@@ -1,10 +1,13 @@
 package iudx.onboarding.server.apiserver;
 
-import static iudx.onboarding.server.apiserver.util.Constants.*;
+import static iudx.onboarding.server.apiserver.util.Constants.ALLOWED_HEADERS;
+import static iudx.onboarding.server.apiserver.util.Constants.ALLOWED_METHODS;
+import static iudx.onboarding.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.onboarding.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
+import static iudx.onboarding.server.common.Constants.TOKEN_ADDRESS;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
@@ -16,8 +19,7 @@ import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.TimeoutHandler;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.HttpStatusCode;
-import java.util.HashSet;
-import java.util.Set;
+import iudx.onboarding.server.token.TokenService;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,8 +29,8 @@ import org.apache.logging.log4j.Logger;
  *
  * <h1>Onboarding Server API Verticle</h1>
  *
- * <p>The API Server verticle implements the IUDX Onboarding Server APIs. It handles the API requests
- * from the clients and interacts with the associated Service to respond.
+ * <p>The API Server verticle implements the IUDX Onboarding Server APIs. It handles the API
+ * requests from the clients and interacts with the associated Service to respond.
  *
  * @see io.vertx.core.Vertx
  * @see AbstractVerticle
@@ -51,6 +53,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystore;
   private String keystorePassword;
   private String dxApiBasePath;
+  private TokenService tokenService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -61,28 +64,6 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   @Override
   public void start() throws Exception {
-
-    Set<String> allowedHeaders = new HashSet<>();
-    allowedHeaders.add(HEADER_ACCEPT);
-    allowedHeaders.add(HEADER_TOKEN);
-    allowedHeaders.add(HEADER_CONTENT_LENGTH);
-    allowedHeaders.add(HEADER_CONTENT_TYPE);
-    allowedHeaders.add(HEADER_HOST);
-    allowedHeaders.add(HEADER_ORIGIN);
-    allowedHeaders.add(HEADER_REFERER);
-    allowedHeaders.add(HEADER_ALLOW_ORIGIN);
-    allowedHeaders.add(HEADER_PUBLIC_KEY);
-    allowedHeaders.add(HEADER_RESPONSE_FILE_FORMAT);
-    allowedHeaders.add(HEADER_OPTIONS);
-
-    Set<HttpMethod> allowedMethods = new HashSet<>();
-    allowedMethods.add(HttpMethod.GET);
-    allowedMethods.add(HttpMethod.POST);
-    allowedMethods.add(HttpMethod.OPTIONS);
-    allowedMethods.add(HttpMethod.DELETE);
-    allowedMethods.add(HttpMethod.PATCH);
-    allowedMethods.add(HttpMethod.PUT);
-
     /* Create a reference to HazelcastClusterManager. */
 
     router = Router.router(vertx);
@@ -97,7 +78,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     router
         .route()
         .handler(
-            CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+            CorsHandler.create("*")
+                .allowedHeaders(ALLOWED_HEADERS)
+                .allowedMethods(ALLOWED_METHODS));
 
     router
         .route()
@@ -114,40 +97,17 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     // attach custom http error responses to router
     HttpStatusCode[] statusCodes = HttpStatusCode.values();
-    Stream.of(statusCodes)
-        .forEach(
-            code -> {
-              router.errorHandler(
-                  code.getValue(),
-                  errorHandler -> {
-                    HttpServerResponse response = errorHandler.response();
-                    if (response.headWritten()) {
-                      try {
-                        response.close();
-                      } catch (RuntimeException e) {
-                        LOGGER.error("Error : " + e);
-                      }
-                      return;
-                    }
-                    response
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .setStatusCode(code.getValue())
-                        .end(errorResponse(code));
-                  });
-            });
+    configureErrorHandlers(router,statusCodes);
 
     router.route().handler(BodyHandler.create());
     router.route().handler(TimeoutHandler.create(10000, 408));
 
     /* NGSI-LD api endpoints */
 
-    router
-      .post(api.getOnboardingUrl())
-      .handler(this::handleOnboardingQuery);
+    router.post(api.getOnboardingUrl()).handler(this::handleOnboardingQuery);
 
-    router
-      .post(api.getIngestionUrl())
-      .handler(this::handleIngestionQuery);
+    router.post(api.getIngestionUrl()).handler(this::handleIngestionQuery);
+    router.post(api.getTokenUrl()).handler(this::handleTokenRequest);
 
     /* Read ssl configuration. */
     isssl = config().getBoolean("ssl");
@@ -188,15 +148,35 @@ public class ApiServerVerticle extends AbstractVerticle {
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
-    /* Get a handler for the Service Discovery interface. */
-
+    tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
     /* Print the deployed endpoints */
     LOGGER.info("API server deployed on :" + serverOptions.getPort());
   }
 
-  private void handleOnboardingQuery(RoutingContext routingContext) {
-  }
-  private void handleIngestionQuery(RoutingContext routingContext) {
+  private void handleTokenRequest(RoutingContext routingContext) {
+    tokenService.createToken(routingContext.getBodyAsJson());
   }
 
+  private void handleOnboardingQuery(RoutingContext routingContext) {}
+
+  private void handleIngestionQuery(RoutingContext routingContext) {}
+
+  private void configureErrorHandlers(Router router, HttpStatusCode[] statusCodes) {
+    Stream.of(statusCodes).forEach(code -> {
+      router.errorHandler(code.getValue(), errorHandler -> {
+        HttpServerResponse response = errorHandler.response();
+        if (response.headWritten()) {
+          try {
+            response.close();
+          } catch (RuntimeException e) {
+            LOGGER.error("Error: " + e);
+          }
+          return;
+        }
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(code.getValue())
+          .end(errorResponse(code));
+      });
+    });
+  }
 }

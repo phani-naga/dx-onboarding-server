@@ -1,5 +1,9 @@
 package iudx.onboarding.server.apiserver.util;
 
+import io.vertx.core.http.HttpMethod;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 public class Constants {
 
   // Header params
@@ -14,13 +18,21 @@ public class Constants {
   public static final String HEADER_OPTIONS = "options";
   public static final String HEADER_PUBLIC_KEY = "publicKey";
   public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
+  public static final Set<String> ALLOWED_HEADERS =
+    new HashSet<>(Arrays.asList(HEADER_ACCEPT, HEADER_TOKEN, HEADER_CONTENT_LENGTH,
+      HEADER_CONTENT_TYPE, HEADER_HOST, HEADER_ORIGIN, HEADER_REFERER, HEADER_ALLOW_ORIGIN));
 
+  public static final Set<HttpMethod> ALLOWED_METHODS =
+    new HashSet<>(Arrays.asList(HttpMethod.GET,
+      HttpMethod.POST, HttpMethod.OPTIONS, HttpMethod.DELETE, HttpMethod.PATCH,
+      HttpMethod.PUT));
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
   public static final String APPLICATION_JSON = "application/json";
 
   // endpoints
-  public static final String ONBOARDING_AIP = "/item";
-  public static final String INGESTION_AIP = "/ingestion";
+  public static final String ONBOARDING_API = "/item";
+  public static final String INGESTION_API = "/ingestion";
+  public static final String TOKEN_API = "/token";
 
 }

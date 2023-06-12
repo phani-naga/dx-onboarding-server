@@ -8,6 +8,7 @@ public class Api {
   private final String dxApiBasePath;
   private StringBuilder onboardingUrl;
   private StringBuilder ingestionUrl;
+  private StringBuilder tokenUrl;
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
     buildPaths();
@@ -25,8 +26,9 @@ public class Api {
   }
 
   private void buildPaths() {
-    onboardingUrl = new StringBuilder(dxApiBasePath).append(ONBOARDING_AIP);
-    ingestionUrl = new StringBuilder(dxApiBasePath).append(INGESTION_AIP);
+    onboardingUrl = new StringBuilder(dxApiBasePath).append(ONBOARDING_API);
+    ingestionUrl = new StringBuilder(dxApiBasePath).append(INGESTION_API);
+    tokenUrl = new StringBuilder(dxApiBasePath).append(TOKEN_API);
   }
 
   public String getOnboardingUrl() {
@@ -35,5 +37,8 @@ public class Api {
 
   public String getIngestionUrl() {
     return ingestionUrl.toString();
+  }
+  public String getTokenUrl(){
+    return tokenUrl.toString();
   }
 }
