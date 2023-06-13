@@ -153,6 +153,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * Sets the server options based on the configuration settings.
+   * If SSL is enabled, starts an HTTPS server with the specified HTTP port.
+   * If SSL is disabled, starts an HTTP server with the specified HTTP port.
+   * If the HTTP port is not specified in the configuration, default ports (8080 for HTTP and 8443 for HTTPS) will be used.
+   *
+   * @param serverOptions The server options to be configured.
+   */
   private void setServerOptions(HttpServerOptions serverOptions) {
     isSSL = config().getBoolean("ssl");
     if (isSSL) {
