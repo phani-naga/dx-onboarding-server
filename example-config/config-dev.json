@@ -24,7 +24,8 @@
       "id": "iudx.onboarding.server.apiserver.ApiServerVerticle",
       "isWorkerVerticle": false,
       "ssl": true,
-      "verticleInstances": 1
+      "verticleInstances": 1,
+      "httpPort" : 1234
     },
     {
       "id": "iudx.onboarding.server.token.TokenVerticle",

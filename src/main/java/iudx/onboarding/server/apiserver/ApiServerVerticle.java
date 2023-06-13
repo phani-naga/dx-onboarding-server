@@ -11,7 +11,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -49,9 +48,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private HttpServer server;
   private Router router;
   private int port;
-  private boolean isssl;
-  private String keystore;
-  private String keystorePassword;
+  private boolean isSSL;
   private String dxApiBasePath;
   private TokenService tokenService;
 
@@ -75,29 +72,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Define the APIs, methods, endpoints and associated methods. */
 
     router = Router.router(vertx);
-    router
-        .route()
-        .handler(
-            CorsHandler.create("*")
-                .allowedHeaders(ALLOWED_HEADERS)
-                .allowedMethods(ALLOWED_METHODS));
+    configureCorsHandler(router);
 
-    router
-        .route()
-        .handler(
-            requestHandler -> {
-              requestHandler
-                  .response()
-                  .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
-                  .putHeader("Pragma", "no-cache")
-                  .putHeader("Expires", "0")
-                  .putHeader("X-Content-Type-Options", "nosniff");
-              requestHandler.next();
-            });
+    putCommonResponseHeaders();
 
     // attach custom http error responses to router
-    HttpStatusCode[] statusCodes = HttpStatusCode.values();
-    configureErrorHandlers(router,statusCodes);
+    configureErrorHandlers(router);
 
     router.route().handler(BodyHandler.create());
     router.route().handler(TimeoutHandler.create(10000, 408));
@@ -105,63 +85,41 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* NGSI-LD api endpoints */
 
     router.post(api.getOnboardingUrl()).handler(this::handleOnboardingQuery);
-
     router.post(api.getIngestionUrl()).handler(this::handleIngestionQuery);
     router.post(api.getTokenUrl()).handler(this::handleTokenRequest);
 
     /* Read ssl configuration. */
-    isssl = config().getBoolean("ssl");
-
     HttpServerOptions serverOptions = new HttpServerOptions();
-    if (isssl) {
-
-      /* Read the configuration and set the HTTPs server properties. */
-
-      keystore = config().getString("keystore");
-      keystorePassword = config().getString("keystorePassword");
-
-      /*
-       * Default port when ssl is enabled is 8443. If set through config, then that value is taken
-       */
-      port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
-
-      /* Set up the HTTPs server properties, APIs and port. */
-
-      serverOptions
-          .setSsl(true)
-          .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
-      LOGGER.info("Info: Starting HTTPs server at port" + port);
-
-    } else {
-
-      /* Set up the HTTP server properties, APIs and port. */
-
-      serverOptions.setSsl(false);
-      /*
-       * Default port when ssl is disabled is 8080. If set through config, then that value is taken
-       */
-      port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
-      LOGGER.info("Info: Starting HTTP server at port" + port);
-    }
-
+    setServerOptions(serverOptions);
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
     /* Print the deployed endpoints */
-    LOGGER.info("API server deployed on :" + serverOptions.getPort());
+    LOGGER.info("API server deployed on: " + port);
   }
 
-  private void handleTokenRequest(RoutingContext routingContext) {
-    tokenService.createToken(routingContext.getBodyAsJson());
+  /**
+   * Configures the CORS handler on the provided router.
+   *
+   * @param router The router instance to configure the CORS handler on.
+   */
+  private void configureCorsHandler(Router router) {
+    router.route().handler(
+      CorsHandler.create("*")
+        .allowedHeaders(ALLOWED_HEADERS)
+        .allowedMethods(ALLOWED_METHODS)
+    );
   }
 
-  private void handleOnboardingQuery(RoutingContext routingContext) {}
-
-  private void handleIngestionQuery(RoutingContext routingContext) {}
-
-  private void configureErrorHandlers(Router router, HttpStatusCode[] statusCodes) {
+  /**
+   * Configures error handlers for the specified status codes on the provided router.
+   *
+   * @param router The router instance to configure the error handlers on.
+   */
+  private void configureErrorHandlers(Router router) {
+    HttpStatusCode[] statusCodes = HttpStatusCode.values();
     Stream.of(statusCodes).forEach(code -> {
       router.errorHandler(code.getValue(), errorHandler -> {
         HttpServerResponse response = errorHandler.response();
@@ -179,4 +137,37 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     });
   }
+
+  /**
+   * Sets common response headers to be included in HTTP responses.
+   */
+  private void putCommonResponseHeaders() {
+    router.route().handler(requestHandler -> {
+      requestHandler
+        .response()
+        .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+        .putHeader("Pragma", "no-cache")
+        .putHeader("Expires", "0")
+        .putHeader("X-Content-Type-Options", "nosniff");
+      requestHandler.next();
+    });
+  }
+
+  private void setServerOptions(HttpServerOptions serverOptions) {
+    isSSL = config().getBoolean("ssl");
+    if (isSSL) {
+      LOGGER.debug("Info: Starting HTTPs server");
+      port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
+    } else {
+      LOGGER.debug("Info: Starting HTTP server");
+      serverOptions.setSsl(false);
+      port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
+    }
+  }
+  private void handleTokenRequest(RoutingContext routingContext) {
+    tokenService.createToken(routingContext.getBodyAsJson());
+  }
+  private void handleOnboardingQuery(RoutingContext routingContext) {}
+  private void handleIngestionQuery(RoutingContext routingContext) {}
+
 }
