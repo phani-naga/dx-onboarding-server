@@ -192,8 +192,12 @@
       <artifactId>elasticsearch-rest-client</artifactId>
       <version>${elasticsearch-rest-client.version}</version>
     </dependency>
-
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-auth-oauth2</artifactId>
+    </dependency>
+    <dependency>
+
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
       <version>3.11.1</version>

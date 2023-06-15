@@ -4,8 +4,8 @@
     "zookeeper"
   ],
   "clusterId": "iudx-onboarding-cluster",
-  "commonConfig" : {
-    "dxApiBasePath" : "",
+  "commonConfig": {
+    "dxApiBasePath": "",
     "dxCatalogueBasePath": "",
     "dxAuthBasePath": ""
   },
@@ -13,7 +13,7 @@
   "modules": [
     {
       "id": "iudx.onboarding.server.catalogue.CatalogueVerticle",
-      "isWorkerVerticle":false,
+      "isWorkerVerticle": false,
       "localCatServerHost": "cat-api",
       "localCatServerPort": 123,
       "centralCatServerHost": "cat-api",
@@ -22,9 +22,18 @@
     },
     {
       "id": "iudx.onboarding.server.apiserver.ApiServerVerticle",
-      "isWorkerVerticle":false,
+      "isWorkerVerticle": false,
       "ssl": true,
-      "verticleInstances": 1
+      "verticleInstances": 1,
+      "httpPort" : 1234
+    },
+    {
+      "id": "iudx.onboarding.server.token.TokenVerticle",
+      "isWorkerVerticle": false,
+      "verticleInstances": 1,
+      "keycloakSite": "{{protocol}}://{{keycloakHost}}:{{keycloakPort}}/auth/realms/{{keycloakRealm}}",
+      "keycloakClientId": "auth.iudx.org.in",
+      "keycloakClientSecret": "6ba618a0-06c6-49a0-a824-d5dfc6d025f3"
     }
   ]
 }
