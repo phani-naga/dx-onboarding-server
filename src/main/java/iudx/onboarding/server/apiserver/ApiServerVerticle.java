@@ -5,8 +5,11 @@ import static iudx.onboarding.server.apiserver.util.Constants.ALLOWED_METHODS;
 import static iudx.onboarding.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.onboarding.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
-import static iudx.onboarding.server.common.Constants.*;
-
+import static iudx.onboarding.server.common.Constants.CATALOGUE_ADDRESS;
+import static iudx.onboarding.server.common.Constants.TOKEN_ADDRESS;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
@@ -19,27 +22,10 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.TimeoutHandler;
 import iudx.onboarding.server.catalogue.CatalogueUtilService;
-import iudx.onboarding.server.catalogue.service.CatalogueService;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
 import iudx.onboarding.server.token.TokenService;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
-import java.util.function.DoubleBinaryOperator;
-import java.util.function.DoubleFunction;
-import java.util.function.DoubleToIntFunction;
-import java.util.function.Function;
-import java.util.function.IntBinaryOperator;
-import java.util.function.IntFunction;
-import java.util.function.IntToLongFunction;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The Onboarding Server API Verticle.
