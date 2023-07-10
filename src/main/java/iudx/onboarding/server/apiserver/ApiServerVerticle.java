@@ -7,7 +7,11 @@ import static iudx.onboarding.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
 import static iudx.onboarding.server.common.Constants.CATALOGUE_ADDRESS;
 import static iudx.onboarding.server.common.Constants.TOKEN_ADDRESS;
+
+import java.util.Map;
 import java.util.stream.Stream;
+
+import io.vertx.core.MultiMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -196,6 +200,11 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void createItem(RoutingContext routingContext) {
+    MultiMap headers = routingContext.request().headers();
+    JsonObject headerJson = new JsonObject();
+    for (Map.Entry<String, String> entry : headers.entries()) {
+      headerJson.put(entry.getKey(), entry.getValue());
+    }
     Future<JsonObject> createLocaItem =
         catalogueService.createItem(routingContext.body().asJsonObject(), CatalogueType.LOCAL);
     createLocaItem.onSuccess(createLocalItemSuccessHandler -> {
