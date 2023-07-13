@@ -1,6 +1,7 @@
 package iudx.onboarding.server.catalogue;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
@@ -22,29 +23,73 @@ public class CatalogueServiceImpl implements CatalogueUtilService{
     this.localCat = new LocalCatImpl(vertx,config);
   }
   @Override
-  public Future<JsonObject> createItem(JsonObject request, CatalogueType catalogueType) {
-    if(catalogueType.equals(CatalogueType.CENTRAL))
-      centralCat.createItem(request);
-    else if(catalogueType.equals(CatalogueType.LOCAL))
-      localCat.createItem(request);
-    return null;
+  public Future<JsonObject> createItem(JsonObject request, CatalogueType catalogueType, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+
+    Future<JsonObject> createFuture;
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      createFuture = centralCat.createItem(request, token);
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      createFuture = localCat.createItem(request, token);
+    } else {
+      promise.fail("Invalid catalogue type");
+      return promise.future();
+    }
+
+    createFuture.onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        promise.fail("Request failed");
+      }
+    });
+
+    return promise.future();
   }
 
   @Override
-  public Future<JsonObject> updateItem(JsonObject request, CatalogueType catalogueType) {
+  public Future<JsonObject> updateItem(JsonObject request, CatalogueType catalogueType, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    Future<JsonObject> updateFuture;
     if(catalogueType.equals(CatalogueType.CENTRAL))
-      centralCat.updateItem(request);
+      updateFuture = centralCat.updateItem(request, token);
     else if(catalogueType.equals(CatalogueType.LOCAL))
-      localCat.updateItem(request);
-    return null;
+      updateFuture = localCat.updateItem(request, token);
+    else {
+      promise.fail("Invalid catalogue type");
+      return promise.future();
+    }
+    updateFuture.onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        promise.fail("Request failed");
+      }
+    });
+
+    return promise.future();
   }
 
   @Override
   public Future<JsonObject> deleteItem(JsonObject request, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    Future<JsonObject> deleteFuture;
     if(catalogueType.equals(CatalogueType.CENTRAL))
-      centralCat.deleteItem(request);
-    else if(catalogueType.equals(CatalogueType.LOCAL))
-      localCat.deleteItem(request);
-    return null;
+      deleteFuture = centralCat.deleteItem(request);
+    else if(catalogueType.equals(CatalogueType.LOCAL)) {
+      deleteFuture = localCat.deleteItem(request);
+    } else {
+      promise.fail("Invalid catalogue type");
+      return promise.future();
+    }
+    deleteFuture.onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        promise.fail("Request failed");
+      }
+    });
+
+    return promise.future();
   }
 }

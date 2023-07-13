@@ -33,12 +33,12 @@ public class CentralCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> createItem(JsonObject request) {
+  public Future<JsonObject> createItem(JsonObject request, String token) {
     return null;
   }
 
   @Override
-  public Future<JsonObject> updateItem(JsonObject request) {
+  public Future<JsonObject> updateItem(JsonObject request, String token) {
     return null;
   }
 

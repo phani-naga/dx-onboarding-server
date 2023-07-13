@@ -9,8 +9,8 @@ import iudx.onboarding.server.common.CatalogueType;
 @VertxGen
 @ProxyGen
 public interface CatalogueService {
-  Future<JsonObject> createItem(final JsonObject request);
-  Future<JsonObject> updateItem(final JsonObject request);
+  Future<JsonObject> createItem(final JsonObject request, String token);
+  Future<JsonObject> updateItem(final JsonObject request, String token);
   Future<JsonObject> deleteItem(final JsonObject request);
 
 }
