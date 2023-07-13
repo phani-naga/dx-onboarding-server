@@ -25,7 +25,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService{
   @Override
   public Future<JsonObject> createItem(JsonObject request, CatalogueType catalogueType, String token) {
     Promise<JsonObject> promise = Promise.promise();
-
     Future<JsonObject> createFuture;
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
       createFuture = centralCat.createItem(request, token);
@@ -71,18 +70,41 @@ public class CatalogueServiceImpl implements CatalogueUtilService{
   }
 
   @Override
-  public Future<JsonObject> deleteItem(JsonObject request, CatalogueType catalogueType) {
+  public Future<JsonObject> deleteItem(String id, CatalogueType catalogueType, String token) {
     Promise<JsonObject> promise = Promise.promise();
     Future<JsonObject> deleteFuture;
     if(catalogueType.equals(CatalogueType.CENTRAL))
-      deleteFuture = centralCat.deleteItem(request);
+      deleteFuture = centralCat.deleteItem(id, token);
     else if(catalogueType.equals(CatalogueType.LOCAL)) {
-      deleteFuture = localCat.deleteItem(request);
+      deleteFuture = localCat.deleteItem(id, token);
     } else {
       promise.fail("Invalid catalogue type");
       return promise.future();
     }
     deleteFuture.onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        promise.fail("Request failed");
+      }
+    });
+
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> getItem(String id, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    Future<JsonObject> getFuture;
+    if(catalogueType.equals(CatalogueType.CENTRAL))
+      getFuture = centralCat.getItem(id);
+    else if(catalogueType.equals(CatalogueType.LOCAL)) {
+      getFuture = localCat.getItem(id);
+    } else {
+      promise.fail("Invalid catalogue type");
+      return promise.future();
+    }
+    getFuture.onComplete(handler -> {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {

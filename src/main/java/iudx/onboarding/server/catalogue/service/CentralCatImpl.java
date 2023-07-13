@@ -43,7 +43,8 @@ public class CentralCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> deleteItem(JsonObject request) {
-    return null;
-  }
+  public Future<JsonObject> deleteItem(String id, String token) { return null; }
+
+  @Override
+  public Future<JsonObject> getItem(String id) { return null; }
 }
