@@ -16,6 +16,7 @@ public interface CatalogueUtilService {
   Future<JsonObject> deleteItem(final String request, CatalogueType catalogueType, String token);
   Future<JsonObject> getItem(final String request, CatalogueType catalogueType);
 
+
   @GenIgnore
   static CatalogueUtilService createProxy(Vertx vertx, String address) {
     return new CatalogueUtilServiceVertxEBProxy(vertx, address);

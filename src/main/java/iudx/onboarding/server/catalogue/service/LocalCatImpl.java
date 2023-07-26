@@ -89,7 +89,7 @@ public class LocalCatImpl implements CatalogueService {
               .addQueryParam("id", id)
               .send(httpResponseAsyncResult -> {
                 if (httpResponseAsyncResult.succeeded()) {
-                  LOGGER.info("request successful"+httpResponseAsyncResult.result().bodyAsJsonObject());
+                  LOGGER.info("local request successful"+httpResponseAsyncResult.result().bodyAsJsonObject());
                   JsonObject response = new JsonObject().put("statusCode", httpResponseAsyncResult.result().statusCode())
                           .put("results", httpResponseAsyncResult.result().body().toJsonObject());
                   promise.complete(response);
