@@ -1,22 +1,12 @@
 package iudx.onboarding.server.apiserver;
 
-import static iudx.onboarding.server.apiserver.util.Constants.*;
-import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
-import static iudx.onboarding.server.common.Constants.CATALOGUE_ADDRESS;
-import static iudx.onboarding.server.common.Constants.TOKEN_ADDRESS;
-
-import java.util.Map;
-import java.util.stream.Stream;
-
-import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServerRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -29,6 +19,14 @@ import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
 import iudx.onboarding.server.token.TokenService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.stream.Stream;
+
+import static iudx.onboarding.server.apiserver.util.Constants.*;
+import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
+import static iudx.onboarding.server.common.Constants.*;
 
 /**
  * The Onboarding Server API Verticle.
@@ -39,6 +37,7 @@ import iudx.onboarding.server.token.TokenService;
  * The API Server verticle implements the IUDX Onboarding Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
+ * @version 1.0
  * @see io.vertx.core.Vertx
  * @see AbstractVerticle
  * @see HttpServer
@@ -46,8 +45,7 @@ import iudx.onboarding.server.token.TokenService;
  * @see io.vertx.servicediscovery.ServiceDiscovery
  * @see io.vertx.servicediscovery.types.EventBusService
  * @see io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
- * @version 1.0
- * @since 2020-05-31
+ * @since 2023-07-27
  */
 public class ApiServerVerticle extends AbstractVerticle {
 
@@ -126,10 +124,10 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void configureCorsHandler(Router router) {
     router
         .route()
-          .handler(CorsHandler
-              .create("*")
-                .allowedHeaders(ALLOWED_HEADERS)
-                .allowedMethods(ALLOWED_METHODS));
+        .handler(CorsHandler
+            .create("*")
+            .allowedHeaders(ALLOWED_HEADERS)
+            .allowedMethods(ALLOWED_METHODS));
   }
 
   /**
@@ -152,8 +150,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         }
         response
             .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-              .setStatusCode(code.getValue())
-              .end(errorResponse(code));
+            .setStatusCode(code.getValue())
+            .end(errorResponse(code));
       });
     });
   }
@@ -165,10 +163,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(requestHandler -> {
       requestHandler
           .response()
-            .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
-            .putHeader("Pragma", "no-cache")
-            .putHeader("Expires", "0")
-            .putHeader("X-Content-Type-Options", "nosniff");
+          .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+          .putHeader("Pragma", "no-cache")
+          .putHeader("Expires", "0")
+          .putHeader("X-Content-Type-Options", "nosniff");
       requestHandler.next();
     });
   }
@@ -194,116 +192,97 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void handleTokenRequest(RoutingContext routingContext) {
-    tokenService.createToken(routingContext.getBodyAsJson());
+    HttpServerResponse response = routingContext.response();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    tokenService.createToken()
+        .onSuccess(successHandler -> {
+          response.setStatusCode(200)
+              .end(successHandler.toString());
+        })
+        .onFailure(failureHandler -> {
+          response.setStatusCode(400)
+              .end(failureHandler.getMessage());
+        });
   }
 
   private void createItem(RoutingContext routingContext) {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    requestBody.put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
     catalogueService
-        .createItem(
-            routingContext.body().asJsonObject(), CatalogueType.LOCAL, tokenHeadersMap.get("token"))
+        .createItem(requestBody, CatalogueType.LOCAL)
         .onSuccess(
             createLocalItemSuccessHandler -> {
               JsonObject localCreateResponse = createLocalItemSuccessHandler;
               LOGGER.info("Response {}", localCreateResponse);
-              if (localCreateResponse.getInteger("statusCode").equals(201)) {
-                // call only if response is 201 -success
-                JsonObject itemBodyWithId =
-                    routingContext
-                        .body()
-                        .asJsonObject()
-                        .put(
-                            "id",
-                            localCreateResponse
-                                .getJsonObject("results")
-                                .getJsonObject("results")
-                                .getString("id"));
-                LOGGER.info(
-                    "item uploaded in local cat {}", localCreateResponse.getJsonObject("results"));
-                catalogueService
-                    .createItem(
-                        itemBodyWithId,
-                        CatalogueType.CENTRAL,
-                        tokenHeadersMap.get("Keycloak-Token"))
-                    .onSuccess(
-                        createCentralCatItemSuccess -> {
-                          if (createCentralCatItemSuccess.getInteger("statusCode").equals(201)) {
-                            response
-                                .setStatusCode(201)
-                                .end(
-                                    createCentralCatItemSuccess
-                                        .getJsonObject("results")
-                                        .toString());
-                          } else {
-                            handleResponse(response, createCentralCatItemSuccess);
-                          }
-                        })
-                    .onFailure(centralCatItemFailure -> {
-                        Throwable cause = centralCatItemFailure.getCause();
-                        LOGGER.info("Handler Failed {}", cause);
-                    });
-              } else {
-                handleResponse(response, localCreateResponse);
-              }
+              JsonObject itemBodyWithId = localCreateResponse.getJsonObject(RESULTS);
+              LOGGER.info(
+                  "item uploaded in local cat {}", itemBodyWithId);
+
+              catalogueService
+                  .createItem(itemBodyWithId, CatalogueType.CENTRAL)
+                  .onSuccess(
+                      createCentralCatItemSuccess -> {
+                        response
+                            .setStatusCode(201)
+                            .end(
+                                createCentralCatItemSuccess
+//                                    .getJsonObject(RESULTS)
+                                    .toString());
+                      })
+                  .onFailure(centralCatItemFailure -> {
+                    // TODO: delete item from local CAT
+//                    handleResponse(response, centralCatItemFailure);
+//                    Throwable cause = centralCatItemFailure.getCause();
+                    LOGGER.info("Central Handler Failed {}", centralCatItemFailure.getMessage());
+                  });
             })
         .onFailure(
             createLocalItemFailureHandler -> {
               Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Handler Failed {}", cause);
+              LOGGER.info("Local Handler Failed {}", cause);
             });
   }
 
   private void updateItem(RoutingContext routingContext) {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    requestBody.put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    Future<JsonObject> createLocaItem =
-        catalogueService.updateItem(
-            routingContext.body().asJsonObject(),
-            CatalogueType.LOCAL,
-            tokenHeadersMap.get("token"));
-    createLocaItem
+    catalogueService
+        .updateItem(requestBody, CatalogueType.LOCAL)
         .onSuccess(
-            createLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = createLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              if (localCreateResponse.getInteger("statusCode").equals(200)) {
-                LOGGER.info(
-                    "item updated in local cat {}", localCreateResponse.getJsonObject("results"));
-                // call only if response is 200 -success
-                catalogueService
-                    .updateItem(
-                        routingContext.body().asJsonObject(),
-                        CatalogueType.CENTRAL,
-                        tokenHeadersMap.get("Keycloak-Token"))
-                    .onSuccess(
-                        createCentralCatItemSuccess -> {
-                          if (createCentralCatItemSuccess.getInteger("statusCode").equals(200)) {
-                            response
-                                .setStatusCode(200)
-                                .end(
-                                    createCentralCatItemSuccess
-                                        .getJsonObject("results")
-                                        .toString());
-                          } else {
-                            handleResponse(response, createCentralCatItemSuccess);
-                          }
-                        })
-                    .onFailure(centralCatItemFailure -> {
-                        Throwable cause = centralCatItemFailure.getCause();
-                        LOGGER.info("Handler Failed {}", cause);
-                    });
+            updateLocalItemSuccessHandler -> {
+              JsonObject localUpdateResponse = updateLocalItemSuccessHandler;
+              LOGGER.info("Response {}", localUpdateResponse);
+              LOGGER.info(
+                  "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
 
-              } else {
-                handleResponse(response, localCreateResponse);
-              }
+              catalogueService
+                  .updateItem(requestBody, CatalogueType.CENTRAL)
+                  .onSuccess(
+                      updateCentralCatItemSuccess -> {
+                        response
+                            .setStatusCode(200)
+                            .end(
+                                updateCentralCatItemSuccess
+//                                    .getJsonObject(RESULTS)
+                                    .toString());
+                      })
+                  .onFailure(centralCatItemFailure -> {
+                    // TODO: undo changes on local
+//                          handleResponse(response, createCentralCatItemSuccess);
+//                    Throwable cause = centralCatItemFailure.getCause();
+                    LOGGER.info("Central Handler Failed {}", centralCatItemFailure.getMessage());
+                  });
             })
         .onFailure(
             createLocalItemFailureHandler -> {
               Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Handler Failed {}", cause);
+              LOGGER.info("Lccal Handler Failed {}", cause);
             });
   }
 
@@ -311,102 +290,93 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = new JsonObject()
+        .put(ID, request.getParam(ID))
+        .put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    catalogueService
-        .deleteItem(request.getParam("id"), CatalogueType.LOCAL, tokenHeadersMap.get("token"))
-        .onSuccess(
-            createLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = createLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              if (localCreateResponse.getInteger("statusCode").equals(200)) {
-                LOGGER.info(
-                    "item deleted in local cat {}", localCreateResponse.getJsonObject("results"));
-                // call only if response is 200 -success
-                catalogueService
-                    .deleteItem(
-                        request.getParam("id"),
-                        CatalogueType.CENTRAL,
-                        tokenHeadersMap.get("Keycloak-Token"))
-                    .onSuccess(
-                        createCentralCatItemSuccess -> {
-                          if (createCentralCatItemSuccess.getInteger("statusCode").equals(200)) {
-                            LOGGER.info(
-                                "item deleted in central cat {}",
-                                createCentralCatItemSuccess.getJsonObject("results"));
-                            response
-                                .setStatusCode(200)
-                                .end(
-                                    createCentralCatItemSuccess
-                                        .getJsonObject("results")
-                                        .toString());
-                          } else if (!createCentralCatItemSuccess
-                              .getInteger("statusCode")
-                              .equals(200)) {
-                              LOGGER.debug("Item not deleted from cat central");
-                            catalogueService
-                                .getItem(request.getParam("id"), CatalogueType.CENTRAL)
-                                .onSuccess(
-                                    uploadLocalItem -> {
-                                      if (uploadLocalItem.getInteger("statusCode").equals(200)) {
-                                        LOGGER.info("getting item from central cat to upload to cop");
-                                        JsonObject requestbody =
-                                            uploadLocalItem
-                                                .getJsonObject("results")
-                                                .getJsonArray("results")
-                                                .getJsonObject(0);
-                                        requestbody.remove("itemStatus");
-                                        requestbody.remove("itemCreatedAt");
-                                        requestbody.remove("resourceServerHTTPAccessURL");
-                                        createLocalItem(
-                                                requestbody,
-                                                tokenHeadersMap.get("token"),
-                                                routingContext);
-                                      } else {
-                                        LOGGER.info(
-                                            "item not present in central");
-                                        handleResponse(response, uploadLocalItem);
-                                      }
-                                    })
-                                .onFailure(
-                                    uploadLocalItem -> {
-                                      Throwable cause = uploadLocalItem.getCause();
-                                      LOGGER.info(
-                                          "Handler Failed to upload item in local cat, item not deleted from central {}",
-                                          cause);
-                                    });
-                          }
-                        })
-                    .onFailure(centralCatItemFailure -> {
-                        Throwable cause = centralCatItemFailure.getCause();
-                        LOGGER.info(
-                                "Handler Failed to upload item in local cat, item not deleted from central {}",
-                                cause);
-                    });
 
-              } else {
-                handleResponse(response, localCreateResponse);
-              }
+    catalogueService
+        .deleteItem(requestBody, CatalogueType.LOCAL)
+        .onSuccess(
+            deleteLocalItemSuccessHandler -> {
+              JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
+              LOGGER.info("Response {}", localCreateResponse);
+              LOGGER.info(
+                  "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
+
+              catalogueService
+                  .deleteItem(requestBody, CatalogueType.CENTRAL)
+                  .onSuccess(
+                      deleteCentralCatItemSuccess -> {
+                        LOGGER.info(
+                            "item deleted in central cat {}",
+                            deleteCentralCatItemSuccess.getJsonArray(RESULTS));
+                        response
+                            .setStatusCode(200)
+                            .end(
+                                deleteCentralCatItemSuccess
+//                                    .getJsonObject(RESULTS)
+                                    .toString());
+                      })
+                  .onFailure(centralCatItemFailure -> {
+                    handleInconsistentDelete(tokenHeadersMap, request, response);
+//                    Throwable cause = centralCatItemFailure.getCause();
+                    LOGGER.info(
+                        "Handler Failed to upload item in local cat, item not deleted from central {}",
+                        centralCatItemFailure.getMessage());
+                  });
             })
         .onFailure(
             createLocalItemFailureHandler -> {
               Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Handler Failed {}", cause);
+              LOGGER.info("Local Handler Failed {}", cause);
             });
   }
 
-  private Future<JsonObject> createLocalItem(
-      JsonObject itemBody, String token, RoutingContext routingContext) {
-    Promise<JsonObject> promise = Promise.promise();
-    HttpServerResponse response = routingContext.response();
+  private void handleInconsistentDelete(MultiMap tokenHeadersMap, HttpServerRequest request, HttpServerResponse response) {
+    LOGGER.warn("Item not deleted from cat central");
     catalogueService
-        .createItem(itemBody, CatalogueType.LOCAL, token)
+        .getItem(request.getParam(ID), CatalogueType.CENTRAL)
+        .onSuccess(
+            getFromCentralHandler -> {
+              if (getFromCentralHandler.getInteger(STATUS_CODE).equals(200)) {
+                LOGGER.info("getting item from central cat to upload to cop");
+                JsonObject requestbody =
+                    getFromCentralHandler
+                        .getJsonObject(RESULTS)
+                        .getJsonArray(RESULTS)
+                        .getJsonObject(0);
+                requestbody.remove("itemStatus");
+                requestbody.remove("resourceServerHTTPAccessURL");
+                Future.future(f -> restoreItemOnLocal(requestbody, tokenHeadersMap.get(TOKEN), response));
+              } else {
+                LOGGER.info(
+                    "item not present in central");
+                handleResponse(response, getFromCentralHandler);
+              }
+            })
+        .onFailure(
+            uploadLocalItem -> {
+              Throwable cause = uploadLocalItem.getCause();
+              LOGGER.info(
+                  "Handler Failed to upload item in local cat, item not deleted from central {}",
+                  cause);
+            });
+  }
+
+  private Future<JsonObject> restoreItemOnLocal(
+      JsonObject itemBody, String token, HttpServerResponse response) {
+    Promise<JsonObject> promise = Promise.promise();
+    itemBody.put(HEADER_TOKEN, token);
+    catalogueService
+        .createItem(itemBody, CatalogueType.LOCAL)
         .onSuccess(
             createItem -> {
-              if (createItem.getInteger("statusCode").equals(201)) {
-                  LOGGER.info("item created again in local cat");
-                response.setStatusCode(201).end(createItem.getJsonObject("results").toString());
+              if (createItem.getInteger(STATUS_CODE).equals(201)) {
+                LOGGER.info("item created again in local cat");
+                response.setStatusCode(201).end(createItem.getJsonObject(RESULTS).toString());
               } else {
-                  handleResponse(response, createItem);
+                handleResponse(response, createItem);
               }
             });
 
@@ -414,58 +384,45 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void handleResponse(HttpServerResponse response, JsonObject responseObject) {
-    int statusCode = responseObject.getInteger("statusCode");
-    response.setStatusCode(statusCode).end(responseObject.getJsonObject("results").toString());
+    int statusCode = responseObject.getInteger(STATUS_CODE);
+    response.setStatusCode(statusCode).end(responseObject.getJsonObject(RESULTS).toString());
   }
 
   private void getItem(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    Future<JsonObject> createLocaItem =
-        catalogueService.getItem(request.getParam("id"), CatalogueType.LOCAL);
-    createLocaItem
+    catalogueService.getItem(request.getParam(ID), CatalogueType.LOCAL)
         .onSuccess(
-            createLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = createLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              if (localCreateResponse.getInteger("statusCode").equals(200)) {
+            getLocalItemSuccessHandler -> {
+              LOGGER.info("Response {}", getLocalItemSuccessHandler);
                 LOGGER.info(
-                    "item taken from local cat {}", localCreateResponse.getJsonObject("results"));
+                    "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
                 // call only if response is 200 -success
-                catalogueService
-                    .getItem(request.getParam("id"), CatalogueType.CENTRAL)
-                    .onSuccess(
-                        createCentralCatItemSuccess -> {
-                          if (createCentralCatItemSuccess.getInteger("statusCode").equals(200)) {
-                            response
-                                .setStatusCode(200)
-                                .end(
-                                    createCentralCatItemSuccess
-                                        .getJsonObject("results")
-                                        .toString());
-                          } else {
-                            handleResponse(response, createCentralCatItemSuccess);
-                          }
-                        })
-                    .onFailure(centralCatItemFailure -> {});
-
-              } else {
-                handleResponse(response, localCreateResponse);
-              }
+                response
+                    .setStatusCode(200)
+                    .end(
+                        getLocalItemSuccessHandler
+//                            .getJsonObject(RESULTS)
+                            .toString());
             })
         .onFailure(
-            createLocalItemFailureHandler -> {
-              Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Handler Failed {}", cause);
+            getLocalItemFailureHandler -> {
+//                handleResponse(response, getLocalItemSuccessHandler);
+//              Throwable cause = createLocalItemFailureHandler.getCause();
+              LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getMessage());
             });
   }
 
-  private void registerAdapter(RoutingContext routingContext) {}
+  private void registerAdapter(RoutingContext routingContext) {
+  }
 
-  private void updateAdapter(RoutingContext routingContext) {}
+  private void updateAdapter(RoutingContext routingContext) {
+  }
 
-  private void deleteAdapter(RoutingContext routingContext) {}
+  private void deleteAdapter(RoutingContext routingContext) {
+  }
 
-  private void getAdapter(RoutingContext routingContext) {}
+  private void getAdapter(RoutingContext routingContext) {
+  }
 }

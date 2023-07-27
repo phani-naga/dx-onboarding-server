@@ -29,6 +29,8 @@ public class Constants {
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
   public static final String APPLICATION_JSON = "application/json";
+  public static final String STATUS_CODE = "statusCode";
+  public static final String RESULTS = "results";
 
   // endpoints
   public static final String ONBOARDING_API = "/item";

@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
@@ -11,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 public interface TokenService {
 
-  Future<JsonObject> createToken(JsonObject jsonObject);
+  Future<JsonObject> createToken();
   @GenIgnore
   static TokenService createProxy(Vertx vertx, String address) {
     return new TokenServiceVertxEBProxy(vertx, address);
