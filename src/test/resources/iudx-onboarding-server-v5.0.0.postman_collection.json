@@ -1,66 +1,14 @@
 {
 	"info": {
-		"_postman_id": "6fd8b559-e62a-4e1f-ad78-b3c8383f5298",
+		"_postman_id": "f17247ec-7c2f-40c5-9487-2079c9a8565f",
 		"name": "iudx-onboarding-server-v5.0.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "27217689"
+		"_exporter_id": "17194681"
 	},
 	"item": [
 		{
 			"name": "Get Tokens",
 			"item": [
-				{
-					"name": "Admin Token",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"pm.environment.set(\"adminToken\", jsonData.results.accessToken);\r",
-									"postman.setEnvironmentVariable(\"adminToken\", jsonData.results.accessToken);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "clientId",
-								"value": "{{clientId}}"
-							},
-							{
-								"key": "clientSecret",
-								"value": "{{clientSecret}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"cat-test.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"admin\"\n}"
-						},
-						"url": {
-							"raw": "https://authvertx.iudx.io/auth/v1/token",
-							"protocol": "https",
-							"host": [
-								"authvertx",
-								"iudx",
-								"io"
-							],
-							"path": [
-								"auth",
-								"v1",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Delegate Token",
 					"event": [
@@ -81,20 +29,74 @@
 						"header": [
 							{
 								"key": "clientId",
-								"value": "{{providerClientId}}"
+								"value": "{{providerClientID}}"
 							},
 							{
 								"key": "clientSecret",
 								"value": "{{providerClientSecret}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"cat-test.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"delegate\"\n}"
+							"raw": "{\n  \"itemId\": \"cat-test.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"provider\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CAT Admin token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.environment.set(\"catAdminToken\", jsonData.results.accessToken);\r",
+									"postman.setEnvironmentVariable(\"catAdminToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{clientID}}"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{clientSecret}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"cat-test.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "https://authvertx.iudx.io/auth/v1/token",
@@ -149,18 +151,19 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
 								"key": "token",
-								"value": "{{adminToken}}",
+								"value": "{{catAdminToken}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:ResourceServer\"\n          ],\n          \"name\": \"rs.iudx.io\",\n          \"description\": \"dummy  IUDX resource server\",\n          \"tags\": [\n            \"IUDX\",\n            \"Resource\",\n            \"Server\",\n            \"Platform\"\n          ],\n          \"owner\": \"fd47486b-3497-4248-ac1e-082e4d37a66c\",\n          \"resourceServerHTTPAccessURL\": \"cop.iudx.io\",\n          \"resourceServerOrg\":  {\n                    \"name\": \"iudx\",\n                    \"additionalInfoURL\": \"https://iudx.org.in\",\n                    \"location\": {\n                        \"type\": \"Place\",\n                        \"address\": \"IISc, Bangalore\",\n                        \"geometry\": {\n                            \"type\": \"Point\",\n                            \"coordinates\": [\n                                77.570423,\n                                13.013945\n                            ]\n                        }\n                    }\n                }\n        }"
+							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:ResourceServer\"\n          ],\n          \"name\": \"rs.iudx.io\",\n          \"description\": \"dummy  IUDX resource server\",\n          \"tags\": [\n            \"IUDX\",\n            \"Resource\",\n            \"Server\",\n            \"Platform\"\n          ],\n          \"owner\": \"fd47486b-3497-4248-ac1e-082e4d37a66c\",\n          \"resourceServerHTTPAccessURL\": \"cop.iudx.io\",\n          \"resourceServerOrg\":  {\n                    \"name\": \"iudx\",\n                    \"additionalInfoURL\": \"https://iudx.org.in\",\n                    \"location\": {\n                        \"type\": \"Place\",\n                        \"address\": \"IISc, Bangalore\",\n                        \"geometry\": {\n                            \"type\": \"Point\",\n                            \"coordinates\": [\n                                77.570423,\n                                13.013945\n                            ]\n                        }\n                    }\n                }\n        }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "localhost:8090/ngsi-ld/v1/item",
@@ -208,10 +211,6 @@
 						"method": "POST",
 						"header": [
 							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
 								"key": "token",
 								"value": "{{token}}",
 								"type": "text"
@@ -219,7 +218,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"description\": \"provider id for uuid test\",\n    \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"_summary\": \"uuid test provider id\"\n}"
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"description\": \"provider id for uuid test\",\n    \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"_summary\": \"uuid test provider id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "localhost:8090/ngsi-ld/v1/item",
@@ -501,10 +505,6 @@
 						"method": "PATCH",
 						"header": [
 							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
 								"key": "token",
 								"value": "{{adminToken}}",
 								"type": "text"
@@ -512,7 +512,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:ResourceServer\"\n          ],\n          \"id\":\"{{resource_server_id}}\",\n          \"owner\": \"fd47486b-3497-4248-ac1e-082e4d37a66c\",\n          \"name\": \"rs.iudx.io\",\n          \"description\": \"updated dummy  IUDX resource server\",\n          \"tags\": [\n            \"IUDX\",\n            \"Resource\",\n            \"Server\",\n            \"Platform\"\n          ],\n          \"resourceServerHTTPAccessURL\": \"cop.iudx.io\",\n          \"resourceServerOrg\":  {\n                    \"name\": \"iudx\",\n                    \"additionalInfoURL\": \"https://iudx.org.in\",\n                    \"location\": {\n                        \"type\": \"Place\",\n                        \"address\": \"IISc, Bangalore\",\n                        \"geometry\": {\n                            \"type\": \"Point\",\n                            \"coordinates\": [\n                                77.570423,\n                                13.013945\n                            ]\n                        }\n                    }\n                }\n        }"
+							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:ResourceServer\"\n          ],\n          \"id\":\"{{resource_server_id}}\",\n          \"owner\": \"fd47486b-3497-4248-ac1e-082e4d37a66c\",\n          \"name\": \"rs.iudx.io\",\n          \"description\": \"updated dummy  IUDX resource server\",\n          \"tags\": [\n            \"IUDX\",\n            \"Resource\",\n            \"Server\",\n            \"Platform\"\n          ],\n          \"resourceServerHTTPAccessURL\": \"cop.iudx.io\",\n          \"resourceServerOrg\":  {\n                    \"name\": \"iudx\",\n                    \"additionalInfoURL\": \"https://iudx.org.in\",\n                    \"location\": {\n                        \"type\": \"Place\",\n                        \"address\": \"IISc, Bangalore\",\n                        \"geometry\": {\n                            \"type\": \"Point\",\n                            \"coordinates\": [\n                                77.570423,\n                                13.013945\n                            ]\n                        }\n                    }\n                }\n        }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "localhost:8090/ngsi-ld/v1/item",
@@ -969,7 +974,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_item_id}}",
 							"host": [
 								"localhost"
 							],
@@ -982,7 +987,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
+									"value": "{{resource_item_id}}"
 								}
 							]
 						}
@@ -994,174 +999,6 @@
 		{
 			"name": "Delete Item",
 			"item": [
-				{
-					"name": "401 (invalid jwt credentials) - Delete Resource Server DX Entity Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "jwt",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "{{resource_server_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "404 (not found) - Delete Resource Server DX Entity Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(404);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{adminToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "400 (invalid syntax) - Delete Resource Server DX Entity",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{adminToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "304039a1-c6b6-361a-8ef4"
-								}
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "200 (success) - Delete Resource Item DX Entity",
 					"event": [
@@ -1380,6 +1217,174 @@
 								{
 									"key": "id",
 									"value": "{{resource_server_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid syntax) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid jwt credentials) - Delete Resource Server DX Entity Copy 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "jwt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) - Delete Resource Server DX Entity Copy 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
 								}
 							]
 						}
