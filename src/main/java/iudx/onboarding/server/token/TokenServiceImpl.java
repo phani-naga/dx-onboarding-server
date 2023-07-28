@@ -4,7 +4,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.auth.oauth2.OAuth2Options;
@@ -56,14 +55,13 @@ public class TokenServiceImpl implements TokenService {
     keycloak.authenticate(new JsonObject())
         .onSuccess(
             res -> {
-              LOGGER.debug(res.principal());
               jwtToken = res.principal().getString("access_token");
               LOGGER.info("Token generated successfully ");
               promise.complete(new JsonObject().put(TOKEN, jwtToken));
             })
         .onFailure(err -> {
           LOGGER.error("Failed to generate the token " + err.getMessage());
-              promise.fail(err.getMessage());
+          promise.fail(err.getMessage());
         });
     return promise.future();
   }

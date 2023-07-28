@@ -1,5 +1,6 @@
 package iudx.onboarding.server.catalogue;
 
+import io.vertx.circuitbreaker.CircuitBreaker;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -18,28 +19,37 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
   private final TokenService tokenService;
+  private final CircuitBreaker circuitBreaker;
   public CentralCatImpl centralCat;
   public LocalCatImpl localCat;
+  private InconsistencyHandler inconsistencyHandler;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, JsonObject config) {
+  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, CircuitBreaker circuitBreaker, JsonObject config) {
     this.tokenService = tokenService;
+    this.circuitBreaker = circuitBreaker;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
+    this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat);
   }
 
   @Override
-  public Future<JsonObject> createItem(JsonObject request, CatalogueType catalogueType) {
+  public Future<JsonObject> createItem(JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
-    String token = request.getString(TOKEN);
-    request.remove(TOKEN);
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
-      tokenService.createToken().compose(adminToken -> {
-        return centralCat.createItem(request, adminToken.getString(TOKEN));
-      }).onComplete(completeHandler -> {
-        if (completeHandler.succeeded()) {
-          promise.complete(completeHandler.result());
+      circuitBreaker.<JsonObject>execute(circuitBreakerHandler -> {
+        tokenService.createToken().compose(adminToken -> {
+          return centralCat.createItem(request, adminToken.getString(TOKEN));
+        }).onComplete(circuitBreakerHandler);
+      }).onComplete(ar -> {
+        if (ar.succeeded()) {
+          promise.complete(ar.result());
         } else {
-          promise.fail(completeHandler.cause());
+          LOGGER.warn("Failed to upload item to central");
+          LOGGER.debug(token);
+          // TODO: delete item from local
+          String id = request.getString(ID);
+          Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(localCat, id, token));
+          promise.fail(ar.cause().getMessage());
         }
       });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
@@ -58,10 +68,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   }
 
   @Override
-  public Future<JsonObject> updateItem(JsonObject request, CatalogueType catalogueType) {
+  public Future<JsonObject> updateItem(JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
-    String token = request.getString(TOKEN);
-    request.remove(TOKEN);
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
       tokenService.createToken().compose(adminToken -> {
         return centralCat.updateItem(request, adminToken.getString(TOKEN));
@@ -88,11 +96,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   }
 
   @Override
-  public Future<JsonObject> deleteItem(JsonObject request, CatalogueType catalogueType) {
+  public Future<JsonObject> deleteItem(JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
-    Future<JsonObject> deleteFuture;
-    String token = request.getString(TOKEN);
-    request.remove(TOKEN);
     String id = request.getString(ID);
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
       tokenService.createToken().compose(adminToken -> {
