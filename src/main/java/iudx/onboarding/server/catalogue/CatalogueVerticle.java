@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,11 +16,13 @@ public class CatalogueVerticle extends AbstractVerticle {
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
+  private TokenService tokenService;
 
   @Override
   public void start() throws Exception {
 
-    catalogueUtilService = new CatalogueServiceImpl(vertx,config());
+    tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
+    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CATALOGUE_ADDRESS).register(CatalogueUtilService.class, catalogueUtilService);
 
