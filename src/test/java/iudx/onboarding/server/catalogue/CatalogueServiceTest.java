@@ -45,7 +45,7 @@ public class CatalogueServiceTest {
             .put("localCatServerPort", 8080);
 
     catalogueService =
-        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), config, client);
+        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, config);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .createItem(request, localType)
+        .createItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -102,7 +102,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .createItem(request, localType)
+        .createItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -136,7 +136,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .createItem(request, localType)
+        .createItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -172,7 +172,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .updateItem(request, localType)
+        .updateItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -205,7 +205,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .updateItem(request, localType)
+        .updateItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -238,7 +238,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .updateItem(request, localType)
+        .updateItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -275,7 +275,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteItem(request, localType)
+        .deleteItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -310,7 +310,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteItem(request, localType)
+        .deleteItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -345,7 +345,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteItem(request, localType)
+        .deleteItem(request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {

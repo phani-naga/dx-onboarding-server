@@ -30,7 +30,6 @@ public class CatalogueVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
-<<<<<<< HEAD
 
     //Circuit breaker is used for retries on Central CAT only
     circuitBreakerOptions = new CircuitBreakerOptions()
