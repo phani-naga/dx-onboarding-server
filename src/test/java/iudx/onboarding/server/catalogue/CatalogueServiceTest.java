@@ -118,7 +118,7 @@ public class CatalogueServiceTest {
 
   @Test
   @Description("test createItem when handler fails and type is local")
-  public void testCreateItemLocalFailedd(VertxTestContext testContext) {
+  public void testCreateItemFailed(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
@@ -187,7 +187,7 @@ public class CatalogueServiceTest {
 
   @Test
   @Description("test updateItem when handler fails and type is local")
-  public void testUpdateItemLocalFailedd(VertxTestContext testContext) {
+  public void testUpdateItemFailed(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
@@ -325,7 +325,7 @@ public class CatalogueServiceTest {
 
   @Test
   @Description("test deleteItem when handler fails and type is local")
-  public void testDelateItemLocalFailedd(VertxTestContext testContext) {
+  public void testDelateItemFailed(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
@@ -426,7 +426,7 @@ public class CatalogueServiceTest {
 
   @Test
   @Description("test getItem when handler fails and type is local")
-  public void testGetItemLocalFailedd(VertxTestContext testContext) {
+  public void testGetItemFailed(VertxTestContext testContext) {
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
     when(client.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
