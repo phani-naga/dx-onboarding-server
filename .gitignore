@@ -110,6 +110,7 @@ local.properties
 
 # Log file
 *.log
+src/main/resources/log4j2.xml
 
 # BlueJ files
 *.ctxt

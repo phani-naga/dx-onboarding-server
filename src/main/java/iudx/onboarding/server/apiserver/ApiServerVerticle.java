@@ -251,8 +251,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             updateLocalItemSuccessHandler -> {
               JsonObject localUpdateResponse = updateLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localUpdateResponse);
-              LOGGER.info(
+              LOGGER.debug(
                   "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
 
               catalogueService
@@ -263,15 +262,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                             .setStatusCode(200)
                             .end(
                                 updateCentralCatItemSuccess
-//                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(updateCentralCatItemFailure -> {
-                    // TODO: undo changes on local
-//                          handleResponse(response, createCentralCatItemSuccess);
-//                    Throwable cause = centralCatItemFailure.getCause();
-                    LOGGER.info("Central Handler Failed, item need to be changed in local {}", updateCentralCatItemFailure.getLocalizedMessage());
-                    response.end(updateCentralCatItemFailure.getMessage());
+                  .onFailure(centralCatItemFailure -> {
+                    // This is after 3 retries and delete of item from local
+                    // TODO: notify user to try again
+                    response.setStatusCode(500).end("Update failed, try again later");
                   });
             })
         .onFailure(
@@ -294,30 +290,27 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             deleteLocalItemSuccessHandler -> {
               JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              LOGGER.info(
+              LOGGER.debug(
                   "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
 
               catalogueService
                   .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       deleteCentralCatItemSuccess -> {
-                        LOGGER.info(
+                        LOGGER.debug(
                             "item deleted in central cat {}",
                             deleteCentralCatItemSuccess.getJsonArray(RESULTS));
                         response
                             .setStatusCode(200)
                             .end(
                                 deleteCentralCatItemSuccess
-//                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(deleteCentralCatItemFailure -> {
+                  .onFailure(centralCatItemFailure -> {
+                    // This is after 3 retries and delete of item from local
+                    // TODO: notify user to try again
+                    response.setStatusCode(500).end("Upload failed, try again later");
                     handleInconsistentDelete(tokenHeadersMap, request, response);
-                    LOGGER.info(
-                        "central handler failed. Item need to be deleted from local {}",
-                        deleteCentralCatItemFailure.getLocalizedMessage());
-                    response.end(deleteCentralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
@@ -389,13 +382,13 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             getLocalItemSuccessHandler -> {
               LOGGER.info("Response {}", getLocalItemSuccessHandler);
-                LOGGER.info(
-                    "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
-                // call only if response is 200 -success
-                response
-                    .setStatusCode(200)
-                    .end(
-                        getLocalItemSuccessHandler.toString());
+              LOGGER.info(
+                  "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
+              // call only if response is 200 -success
+              response
+                  .setStatusCode(200)
+                  .end(
+                      getLocalItemSuccessHandler.toString());
             })
         .onFailure(
             getLocalItemFailureHandler -> {

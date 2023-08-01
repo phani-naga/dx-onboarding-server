@@ -30,7 +30,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     this.circuitBreaker = circuitBreaker;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
-    this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat);
+    this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat, centralCat, circuitBreaker);
   }
 
   @Override
@@ -46,8 +46,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
           promise.complete(ar.result());
         } else {
           LOGGER.warn("Failed to upload item to central");
-          LOGGER.debug(token);
-          // TODO: delete item from local
           String id = request.getString(ID);
           Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(localCat, id, token));
           promise.fail(ar.cause().getMessage());
@@ -72,13 +70,18 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   public Future<JsonObject> updateItem(JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
-      tokenService.createToken().compose(adminToken -> {
-        return centralCat.updateItem(request, adminToken.getString(TOKEN));
-      }).onComplete(completeHandler -> {
-        if (completeHandler.succeeded()) {
-          promise.complete(completeHandler.result());
+      circuitBreaker.<JsonObject>execute(circuitBreakerHandler -> {
+        tokenService.createToken().compose(adminToken -> {
+          return centralCat.updateItem(request, adminToken.getString(TOKEN));
+        }).onComplete(circuitBreakerHandler);
+      }).onComplete(ar -> {
+        if (ar.succeeded()) {
+          promise.complete(ar.result());
         } else {
-          promise.fail(completeHandler.cause());
+          LOGGER.warn("Failed to upload item to central");
+          String id = request.getString(ID);
+          Future.future(f -> inconsistencyHandler.handleUpdateOnLocal(localCat, centralCat, id, token));
+          promise.fail(ar.cause().getMessage());
         }
       });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
@@ -101,13 +104,17 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     Promise<JsonObject> promise = Promise.promise();
     String id = request.getString(ID);
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
-      tokenService.createToken().compose(adminToken -> {
-        return centralCat.deleteItem(id, adminToken.getString(TOKEN));
-      }).onComplete(completeHandler -> {
-        if (completeHandler.succeeded()) {
-          promise.complete(completeHandler.result());
+      circuitBreaker.<JsonObject>execute(circuitBreakerHandler -> {
+        tokenService.createToken().compose(adminToken -> {
+          return centralCat.deleteItem(id, adminToken.getString(TOKEN));
+        }).onComplete(circuitBreakerHandler);
+      }).onComplete(ar -> {
+        if (ar.succeeded()) {
+          promise.complete(ar.result());
         } else {
-          promise.fail(completeHandler.cause());
+          LOGGER.warn("Failed to delete item from central");
+          Future.future(f -> inconsistencyHandler.handleUploadToLocal(localCat, centralCat, id, token));
+          promise.fail(ar.cause());
         }
       });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
