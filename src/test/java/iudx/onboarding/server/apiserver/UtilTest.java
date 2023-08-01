@@ -1,4 +1,4 @@
-package apiserver;
+package iudx.onboarding.server.apiserver;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

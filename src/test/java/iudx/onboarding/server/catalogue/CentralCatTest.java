@@ -1,4 +1,4 @@
-package catalogue;
+package iudx.onboarding.server.catalogue;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
