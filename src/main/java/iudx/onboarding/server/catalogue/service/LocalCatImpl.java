@@ -48,9 +48,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -75,9 +75,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -102,9 +102,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -126,9 +126,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());

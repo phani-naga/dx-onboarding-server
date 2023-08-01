@@ -5,6 +5,7 @@ import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +21,7 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
+  private WebClient webClient;
 
   private CircuitBreaker circuitBreaker;
   private CircuitBreakerOptions circuitBreakerOptions;
@@ -28,6 +30,7 @@ public class CatalogueVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
+<<<<<<< HEAD
 
     //Circuit breaker is used for retries on Central CAT only
     circuitBreakerOptions = new CircuitBreakerOptions()

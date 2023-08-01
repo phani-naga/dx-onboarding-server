@@ -236,8 +236,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             })
         .onFailure(
             createLocalItemFailureHandler -> {
-              Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Local Handler Failed {}", cause);
+              LOGGER.info("Local Handler Failed {}", createLocalItemFailureHandler.getLocalizedMessage());
+              response.end(createLocalItemFailureHandler.getMessage());
             });
   }
 
@@ -266,17 +266,18 @@ public class ApiServerVerticle extends AbstractVerticle {
 //                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(centralCatItemFailure -> {
+                  .onFailure(updateCentralCatItemFailure -> {
                     // TODO: undo changes on local
 //                          handleResponse(response, createCentralCatItemSuccess);
 //                    Throwable cause = centralCatItemFailure.getCause();
-                    LOGGER.info("Central Handler Failed {}", centralCatItemFailure.getMessage());
+                    LOGGER.info("Central Handler Failed, item need to be changed in local {}", updateCentralCatItemFailure.getLocalizedMessage());
+                    response.end(updateCentralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
-            createLocalItemFailureHandler -> {
-              Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Lccal Handler Failed {}", cause);
+            updateLocalItemFailureHandler -> {
+              LOGGER.info("Local Handler Failed {}", updateLocalItemFailureHandler.getLocalizedMessage());
+              response.end(updateLocalItemFailureHandler.getMessage());
             });
   }
 
@@ -311,18 +312,18 @@ public class ApiServerVerticle extends AbstractVerticle {
 //                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(centralCatItemFailure -> {
+                  .onFailure(deleteCentralCatItemFailure -> {
                     handleInconsistentDelete(tokenHeadersMap, request, response);
-//                    Throwable cause = centralCatItemFailure.getCause();
                     LOGGER.info(
-                        "Handler Failed to upload item in local cat, item not deleted from central {}",
-                        centralCatItemFailure.getMessage());
+                        "central handler failed. Item need to be deleted from local {}",
+                        deleteCentralCatItemFailure.getLocalizedMessage());
+                    response.end(deleteCentralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
-            createLocalItemFailureHandler -> {
-              Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Local Handler Failed {}", cause);
+            deleteLocalItemFailureHandler -> {
+              LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
+              response.end(deleteLocalItemFailureHandler.getMessage());
             });
   }
 
@@ -349,11 +350,11 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             })
         .onFailure(
-            uploadLocalItem -> {
-              Throwable cause = uploadLocalItem.getCause();
+            uploadLocalItemFailure -> {
               LOGGER.info(
                   "Handler Failed to upload item in local cat, item not deleted from central {}",
-                  cause);
+                  uploadLocalItemFailure.getLocalizedMessage());
+              response.end(uploadLocalItemFailure.getMessage());
             });
   }
 
@@ -388,21 +389,19 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             getLocalItemSuccessHandler -> {
               LOGGER.info("Response {}", getLocalItemSuccessHandler);
-              LOGGER.info(
-                  "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
-              // call only if response is 200 -success
-              response
-                  .setStatusCode(200)
-                  .end(
-                      getLocalItemSuccessHandler
-//                            .getJsonObject(RESULTS)
-                          .toString());
+                LOGGER.info(
+                    "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
+                // call only if response is 200 -success
+                response
+                    .setStatusCode(200)
+                    .end(
+                        getLocalItemSuccessHandler.toString());
             })
         .onFailure(
             getLocalItemFailureHandler -> {
-//                handleResponse(response, getLocalItemSuccessHandler);
-//              Throwable cause = createLocalItemFailureHandler.getCause();
-              LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getMessage());
+
+              LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
+              response.end(getLocalItemFailureHandler.getMessage());
             });
   }
 
