@@ -1,4 +1,4 @@
-package common;
+package iudx.onboarding.server.common;
 
 import iudx.onboarding.server.common.HttpStatusCode;
 import org.junit.jupiter.api.Test;

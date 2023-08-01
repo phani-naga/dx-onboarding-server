@@ -1,4 +1,4 @@
-package catalogue;
+package iudx.onboarding.server.catalogue;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
