@@ -18,12 +18,13 @@ public class CentralCatImpl implements CatalogueService {
   private String catBasePath;
   private Vertx vertx;
 
-  public CentralCatImpl(Vertx vertx, JsonObject config) {
+  public CentralCatImpl(Vertx vertx, JsonObject config, WebClient client) {
     LOGGER.debug("config : {}", config);
     this.vertx = vertx;
     this.catHost = config.getString("centralCatServerHost");
     this.catPort = config.getInteger("centralCatServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
+    this.catWebClient = client;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
