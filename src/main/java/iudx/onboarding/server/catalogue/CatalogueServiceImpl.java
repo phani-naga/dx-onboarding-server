@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
@@ -20,11 +21,12 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   private final TokenService tokenService;
   public CentralCatImpl centralCat;
   public LocalCatImpl localCat;
+  private WebClient client;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, JsonObject config) {
+  public CatalogueServiceImpl(Vertx vertx, TokenService tokenService, JsonObject config, WebClient client) {
     this.tokenService = tokenService;
-    this.centralCat = new CentralCatImpl(vertx, config);
-    this.localCat = new LocalCatImpl(vertx, config);
+    this.centralCat = new CentralCatImpl(vertx, config, client);
+    this.localCat = new LocalCatImpl(vertx, config, client);
   }
 
   @Override

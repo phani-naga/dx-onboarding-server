@@ -171,6 +171,20 @@
       <artifactId>curator-x-discovery</artifactId>
       <version>${curator.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter-engine.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-rx-java2</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5</artifactId>
+    </dependency>
     <!-- -->
     <dependency>
       <groupId>io.vertx</groupId>
@@ -263,6 +277,18 @@
             <configuration>
               <dataFile>target/jacoco.exec</dataFile>
               <outputDirectory>target/jacoco-site</outputDirectory>
+              <excludes>
+                <exclude>**/*VertxEBProxy.class</exclude>
+                <exclude>**/Constants.class</exclude>
+                <exclude>**/*VertxProxyHandler.class</exclude>
+                <exclude>**/*Verticle.class</exclude>
+
+                <!-- service proxy interfaces -->
+                <exclude>**/*Service.class</exclude>
+
+                <!-- deployment helper classes -->
+                <exclude>iudx/onboarding/server/deploy/*.class</exclude>
+              </excludes>
             </configuration>
           </execution>
         </executions>

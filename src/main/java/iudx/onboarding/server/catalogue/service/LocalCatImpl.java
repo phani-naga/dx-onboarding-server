@@ -18,12 +18,13 @@ public class LocalCatImpl implements CatalogueService {
   private String catBasePath;
   private Vertx vertx;
 
-  public LocalCatImpl(Vertx vertx, JsonObject config) {
+  public LocalCatImpl(Vertx vertx, JsonObject config, WebClient client) {
     LOGGER.debug("config : {}", config);
     this.vertx = vertx;
     this.catHost = config.getString("localCatServerHost");
     this.catPort = config.getInteger("localCatServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
+    this.catWebClient = client;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -46,9 +47,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -72,9 +73,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -99,9 +100,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
@@ -123,9 +124,9 @@ public class LocalCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
