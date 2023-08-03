@@ -1,6 +1,8 @@
 package iudx.onboarding.server.catalogue;
 
-import io.vertx.circuitbreaker.CircuitBreaker;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.Future;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
@@ -16,13 +18,13 @@ public class InconsistencyHandler {
 
   LocalCatImpl localCat;
   CentralCatImpl centralCat;
-  CircuitBreaker circuitBreaker;
+  RetryPolicyBuilder<Object> retryPolicyBuilder;
 
-  InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, CircuitBreaker circuitBreaker) {
+  InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, RetryPolicyBuilder<Object> retryPolicyBuilder) {
     this.tokenService = tokenService;
     this.localCat = localCat;
     this.centralCat = centralCat;
-    this.circuitBreaker = circuitBreaker;
+    this.retryPolicyBuilder = retryPolicyBuilder;
   }
 
   /**
@@ -32,11 +34,19 @@ public class InconsistencyHandler {
    */
   Future<Void> handleDeleteOnLocal(final LocalCatImpl localCat, final String id, final String token) {
 
-    localCat.deleteItem(id, token)
-        .onSuccess(successHandler -> {
-          LOGGER.info("Item deleted from local after upload to central failed");
-        }).onFailure(failureHandler -> {
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(listener -> LOGGER.info("Item deleted from local after upload to central failed"))
+        .onFailure(failureListener -> {
           LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT DELETED FROM LOCAL - INCONSISTENT");
+        })
+        .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          localCat.deleteItem(id, token)
+              .onSuccess(successHandler -> {
+                asyncExecution.complete();
+              }).onFailure(asyncExecution::recordException);
         });
 
     return Future.succeededFuture();
@@ -49,18 +59,23 @@ public class InconsistencyHandler {
    */
   Future<Void> handleUpdateOnLocal(final LocalCatImpl localCat, final CentralCatImpl centralCat, final String id, final String token) {
 
-    centralCat.getItem(id)
-        .onSuccess(oldItem -> {
-
-          localCat.updateItem(oldItem, token)
-              .onSuccess(successHandler -> {
-                LOGGER.info("Update on local reverted after failure on central");
-              }).onFailure(failureHandler -> {
-                LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT RESTORED ON LOCAL");
-              });
-        })
-        .onFailure(failureHandler -> {
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
+        .onFailure(failureListener -> {
           LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT RESTORED ON LOCAL");
+        })
+        .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          centralCat.getItem(id)
+              .onSuccess(oldItem -> {
+                localCat.updateItem(oldItem, token)
+                    .onSuccess(successHandler -> {
+                      asyncExecution.complete();
+                    }).onFailure(asyncExecution::recordException);
+              })
+              .onFailure(asyncExecution::recordException);
         });
 
     return Future.succeededFuture();
@@ -73,17 +88,23 @@ public class InconsistencyHandler {
    */
   Future<Void> handleUploadToLocal(final LocalCatImpl localCat, final CentralCatImpl centralCat, final String id, final String token) {
 
-    centralCat.getItem(id)
-        .onSuccess(item -> {
-
-          localCat.createItem(item, token)
-              .onSuccess(successHandler -> {
-                LOGGER.info("Delete on local reverted after failure on central");
-              }).onFailure(failureHandler -> {
-                LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT RESTORED ON LOCAL");
-              });
-        }).onFailure(failureHandler -> {
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
+        .onFailure(failureListener -> {
           LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT RESTORED ON LOCAL");
+        })
+        .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          centralCat.getItem(id)
+              .onSuccess(item -> {
+                localCat.createItem(item, token)
+                    .onSuccess(successHandler -> {
+                      asyncExecution.complete();
+                    }).onFailure(asyncExecution::recordException);
+
+              }).onFailure(asyncExecution::recordException);
         });
 
     return Future.succeededFuture();

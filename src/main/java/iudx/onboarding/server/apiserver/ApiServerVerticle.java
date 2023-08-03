@@ -87,7 +87,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     configureErrorHandlers(router);
 
     router.route().handler(BodyHandler.create());
-    router.route().handler(TimeoutHandler.create(10000, 408));
+    router.route().handler(TimeoutHandler.create(30000, 408));
 
     /* NGSI-LD api endpoints */
 
@@ -231,7 +231,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .onFailure(centralCatItemFailure -> {
                     // This is after 3 retries and delete of item from local
                     // TODO: notify user to try again
-                    response.setStatusCode(500).end("Upload failed, try again later");
+                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
@@ -267,7 +267,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .onFailure(centralCatItemFailure -> {
                     // This is after 3 retries and delete of item from local
                     // TODO: notify user to try again
-                    response.setStatusCode(500).end("Update failed, try again later");
+                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
                   });
             })
         .onFailure(

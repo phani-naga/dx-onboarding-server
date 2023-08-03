@@ -6,6 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,12 +46,12 @@ public class CentralCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.debug(cause.getMessage());
               promise.fail(cause);
             } else {
-              promise.fail(httpResponseAsyncResult.result().bodyAsString());
+              promise.fail(new DxRuntimeException(400,httpResponseAsyncResult.result().bodyAsString()));
             }
             ; // Fail the promise with the failure cause
           }
@@ -77,7 +78,7 @@ public class CentralCatImpl implements CatalogueService {
             if (cause != null) {
               promise.fail(cause);
             } else {
-              promise.fail(httpResponseAsyncResult.result().bodyAsString());
+              promise.fail(new DxRuntimeException(400,httpResponseAsyncResult.result().bodyAsString()));
             }
             ; // Fail the promise with the failure cause
           }
@@ -99,12 +100,12 @@ public class CentralCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
+              LOGGER.debug(cause.getMessage());
               promise.fail(cause);
             } else {
-              promise.fail(httpResponseAsyncResult.result().bodyAsString());
+              promise.fail(new DxRuntimeException(400,httpResponseAsyncResult.result().bodyAsString()));
             }
             ; // Fail the promise with the failure cause
           }
