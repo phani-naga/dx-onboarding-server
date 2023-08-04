@@ -44,7 +44,6 @@ public class CentralCatTest {
             .put("centralCatServerHost", "localhost")
             .put("centralCatServerPort", 8080)
             .put("dxCatalogueBasePath", "/api");
-
     centralCat = new CentralCatImpl(vertx, config);
   }
 

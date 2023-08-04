@@ -24,6 +24,7 @@ public class CentralCatImpl implements CatalogueService {
     this.catHost = config.getString("centralCatServerHost");
     this.catPort = config.getInteger("centralCatServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
+    this.catWebClient = client;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
