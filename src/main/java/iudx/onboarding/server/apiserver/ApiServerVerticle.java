@@ -389,6 +389,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .setStatusCode(200)
                   .end(
                       getLocalItemSuccessHandler.toString());
+
             })
         .onFailure(
             getLocalItemFailureHandler -> {
