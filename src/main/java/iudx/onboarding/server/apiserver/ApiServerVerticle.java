@@ -1,9 +1,7 @@
 package iudx.onboarding.server.apiserver;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -87,7 +85,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     configureErrorHandlers(router);
 
     router.route().handler(BodyHandler.create());
-    router.route().handler(TimeoutHandler.create(10000, 408));
+    router.route().handler(TimeoutHandler.create(28000, 408));
 
     /* NGSI-LD api endpoints */
 
@@ -209,35 +207,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = routingContext.body().asJsonObject();
-    requestBody.put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
     catalogueService
-        .createItem(requestBody, CatalogueType.LOCAL)
+        .createItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
-            createLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = createLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              JsonObject itemBodyWithId = localCreateResponse.getJsonObject(RESULTS);
-              LOGGER.info(
+            localItem -> {
+              JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
+              LOGGER.debug(
                   "item uploaded in local cat {}", itemBodyWithId);
 
               catalogueService
-                  .createItem(itemBodyWithId, CatalogueType.CENTRAL)
+                  .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
-                      createCentralCatItemSuccess -> {
+                      centralItem -> {
                         response
                             .setStatusCode(201)
                             .end(
-                                createCentralCatItemSuccess
-//                                    .getJsonObject(RESULTS)
+                                centralItem
                                     .toString());
                       })
                   .onFailure(centralCatItemFailure -> {
-                    // TODO: delete item from local CAT
-//                    handleResponse(response, centralCatItemFailure);
-//                    Throwable cause = centralCatItemFailure.getCause();
-                    LOGGER.info("Central Handler Failed. Item need to be deleted in local {}", centralCatItemFailure.getLocalizedMessage());
-                    response.end(centralCatItemFailure.getMessage());
+                    // This is after 3 retries and delete of item from local
+                    // TODO: notify user to try again
+                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
@@ -251,34 +243,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = routingContext.body().asJsonObject();
-    requestBody.put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
     catalogueService
-        .updateItem(requestBody, CatalogueType.LOCAL)
+        .updateItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             updateLocalItemSuccessHandler -> {
               JsonObject localUpdateResponse = updateLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localUpdateResponse);
-              LOGGER.info(
+              LOGGER.debug(
                   "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
 
               catalogueService
-                  .updateItem(requestBody, CatalogueType.CENTRAL)
+                  .updateItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       updateCentralCatItemSuccess -> {
                         response
                             .setStatusCode(200)
                             .end(
                                 updateCentralCatItemSuccess
-//                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(updateCentralCatItemFailure -> {
-                    // TODO: undo changes on local
-//                          handleResponse(response, createCentralCatItemSuccess);
-//                    Throwable cause = centralCatItemFailure.getCause();
-                    LOGGER.info("Central Handler Failed, item need to be changed in local {}", updateCentralCatItemFailure.getLocalizedMessage());
-                    response.end(updateCentralCatItemFailure.getMessage());
+                  .onFailure(centralCatItemFailure -> {
+                    // This is after 3 retries and delete of item from local
+                    // TODO: notify user to try again
+                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
                   });
             })
         .onFailure(
@@ -293,39 +280,34 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = new JsonObject()
-        .put(ID, request.getParam(ID))
-        .put(HEADER_TOKEN, tokenHeadersMap.get(HEADER_TOKEN));
+        .put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
 
     catalogueService
-        .deleteItem(requestBody, CatalogueType.LOCAL)
+        .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             deleteLocalItemSuccessHandler -> {
               JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
-              LOGGER.info("Response {}", localCreateResponse);
-              LOGGER.info(
+              LOGGER.debug(
                   "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
 
               catalogueService
-                  .deleteItem(requestBody, CatalogueType.CENTRAL)
+                  .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       deleteCentralCatItemSuccess -> {
-                        LOGGER.info(
+                        LOGGER.debug(
                             "item deleted in central cat {}",
                             deleteCentralCatItemSuccess.getJsonArray(RESULTS));
                         response
                             .setStatusCode(200)
                             .end(
                                 deleteCentralCatItemSuccess
-//                                    .getJsonObject(RESULTS)
                                     .toString());
                       })
-                  .onFailure(deleteCentralCatItemFailure -> {
-                    handleInconsistentDelete(tokenHeadersMap, request, response);
-                    LOGGER.info(
-                        "central handler failed. Item need to be deleted from local {}",
-                        deleteCentralCatItemFailure.getLocalizedMessage());
-                    response.end(deleteCentralCatItemFailure.getMessage());
+                  .onFailure(centralCatItemFailure -> {
+                    // This is after 3 retries and delete of item from local
+                    // TODO: notify user to try again
+                    response.setStatusCode(500).end("Upload failed, try again later");
                   });
             })
         .onFailure(
@@ -333,61 +315,6 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
               response.end(deleteLocalItemFailureHandler.getMessage());
             });
-  }
-
-  private void handleInconsistentDelete(MultiMap tokenHeadersMap, HttpServerRequest request, HttpServerResponse response) {
-    LOGGER.warn("Item not deleted from cat central");
-    catalogueService
-        .getItem(request.getParam(ID), CatalogueType.CENTRAL)
-        .onSuccess(
-            getFromCentralHandler -> {
-              if (getFromCentralHandler.getInteger(STATUS_CODE).equals(200)) {
-                LOGGER.info("getting item from central cat to upload to cop");
-                JsonObject requestbody =
-                    getFromCentralHandler
-                        .getJsonObject(RESULTS)
-                        .getJsonArray(RESULTS)
-                        .getJsonObject(0);
-                requestbody.remove("itemStatus");
-                requestbody.remove("resourceServerHTTPAccessURL");
-                Future.future(f -> restoreItemOnLocal(requestbody, tokenHeadersMap.get(TOKEN), response));
-              } else {
-                LOGGER.info(
-                    "item not present in central");
-                handleResponse(response, getFromCentralHandler);
-              }
-            })
-        .onFailure(
-            uploadLocalItemFailure -> {
-              LOGGER.info(
-                  "Handler Failed to upload item in local cat, item not deleted from central {}",
-                  uploadLocalItemFailure.getLocalizedMessage());
-              response.end(uploadLocalItemFailure.getMessage());
-            });
-  }
-
-  private Future<JsonObject> restoreItemOnLocal(
-      JsonObject itemBody, String token, HttpServerResponse response) {
-    Promise<JsonObject> promise = Promise.promise();
-    itemBody.put(HEADER_TOKEN, token);
-    catalogueService
-        .createItem(itemBody, CatalogueType.LOCAL)
-        .onSuccess(
-            createItem -> {
-              if (createItem.getInteger(STATUS_CODE).equals(201)) {
-                LOGGER.info("item created again in local cat");
-                response.setStatusCode(201).end(createItem.getJsonObject(RESULTS).toString());
-              } else {
-                handleResponse(response, createItem);
-              }
-            });
-
-    return promise.future();
-  }
-
-  private void handleResponse(HttpServerResponse response, JsonObject responseObject) {
-    int statusCode = responseObject.getInteger(STATUS_CODE);
-    response.setStatusCode(statusCode).end(responseObject.getJsonObject(RESULTS).toString());
   }
 
   private void getItem(RoutingContext routingContext) {
@@ -398,13 +325,14 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             getLocalItemSuccessHandler -> {
               LOGGER.info("Response {}", getLocalItemSuccessHandler);
-                LOGGER.info(
-                    "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
-                // call only if response is 200 -success
-                response
-                    .setStatusCode(200)
-                    .end(
-                        getLocalItemSuccessHandler.toString());
+              LOGGER.info(
+                  "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
+              // call only if response is 200 -success
+              response
+                  .setStatusCode(200)
+                  .end(
+                      getLocalItemSuccessHandler.toString());
+
             })
         .onFailure(
             getLocalItemFailureHandler -> {

@@ -1,5 +1,6 @@
 package iudx.onboarding.server.catalogue;
 
+import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -44,8 +45,7 @@ public class CentralCatTest {
             .put("centralCatServerHost", "localhost")
             .put("centralCatServerPort", 8080)
             .put("dxCatalogueBasePath", "/api");
-
-    centralCat = new CentralCatImpl(vertx, config, client);
+    centralCat = new CentralCatImpl(vertx, config);
   }
 
   @Test

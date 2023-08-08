@@ -9,6 +9,8 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.onboarding.server.common.Constants.TOKEN;
+
 public class LocalCatImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(LocalCatImpl.class);
@@ -18,13 +20,11 @@ public class LocalCatImpl implements CatalogueService {
   private String catBasePath;
   private Vertx vertx;
 
-  public LocalCatImpl(Vertx vertx, JsonObject config, WebClient client) {
-    LOGGER.debug("config : {}", config);
+  public LocalCatImpl(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
     this.catHost = config.getString("localCatServerHost");
     this.catPort = config.getInteger("localCatServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
-    this.catWebClient = client;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -37,6 +37,7 @@ public class LocalCatImpl implements CatalogueService {
   @Override
   public Future<JsonObject> createItem(JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
+    request.remove(TOKEN);
     catWebClient
         .post(catPort, catHost, catBasePath.concat("/item"))
         .putHeader("token", token)
@@ -63,6 +64,7 @@ public class LocalCatImpl implements CatalogueService {
   @Override
   public Future<JsonObject> updateItem(JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
+    request.remove(TOKEN);
     catWebClient
         .put(catPort, catHost, catBasePath.concat("/item"))
         .putHeader("token", token)
