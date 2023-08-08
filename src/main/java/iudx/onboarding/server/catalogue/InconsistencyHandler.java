@@ -32,7 +32,7 @@ public class InconsistencyHandler {
    *
    * @return Future which of the type void
    */
-  Future<Void> handleDeleteOnLocal(final LocalCatImpl localCat, final String id, final String token) {
+  Future<Void> handleDeleteOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Item deleted from local after upload to central failed"))
@@ -57,7 +57,7 @@ public class InconsistencyHandler {
    *
    * @return Future which of the type void
    */
-  Future<Void> handleUpdateOnLocal(final LocalCatImpl localCat, final CentralCatImpl centralCat, final String id, final String token) {
+  Future<Void> handleUpdateOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
@@ -86,7 +86,7 @@ public class InconsistencyHandler {
    *
    * @return Future which of the type void
    */
-  Future<Void> handleUploadToLocal(final LocalCatImpl localCat, final CentralCatImpl centralCat, final String id, final String token) {
+  Future<Void> handleUploadToLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))

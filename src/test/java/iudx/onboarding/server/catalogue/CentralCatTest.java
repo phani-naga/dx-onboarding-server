@@ -1,5 +1,6 @@
 package iudx.onboarding.server.catalogue;
 
+import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;

@@ -2,8 +2,6 @@ package iudx.onboarding.server.catalogue;
 
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
-import io.vertx.circuitbreaker.CircuitBreaker;
-import io.vertx.circuitbreaker.CircuitBreakerOptions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -29,8 +27,6 @@ public class CatalogueVerticle extends AbstractVerticle {
   private TokenService tokenService;
   private WebClient webClient;
 
-  private CircuitBreaker circuitBreaker;
-  private CircuitBreakerOptions circuitBreakerOptions;
 
   @Override
   public void start() throws Exception {

@@ -240,12 +240,6 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-circuit-breaker</artifactId>
-      <version>4.4.4</version>
-    </dependency>
-
-    <dependency>
       <groupId>dev.failsafe</groupId>
       <artifactId>failsafe</artifactId>
       <version>3.3.2</version>

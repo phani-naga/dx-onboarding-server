@@ -49,7 +49,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
           .onFailure(listener -> {
             LOGGER.warn("Failed to upload item to central");
             String id = request.getString(ID);
-            Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(localCat, id, token));
+            Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(id, token));
             promise.fail(handleFailure(listener.getException()));
           })
           .build();
@@ -92,7 +92,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
           .onFailure(listener -> {
             LOGGER.warn("Failed to update item to central");
             String id = request.getString(ID);
-            Future.future(f -> inconsistencyHandler.handleUpdateOnLocal(localCat, centralCat, id, token));
+            Future.future(f -> inconsistencyHandler.handleUpdateOnLocal(id, token));
             promise.fail(handleFailure(listener.getException()));
 //            promise.fail(new DxRuntimeException(500, listener.getException().getMessage()));
           })
@@ -137,7 +137,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
           })
           .onFailure(listener -> {
             LOGGER.warn("Failed to delete item from central");
-            Future.future(f -> inconsistencyHandler.handleUploadToLocal(localCat, centralCat, id, token));
+            Future.future(f -> inconsistencyHandler.handleUploadToLocal(id, token));
             promise.fail(handleFailure(listener.getException()));
           })
           .build();

@@ -24,7 +24,6 @@ public class CentralCatImpl implements CatalogueService {
     this.catHost = config.getString("centralCatServerHost");
     this.catPort = config.getInteger("centralCatServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
-    this.catWebClient = client;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -125,7 +124,6 @@ public class CentralCatImpl implements CatalogueService {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
             promise.complete(response);
           } else {
-            LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
               promise.fail(cause);
