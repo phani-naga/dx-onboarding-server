@@ -19,12 +19,4 @@ public interface CatalogueService {
   Future<JsonObject> getInstance(final String id);
   Future<JsonObject> updateInstance(String id, final JsonObject request, String token);
 
-
-
-
-
-
-
-
-
 }

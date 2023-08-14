@@ -340,10 +340,15 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info(
                   "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
               // call only if response is 200 -success
-              response.setStatusCode(200).end(getLocalItemSuccessHandler.toString());
+              response
+                  .setStatusCode(200)
+                  .end(
+                      getLocalItemSuccessHandler.toString());
+
             })
         .onFailure(
             getLocalItemFailureHandler -> {
+
               LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
               response.end(getLocalItemFailureHandler.getMessage());
             });
