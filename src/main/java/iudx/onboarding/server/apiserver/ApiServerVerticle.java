@@ -1,7 +1,12 @@
 package iudx.onboarding.server.apiserver;
 
+import com.google.common.hash.Hashing;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -20,6 +25,7 @@ import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import static iudx.onboarding.server.apiserver.util.Constants.*;
@@ -94,6 +100,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.get(api.getOnboardingUrl()).handler(this::getItem);
     router.patch(api.getOnboardingUrl()).handler(this::updateItem);
     router.delete(api.getOnboardingUrl()).handler(this::deleteItem);
+
+    // instance API
+    router.post(api.getInstanceUrl()).handler(this::createInstance);
+    router.delete(api.getInstanceUrl()).handler(this::deleteInstance);
+    router.patch(api.getInstanceUrl()).handler(this::updateInstance);
+    router.get(api.getInstanceUrl()).handler(this::getAllInstance);
 
     // adapter API
     router.post(api.getIngestionUrl()).handler(this::registerAdapter);
@@ -328,29 +340,167 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info(
                   "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
               // call only if response is 200 -success
-              response
-                  .setStatusCode(200)
-                  .end(
-                      getLocalItemSuccessHandler.toString());
-
+              response.setStatusCode(200).end(getLocalItemSuccessHandler.toString());
             })
         .onFailure(
             getLocalItemFailureHandler -> {
-
               LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
               response.end(getLocalItemFailureHandler.getMessage());
             });
   }
 
-  private void registerAdapter(RoutingContext routingContext) {
+  private void createInstance(RoutingContext routingContext) {
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            localInstance -> {
+              LOGGER.info("results after local cat{}", localInstance);
+              String instanceId =
+                  localInstance.getJsonArray(RESULTS).getJsonObject(0).getString("id");
+              requestBody.put("instanceId", instanceId);
+              LOGGER.info("request body" + requestBody);
+              catalogueService
+                  .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      centralInstance -> {
+                        response.setStatusCode(201).end(centralInstance.toString());
+                      })
+                  .onFailure(
+                      centralinstance -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end(centralinstance.getMessage());
+                      });
+            })
+        .onFailure(
+            localInstance -> {
+              LOGGER.info("Local Handler Failed {}", localInstance.getLocalizedMessage());
+              handleResponse(response, localInstance);
+
+
+            });
   }
 
-  private void updateAdapter(RoutingContext routingContext) {
+  private void getAllInstance(RoutingContext routingContext) {
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .getInstance(request.getParam(ID), CatalogueType.LOCAL)
+        .onSuccess(
+            getLocalItemSuccessHandler -> {
+              LOGGER.info("Response {}", getLocalItemSuccessHandler);
+              LOGGER.info(
+                  "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
+              // call only if response is 200 -success
+              response.setStatusCode(200).end(getLocalItemSuccessHandler.toString());
+            })
+        .onFailure(
+            getLocalItemFailureHandler -> {
+
+              LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
+                handleResponse(response, getLocalItemFailureHandler);
+            });
   }
 
-  private void deleteAdapter(RoutingContext routingContext) {
+  private void updateInstance(RoutingContext routingContext) {
+
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+
+    String id = routingContext.request().getParam("id");
+    catalogueService
+        .updateInstance(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            updateLocalItemSuccessHandler -> {
+              JsonObject localUpdateResponse = updateLocalItemSuccessHandler;
+              LOGGER.debug(
+                  "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
+
+              catalogueService
+                  .updateInstance(
+                      id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      updateCentralCatItemSuccess -> {
+                        response.setStatusCode(200).end(updateCentralCatItemSuccess.toString());
+                      })
+                  .onFailure(
+                      centralCatItemFailure -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end(centralCatItemFailure.getMessage());
+                      });
+            })
+        .onFailure(
+            updateLocalItemFailureHandler -> {
+              LOGGER.info(
+                  "Local Handler Failed {}", updateLocalItemFailureHandler.getLocalizedMessage());
+                handleResponse(response, updateLocalItemFailureHandler);
+            });
   }
 
-  private void getAdapter(RoutingContext routingContext) {
+  private void deleteInstance(RoutingContext routingContext) {
+
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = new JsonObject().put(ID, request.getParam(ID));
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            deleteLocalItemSuccessHandler -> {
+              JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
+              LOGGER.debug(
+                  "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
+
+              catalogueService
+                  .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      deleteCentralCatItemSuccess -> {
+                        LOGGER.debug(
+                            "item deleted in central cat {}",
+                            deleteCentralCatItemSuccess.getJsonArray(RESULTS));
+                        response.setStatusCode(200).end(deleteCentralCatItemSuccess.toString());
+                      })
+                  .onFailure(
+                      centralCatItemFailure -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end("Upload failed, try again later");
+                      });
+            })
+        .onFailure(
+            deleteLocalItemFailureHandler -> {
+              LOGGER.info(
+                  "Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
+                handleResponse(response, deleteLocalItemFailureHandler);
+            });
   }
+
+    private void handleResponse(HttpServerResponse response, Throwable localInstance) {
+        String errorMessage = localInstance.getMessage();
+
+        if (errorMessage.contains("urn:dx:cat:InvalidSchema")) {
+            response.setStatusCode(400).end(errorMessage);
+        } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
+            response.setStatusCode(401).end(errorMessage);
+        } else {
+            response.setStatusCode(500).end(errorMessage);
+        }
+    }
+
+  private void registerAdapter(RoutingContext routingContext) {}
+
+  private void updateAdapter(RoutingContext routingContext) {}
+
+  private void deleteAdapter(RoutingContext routingContext) {}
+
+  private void getAdapter(RoutingContext routingContext) {}
 }

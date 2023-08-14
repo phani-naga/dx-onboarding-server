@@ -14,5 +14,17 @@ public interface CatalogueService {
   Future<JsonObject> updateItem(final JsonObject request, String token);
   Future<JsonObject> deleteItem(final String id, String token);
   Future<JsonObject> getItem(final String id);
+  Future<JsonObject> createInstance(final JsonObject request, String token);
+  Future<JsonObject> deleteInstance(final String id, String token);
+  Future<JsonObject> getInstance(final String id);
+  Future<JsonObject> updateInstance(String id, final JsonObject request, String token);
+
+
+
+
+
+
+
+
 
 }
