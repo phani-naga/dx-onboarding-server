@@ -26,7 +26,7 @@ public class CentralCatImpl implements CatalogueService {
     this.catBasePath = config.getString("dxCatalogueBasePath");
 
     WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(false);
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
     if (catWebClient == null) {
       catWebClient = WebClient.create(vertx, options);
     }
