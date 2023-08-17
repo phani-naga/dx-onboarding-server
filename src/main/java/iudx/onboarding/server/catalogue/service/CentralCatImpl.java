@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class CentralCatImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CentralCatImpl.class);
-  static WebClient catWebClient;
+  public static WebClient catWebClient;
   private String catHost;
   private int catPort;
   private String catBasePath;
@@ -26,7 +26,7 @@ public class CentralCatImpl implements CatalogueService {
     this.catBasePath = config.getString("dxCatalogueBasePath");
 
     WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(false);
     if (catWebClient == null) {
       catWebClient = WebClient.create(vertx, options);
     }
@@ -140,7 +140,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> createInstance(JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-            .post(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+            .post(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
             .putHeader("token", token)
             .putHeader("Content-Type", "application/json")
             .sendJsonObject(request, httpResponseAsyncResult -> {
@@ -166,7 +166,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> getInstance(String id) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-            .get(catPort, catHost,  catBasePath.concat("/internal/ui/instance"))
+            .get(8081, "localhost",  catBasePath.concat("/internal/ui/instance"))
             .addQueryParam("id", id)
             .send(
                     httpResponseAsyncResult -> {
@@ -190,7 +190,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> updateInstance(String id, JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-            .put(catPort, catHost,  catBasePath.concat("/internal/ui/instance"))
+            .put(8081, "localhost",  catBasePath.concat("/internal/ui/instance"))
             .putHeader("token", token)
             .putHeader("Content-Type", "application/json")
             .addQueryParam("id", id)
@@ -220,7 +220,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> deleteInstance(String id, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .delete(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+        .delete(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .addQueryParam("id", id)

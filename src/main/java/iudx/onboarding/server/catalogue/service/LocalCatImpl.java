@@ -14,7 +14,7 @@ import static iudx.onboarding.server.common.Constants.TOKEN;
 public class LocalCatImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(LocalCatImpl.class);
-  static WebClient catWebClient;
+  public static WebClient catWebClient;
   private String catHost;
   private int catPort;
   private String catBasePath;
@@ -152,13 +152,13 @@ public class LocalCatImpl implements CatalogueService {
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
                   && httpResponseAsyncResult.result().statusCode() == 201) {
+                LOGGER.info("33333333333333333"+catBasePath.concat("/internal/ui/instance"));
                 LOGGER.info(
                     "request successful" + httpResponseAsyncResult.result().body().toJsonObject());
                 JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
                 promise.complete(response);
               } else {
                 Throwable cause = httpResponseAsyncResult.cause();
-                JsonObject jsonObject = httpResponseAsyncResult.result().bodyAsJsonObject();
                 if (cause != null) {
                   LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
                   promise.fail(cause);
