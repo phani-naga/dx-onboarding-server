@@ -13,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 public class CentralCatImpl implements CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CentralCatImpl.class);
-  static WebClient catWebClient;
+  public static WebClient catWebClient;
   private String catHost;
   private int catPort;
   private String catBasePath;
@@ -135,4 +135,117 @@ public class CentralCatImpl implements CatalogueService {
         });
     return promise.future();
   }
+
+  @Override
+  public Future<JsonObject> createInstance(JsonObject request, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+            .post(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+            .putHeader("token", token)
+            .putHeader("Content-Type", "application/json")
+            .sendJsonObject(request, httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded() && httpResponseAsyncResult.result().statusCode() == 201) {
+                LOGGER.info("central request successful");
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.debug(cause.getMessage());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(new DxRuntimeException(400,httpResponseAsyncResult.result().bodyAsString()));
+                }
+              }
+            });
+    return promise.future();
+  }
+
+
+  @Override
+  public Future<JsonObject> getInstance(String id) {
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+            .get(8081, "localhost",  catBasePath.concat("/internal/ui/instance"))
+            .addQueryParam("id", id)
+            .send(
+                    httpResponseAsyncResult -> {
+                      if (httpResponseAsyncResult.succeeded()
+                              && httpResponseAsyncResult.result().statusCode() == 200) {
+                        JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                        promise.complete(response);
+                      } else {
+                        Throwable cause = httpResponseAsyncResult.cause();
+                        if (cause != null) {
+                          promise.fail(cause);
+                        } else {
+                          promise.fail(httpResponseAsyncResult.result().bodyAsString());
+                        }
+                      }
+                    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> updateInstance(String id, JsonObject request, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+            .put(8081, "localhost",  catBasePath.concat("/internal/ui/instance"))
+            .putHeader("token", token)
+            .putHeader("Content-Type", "application/json")
+            .addQueryParam("id", id)
+            .sendJsonObject(
+                    request,
+                    httpResponseAsyncResult -> {
+                      if (httpResponseAsyncResult.succeeded()
+                              && httpResponseAsyncResult.result().statusCode() == 200) {
+                        LOGGER.info("central request successful");
+                        JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                        promise.complete(response);
+                      } else {
+                        LOGGER.info("Failure {}", httpResponseAsyncResult.result().body().toString());
+                        Throwable cause = httpResponseAsyncResult.cause();
+                        if (cause != null) {
+                          promise.fail(cause);
+                        } else {
+                          promise.fail(
+                                  new DxRuntimeException(400, httpResponseAsyncResult.result().bodyAsString()));
+                        }
+                      }
+                    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> deleteInstance(String id, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+        .delete(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+        .putHeader("token", token)
+        .putHeader("Content-Type", "application/json")
+        .addQueryParam("id", id)
+        .send(
+            httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded()
+                  && httpResponseAsyncResult.result().statusCode() == 200) {
+                LOGGER.info(
+                    "central request successful"
+                        + httpResponseAsyncResult.result().bodyAsJsonObject());
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.debug(cause.getMessage());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(
+                      new DxRuntimeException(400, httpResponseAsyncResult.result().bodyAsString()));
+                }
+              }
+            });
+    return promise.future(); // Return the future outside the callback function
+  }
+
+
 }

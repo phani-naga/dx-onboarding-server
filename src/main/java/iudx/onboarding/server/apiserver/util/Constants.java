@@ -36,5 +36,6 @@ public class Constants {
   public static final String ONBOARDING_API = "/item";
   public static final String INGESTION_API = "/ingestion";
   public static final String TOKEN_API = "/token";
+  public static final String INSTANCE_API = "/instance";
 
 }

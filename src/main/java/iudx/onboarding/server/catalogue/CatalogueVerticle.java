@@ -25,7 +25,6 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
-  private WebClient webClient;
 
 
   @Override

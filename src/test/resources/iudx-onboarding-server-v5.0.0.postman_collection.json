@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "f17247ec-7c2f-40c5-9487-2079c9a8565f",
+		"_postman_id": "a209fe0e-7e15-4e76-918a-a2c9c441db34",
 		"name": "iudx-onboarding-server-v5.0.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "17194681"
+		"_exporter_id": "27217689"
 	},
 	"item": [
 		{
@@ -1390,6 +1390,541 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mlayer Instance",
+			"item": [
+				{
+					"name": "Create Instance",
+					"item": [
+						{
+							"name": "201 (Success) Create Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"    pm.expect(body.results[0]).to.have.property(\"id\");\r",
+											"    const ID = body.results[0].id;\r",
+											"    pm.globals.set(\"instance_id\", ID);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {}
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 (Invalid Schema) Create Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"coverrr\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 (Invalid JWT Token) Create Instance Copy 2",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Instance",
+					"item": [
+						{
+							"name": "200(Success) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400(Invalid Schema) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"nahhhme\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(invalid JWT token) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get Instance",
+					"item": [
+						{
+							"name": "200(Success) Get Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete Instance",
+					"item": [
+						{
+							"name": "200(Success) Delete Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(Invalid JWT Token) Delete Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									}
+								],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}
