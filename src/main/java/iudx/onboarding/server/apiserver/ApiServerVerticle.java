@@ -1,12 +1,7 @@
 package iudx.onboarding.server.apiserver;
 
-import com.google.common.hash.Hashing;
-import dev.failsafe.Failsafe;
-import dev.failsafe.RetryPolicy;
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -24,8 +19,6 @@ import iudx.onboarding.server.common.HttpStatusCode;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import static iudx.onboarding.server.apiserver.util.Constants.*;

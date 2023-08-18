@@ -10,7 +10,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.token.TokenService;
@@ -38,14 +37,7 @@ public class CatalogueServiceTest {
   @Mock AsyncResult<HttpResponse<Buffer>> httpResponseAsyncResult;
   @Mock Buffer buffer;
   @Mock Throwable throwable;
-  @Mock
-    RetryPolicyBuilder <Object> retryPolicyBuilder;
-  @Mock
-    RetryPolicy<Object> retryPolicy;
-  @Mock
-    Failsafe failsafe;
-  @Mock
-    FailsafeExecutor<Object> failsafeExecutor;
+
 
   @BeforeEach
   void setUp() {
@@ -56,7 +48,8 @@ public class CatalogueServiceTest {
             .put("dxCatalogueBasePath", "/api")
             .put("localCatServerHost", "localhost")
             .put("localCatServerPort", 8080);
-    catalogueService =
+      LocalCatImpl.catWebClient = mock(WebClient.class);
+      catalogueService =
         new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, config);
   }
 
@@ -65,8 +58,7 @@ public class CatalogueServiceTest {
   public void testCreateItemLocal(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject().put("token", "xyz");
-    CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
+   CatalogueType localType = CatalogueType.LOCAL;
     when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -102,7 +94,6 @@ public class CatalogueServiceTest {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
     when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -137,7 +128,6 @@ public class CatalogueServiceTest {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
     when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -173,7 +163,6 @@ public class CatalogueServiceTest {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
     when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -209,7 +198,6 @@ public class CatalogueServiceTest {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
     when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -243,8 +231,8 @@ public class CatalogueServiceTest {
 
     JsonObject request = new JsonObject().put("token", "xyz");
     CatalogueType localType = CatalogueType.LOCAL;
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
     doAnswer(
@@ -277,8 +265,8 @@ public class CatalogueServiceTest {
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -314,8 +302,8 @@ public class CatalogueServiceTest {
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -349,8 +337,8 @@ public class CatalogueServiceTest {
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.cause()).thenReturn(throwable);
@@ -382,8 +370,8 @@ public class CatalogueServiceTest {
   public void testGetItemLocal(VertxTestContext testContext) {
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
     when(httpResponse.statusCode()).thenReturn(200);
@@ -416,8 +404,8 @@ public class CatalogueServiceTest {
   public void testGetItemLocalFailed(VertxTestContext testContext) {
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
     doAnswer(
@@ -448,8 +436,8 @@ public class CatalogueServiceTest {
   public void testGetItemFailed(VertxTestContext testContext) {
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
-    LocalCatImpl.catWebClient = mock(WebClient.class);
-    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+    when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.cause()).thenReturn(throwable);
     doAnswer(
@@ -481,7 +469,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -504,6 +491,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
+                                verify(LocalCatImpl.catWebClient, times(1)).post(anyInt(), anyString(), anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow(ar.cause());
@@ -517,7 +505,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -537,7 +524,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).post(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
 
                             } else {
@@ -552,7 +539,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -572,7 +558,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).post(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
 
                             } else {
@@ -588,7 +574,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id","abc")).thenReturn(httpRequest);
@@ -611,7 +596,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).put(anyInt(), anyString(), anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow(ar.cause());
@@ -625,7 +610,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id","abc")).thenReturn(httpRequest);
@@ -646,7 +630,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).put(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();
@@ -660,7 +644,6 @@ public class CatalogueServiceTest {
 
         JsonObject request = new JsonObject().put("token", "xyz");
         CatalogueType localType = CatalogueType.LOCAL;
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", "abc")).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -681,7 +664,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).put(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();
@@ -696,7 +679,6 @@ public class CatalogueServiceTest {
         JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -719,7 +701,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).delete(anyInt(), anyString(), anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow(ar.cause());
@@ -734,7 +716,6 @@ public class CatalogueServiceTest {
         JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -755,7 +736,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).delete(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();
@@ -770,7 +751,6 @@ public class CatalogueServiceTest {
         JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
         when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -791,7 +771,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).delete(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();
@@ -804,8 +784,8 @@ public class CatalogueServiceTest {
     public void testGetInstanceLocal(VertxTestContext testContext) {
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
-        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
         when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
         when(httpResponse.statusCode()).thenReturn(200);
@@ -825,7 +805,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).get(anyInt(), anyString(), anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow(ar.cause());
@@ -838,8 +818,8 @@ public class CatalogueServiceTest {
     public void testGetInstanceLocalFailed(VertxTestContext testContext) {
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
-        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(false);
         when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
         doAnswer(
@@ -857,7 +837,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).get(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();
@@ -870,8 +850,8 @@ public class CatalogueServiceTest {
     public void testGetInstanceFailed(VertxTestContext testContext) {
         CatalogueType localType = CatalogueType.LOCAL;
         String id = "dummy";
-        LocalCatImpl.catWebClient = mock(WebClient.class);
-        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);    when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(false);
         when(httpResponseAsyncResult.cause()).thenReturn(throwable);
         doAnswer(
@@ -889,7 +869,7 @@ public class CatalogueServiceTest {
                         ar -> {
                             if (ar.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(LocalCatImpl.catWebClient, times(1)).get(anyInt(), anyString(), anyString());
                                 testContext.failNow(ar.cause());
                             } else {
                                 testContext.completeNow();

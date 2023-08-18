@@ -152,7 +152,6 @@ public class LocalCatImpl implements CatalogueService {
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
                   && httpResponseAsyncResult.result().statusCode() == 201) {
-                LOGGER.info("33333333333333333"+catBasePath.concat("/internal/ui/instance"));
                 LOGGER.info(
                     "request successful" + httpResponseAsyncResult.result().body().toJsonObject());
                 JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
