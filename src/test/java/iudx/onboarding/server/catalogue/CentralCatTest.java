@@ -47,12 +47,13 @@ public class CentralCatTest {
             .put("centralCatServerPort", 8080)
             .put("dxCatalogueBasePath", "/api");
     centralCat = new CentralCatImpl(vertx, config);
+    CentralCatImpl.catWebClient = mock(WebClient.class);
+
   }
 
     @Test
     @Description("test createItem method in central when method succeeds")
     public void createItem(Vertx vertx, VertxTestContext testContext) {
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         JsonObject request = new JsonObject();
         String token = "";
         when(CentralCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
@@ -61,7 +62,6 @@ public class CentralCatTest {
         when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
         when(httpResponse.statusCode()).thenReturn(201);
         when(httpResponse.body()).thenReturn(Buffer.buffer("{\"result\": \"success\"}")); // Adjust this response JSON as needed
-
         doAnswer(
                 (Answer<Void>)
                         invocation -> {
@@ -77,7 +77,7 @@ public class CentralCatTest {
                 handler -> {
                     if (handler.succeeded()) {
                         verify(httpRequest, times(1)).sendJsonObject(any(JsonObject.class), any());
-
+                        verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(), anyString(), anyString());
                         testContext.completeNow();
                     } else {
                         testContext.failNow(handler.cause());
@@ -90,7 +90,6 @@ public class CentralCatTest {
   public void createItemFailed(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
     String token = "";
-    CentralCatImpl.catWebClient = mock(WebClient.class);
     when(CentralCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -115,7 +114,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(), anyString(), anyString());
                 testContext.failNow("fail");
               } else {
                 testContext.completeNow();
@@ -128,8 +127,7 @@ public class CentralCatTest {
   public void updateItem(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
     String token = "";
-     CentralCatImpl.catWebClient = mock(WebClient.class);
-     when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -154,7 +152,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(), anyString(), anyString());
                 testContext.completeNow();
               } else {
                 testContext.failNow("fail");
@@ -167,8 +165,7 @@ public class CentralCatTest {
   public void updateItemFailed(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
     String token = "";
-     CentralCatImpl.catWebClient = mock(WebClient.class);
-     when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -193,7 +190,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(), anyString(), anyString());
                 testContext.failNow("fail");
 
               } else {
@@ -207,8 +204,7 @@ public class CentralCatTest {
   public void deleteItem(VertxTestContext testContext) {
     String id = "dummy";
     String token = "";
-     CentralCatImpl.catWebClient = mock(WebClient.class);
-     when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -234,7 +230,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).send(any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(), anyString(), anyString());
                 testContext.completeNow();
 
               } else {
@@ -248,9 +244,7 @@ public class CentralCatTest {
   public void deleteItemFailed(VertxTestContext testContext) {
     String id = "dummy";
     String token = "";
-     CentralCatImpl.catWebClient = mock(WebClient.class);
-
-     when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -274,8 +268,10 @@ public class CentralCatTest {
         .onComplete(
             handler -> {
               if (handler.succeeded()) {
-                testContext.failNow("fail");
+                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(), anyString(), anyString());
                 verify(httpRequest, times(1)).send(any());
+                testContext.failNow("fail");
+
 
               } else {
                 testContext.completeNow();
@@ -288,9 +284,7 @@ public class CentralCatTest {
   public void getItem(VertxTestContext testContext) {
     String id = "dummy";
     String token = "";
-      CentralCatImpl.catWebClient = mock(WebClient.class);
-
-      when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -315,7 +309,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).send(any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
                 testContext.completeNow();
 
               } else {
@@ -329,8 +323,7 @@ public class CentralCatTest {
   public void getItemFailed(VertxTestContext testContext) {
     String id = "dummy";
     String token = "";
-     CentralCatImpl.catWebClient = mock(WebClient.class);
-     when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
+    when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
@@ -354,7 +347,7 @@ public class CentralCatTest {
             handler -> {
               if (handler.succeeded()) {
                 verify(httpRequest, times(1)).send(any());
-
+                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
                 testContext.failNow("fail");
 
               } else {
@@ -366,7 +359,6 @@ public class CentralCatTest {
     @Test
     @Description("test createItem method in central when method succeeds")
     public void createInstance(Vertx vertx, VertxTestContext testContext) {
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         JsonObject request = new JsonObject();
         String token = "";
         when(CentralCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
@@ -391,7 +383,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(JsonObject.class), any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(),anyString(),anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow(handler.cause());
@@ -404,7 +396,6 @@ public class CentralCatTest {
     public void createInstanceFailed(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         when(CentralCatImpl.catWebClient.post(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -429,7 +420,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(),anyString(),anyString());
                                 testContext.failNow("fail");
                             } else {
                                 testContext.completeNow();
@@ -442,7 +433,6 @@ public class CentralCatTest {
     public void updateInstance(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", "abc")).thenReturn(httpRequest);
@@ -469,7 +459,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(),anyString(),anyString());
                                 testContext.completeNow();
                             } else {
                                 testContext.failNow("fail");
@@ -482,7 +472,6 @@ public class CentralCatTest {
     public void updateInstanceFailed(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         when(CentralCatImpl.catWebClient.put(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id","abc")).thenReturn(httpRequest);
@@ -509,7 +498,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).sendJsonObject(any(), any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(),anyString(),anyString());
                                 testContext.failNow("fail");
 
                             } else {
@@ -523,7 +512,6 @@ public class CentralCatTest {
     public void deleteInstance(VertxTestContext testContext) {
         String id = "dummy";
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -550,7 +538,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(),anyString(),anyString());
                                 testContext.completeNow();
 
                             } else {
@@ -564,8 +552,6 @@ public class CentralCatTest {
     public void deleteInstanceFailed(VertxTestContext testContext) {
         String id = "dummy";
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
-
         when(CentralCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -590,9 +576,9 @@ public class CentralCatTest {
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
-                                testContext.failNow("fail");
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(),anyString(),anyString());
+                                testContext.failNow("fail");
                             } else {
                                 testContext.completeNow();
                             }
@@ -604,8 +590,6 @@ public class CentralCatTest {
     public void getInstance(VertxTestContext testContext) {
         String id = "dummy";
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
-
         when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -631,7 +615,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
                                 testContext.completeNow();
 
                             } else {
@@ -645,7 +629,6 @@ public class CentralCatTest {
     public void getInstanceFailed(VertxTestContext testContext) {
         String id = "dummy";
         String token = "";
-        CentralCatImpl.catWebClient = mock(WebClient.class);
         when(CentralCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -670,7 +653,7 @@ public class CentralCatTest {
                         handler -> {
                             if (handler.succeeded()) {
                                 verify(httpRequest, times(1)).send(any());
-
+                                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
                                 testContext.failNow("fail");
 
                             } else {
