@@ -1,7 +1,6 @@
 package iudx.onboarding.server.common;
 
 import static iudx.onboarding.server.apiserver.util.Constants.*;
-import static iudx.onboarding.server.apiserver.util.Constants.INSTANCE_API;
 
 public class Api {
 
@@ -11,6 +10,7 @@ public class Api {
   private StringBuilder ingestionUrl;
   private StringBuilder tokenUrl;
   private StringBuilder instanceUrl;
+  private StringBuilder domainUrl;
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
     buildPaths();
@@ -32,6 +32,7 @@ public class Api {
     ingestionUrl = new StringBuilder(dxApiBasePath).append(INGESTION_API);
     tokenUrl = new StringBuilder(dxApiBasePath).append(TOKEN_API);
     instanceUrl = new StringBuilder(dxApiBasePath).append(INSTANCE_API);
+    domainUrl = new StringBuilder(dxApiBasePath).append(DOMAIN_API);
   }
 
   public String getOnboardingUrl() {
@@ -44,8 +45,8 @@ public class Api {
   public String getTokenUrl(){
     return tokenUrl.toString();
   }
-  public String getInstanceUrl(){
-    return  instanceUrl.toString();
-  }
+  public String getInstanceUrl(){return  instanceUrl.toString();}
+  public String getDomainUrl(){return  domainUrl.toString();}
+
 
 }

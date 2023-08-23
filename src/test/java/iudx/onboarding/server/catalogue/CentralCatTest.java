@@ -346,7 +346,7 @@ public class CentralCatTest {
   }
 
     @Test
-    @Description("test createItem method in central when method succeeds")
+    @Description("test createInstance method in central when method succeeds")
     public void createInstance(Vertx vertx, VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -379,7 +379,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test createItem method in central when method fails")
+    @Description("test createInstance method in central when method fails")
     public void createInstanceFailed(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -414,7 +414,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test updateItem method in central when method succeeds")
+    @Description("test updateInstance method in central when method succeeds")
     public void updateInstance(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -451,7 +451,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test updateItem method in central when method fails")
+    @Description("test updateInstance method in central when method fails")
     public void updateInstanceFailed(VertxTestContext testContext) {
         JsonObject request = new JsonObject();
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -489,7 +489,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test deleteItem method in central when method succeeds")
+    @Description("test deleteInstance method in central when method succeeds")
     public void deleteInstance(VertxTestContext testContext) {
         String id = "dummy";
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -527,7 +527,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test deleteItem method in central when method fails")
+    @Description("test deleteInstance method in central when method fails")
     public void deleteInstanceFailed(VertxTestContext testContext) {
         String id = "dummy";
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
@@ -563,7 +563,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test getItem method in central when method succeeds")
+    @Description("test getInstance method in central when method succeeds")
     public void getInstance(VertxTestContext testContext) {
         String id = "dummy";
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -600,7 +600,7 @@ public class CentralCatTest {
     }
 
     @Test
-    @Description("test getItem method in central when method fails")
+    @Description("test getInstance method in central when method fails")
     public void getInstanceFailed(VertxTestContext testContext) {
         String id = "dummy";
         when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -622,6 +622,296 @@ public class CentralCatTest {
                 .send(any());
         centralCat
                 .getInstance(id)
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).send(any());
+                                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
+                                testContext.failNow("fail");
+
+                            } else {
+                                testContext.completeNow();
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test createDomain method in central when method succeeds")
+    public void createDomain(Vertx vertx, VertxTestContext testContext) {
+        JsonObject request = new JsonObject();
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(201);
+        when(httpResponse.body()).thenReturn(Buffer.buffer("{\"result\": \"success\"}")); // Adjust this response JSON as needed
+
+        doAnswer(
+                (Answer<Void>)
+                        invocation -> {
+                            ((Handler<AsyncResult<HttpResponse<Buffer>>>) invocation.getArgument(1))
+                                    .handle(httpResponseAsyncResult);
+                            return null;
+                        })
+                .when(httpRequest)
+                .sendJsonObject(any(JsonObject.class), any());
+
+        centralCat.createDomain(request, "abc")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).sendJsonObject(any(JsonObject.class), any());
+                                verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(),anyString(),anyString());
+                                testContext.completeNow();
+                            } else {
+                                testContext.failNow(handler.cause());
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test createDomain method in central when method fails")
+    public void createDoaminFailed(VertxTestContext testContext) {
+        JsonObject request = new JsonObject();
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(202);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(1))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .sendJsonObject(any(), any());
+        centralCat
+                .createDomain(request, "abc")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).sendJsonObject(any(), any());
+                                verify(CentralCatImpl.catWebClient, times(1)).post(anyInt(),anyString(),anyString());
+                                testContext.failNow("fail");
+                            } else {
+                                testContext.completeNow();
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test updateDomain method in central when method succeeds")
+    public void updateDomain(VertxTestContext testContext) {
+        JsonObject request = new JsonObject();
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", "abc")).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpResponse.body()).thenReturn(buffer);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(1))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .sendJsonObject(any(), any());
+        centralCat
+                .updateDomain("abc", request, "")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).sendJsonObject(any(), any());
+                                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(),anyString(),anyString());
+                                testContext.completeNow();
+                            } else {
+                                testContext.failNow("fail");
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test updateDomain method in central when method fails")
+    public void updateDomainFailed(VertxTestContext testContext) {
+        JsonObject request = new JsonObject();
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id","abc")).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.body()).thenReturn(buffer);
+        when(httpResponse.statusCode()).thenReturn(201);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(1))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .sendJsonObject(any(), any());
+        centralCat
+                .updateDomain("abc", request, "")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).sendJsonObject(any(), any());
+                                verify(CentralCatImpl.catWebClient, times(1)).put(anyInt(),anyString(),anyString());
+                                testContext.failNow("fail");
+
+                            } else {
+                                testContext.completeNow();
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test deleteDomain method in central when method succeeds")
+    public void deleteDomain(VertxTestContext testContext) {
+        String id = "dummy";
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpResponse.body()).thenReturn(buffer);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .send(any());
+        centralCat
+                .deleteDomain(id, "")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).send(any());
+                                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(),anyString(),anyString());
+                                testContext.completeNow();
+
+                            } else {
+                                testContext.failNow("fail");
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test deleteDomain method in central when method fails")
+    public void deleteDomainFailed(VertxTestContext testContext) {
+        String id = "dummy";
+        when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(201);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .send(any());
+        centralCat
+                .deleteDomain(id, "")
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).send(any());
+                                verify(CentralCatImpl.catWebClient, times(1)).delete(anyInt(),anyString(),anyString());
+                                testContext.failNow("fail");
+                            } else {
+                                testContext.completeNow();
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test getDomain method in central when method succeeds")
+    public void getDomain(VertxTestContext testContext) {
+        String id = "dummy";
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpResponse.body()).thenReturn(buffer);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .send(any());
+        centralCat
+                .getDomain(id)
+                .onComplete(
+                        handler -> {
+                            if (handler.succeeded()) {
+                                verify(httpRequest, times(1)).send(any());
+                                verify(CentralCatImpl.catWebClient, times(1)).get(anyInt(),anyString(),anyString());
+                                testContext.completeNow();
+
+                            } else {
+                                testContext.failNow("fail");
+                            }
+                        });
+    }
+
+    @Test
+    @Description("test getDomain method in central when method fails")
+    public void getDomainFailed(VertxTestContext testContext) {
+        String id = "dummy";
+        when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
+        when(httpResponse.statusCode()).thenReturn(201);
+        doAnswer(
+                new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+                    @Override
+                    public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0)
+                            throws Throwable {
+
+                        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0))
+                                .handle(httpResponseAsyncResult);
+                        return null;
+                    }
+                })
+                .when(httpRequest)
+                .send(any());
+        centralCat
+                .getDomain(id)
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {

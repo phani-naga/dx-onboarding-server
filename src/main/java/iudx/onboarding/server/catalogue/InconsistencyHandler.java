@@ -221,4 +221,114 @@ public class InconsistencyHandler {
 
     return Future.succeededFuture();
   }
+
+  /**
+   * This method is meant to delete domain on local when upload to central fails
+   *
+   * @return Future which is of the type void
+   */
+  Future<Void> handleDeleteDomainOnLocal(final String id, final String token) {
+
+    RetryPolicy<Object> retryPolicy =
+        retryPolicyBuilder
+            .onSuccess(
+                listener -> LOGGER.info("Domain deleted from local after upload to central failed"))
+            .onFailure(
+                failureListener -> {
+                  LOGGER.error(
+                      "INCONSISTENCY DETECTED : DOMAIN NOT DELETED FROM LOCAL - INCONSISTENT");
+                })
+            .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(
+            asyncExecution -> {
+              localCat
+                  .deleteDomain(id, token)
+                  .onSuccess(
+                      successHandler -> {
+                        asyncExecution.complete();
+                      })
+                  .onFailure(asyncExecution::recordException);
+            });
+
+    return Future.succeededFuture();
+  }
+
+  /**
+   * This method is meant to restore domain on local when update on central fails
+   *
+   * @return Future which is of the type void
+   */
+  Future<Void> handleUploadDomainToLocal(final String id, final String token) {
+
+    RetryPolicy<Object> retryPolicy =
+        retryPolicyBuilder
+            .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
+            .onFailure(
+                failureListener -> {
+                  LOGGER.error("INCONSISTENCY DETECTED : DOMAIN NOT RESTORED ON LOCAL");
+                })
+            .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(
+            asyncExecution -> {
+              centralCat
+                  .getDomain(id)
+                  .onSuccess(
+                      item -> {
+                        JsonObject deletedDomain = item.getJsonArray("results").getJsonObject(0);
+                        deletedDomain.put("domainId", id);
+                        localCat
+                            .createDomain(deletedDomain, token)
+                            .onSuccess(
+                                successHandler -> {
+                                  asyncExecution.complete();
+                                })
+                            .onFailure(asyncExecution::recordException);
+                      })
+                  .onFailure(asyncExecution::recordException);
+            });
+
+    return Future.succeededFuture();
+  }
+
+  /**
+   * This method is meant to restore domain on local when update on central fails
+   *
+   * @return Future which is of the type void
+   */
+  Future<Void> handleUpdateDomainOnLocal(final String id, final String token) {
+
+    RetryPolicy<Object> retryPolicy =
+        retryPolicyBuilder
+            .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
+            .onFailure(
+                failureListener -> {
+                  LOGGER.error("INCONSISTENCY DETECTED : DOMAIN NOT RESTORED ON LOCAL");
+                })
+            .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(
+            asyncExecution -> {
+              centralCat
+                  .getDomain(id)
+                  .onSuccess(
+                      oldItem -> {
+                        JsonObject item = oldItem.getJsonArray("results").getJsonObject(0);
+                        localCat
+                            .updateDomain(id, item, token)
+                            .onSuccess(
+                                successHandler -> {
+                                  asyncExecution.complete();
+                                })
+                            .onFailure(asyncExecution::recordException);
+                      })
+                  .onFailure(asyncExecution::recordException);
+            });
+
+    return Future.succeededFuture();
+  }
 }

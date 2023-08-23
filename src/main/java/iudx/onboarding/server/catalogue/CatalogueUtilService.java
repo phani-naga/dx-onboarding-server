@@ -19,6 +19,10 @@ public interface CatalogueUtilService {
   Future<JsonObject> deleteInstance(final JsonObject request, final String token, CatalogueType catalogueType);
   Future<JsonObject> updateInstance(String id, final JsonObject request, final String token, CatalogueType catalogueType);
   Future<JsonObject> getInstance(final String request, CatalogueType catalogueType);
+  Future<JsonObject> createDomain(final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> deleteDomain(final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> updateDomain(String id, final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> getDomain(final String request, CatalogueType catalogueType);
   @GenIgnore
   static CatalogueUtilService createProxy(Vertx vertx, String address) {
     return new CatalogueUtilServiceVertxEBProxy(vertx, address);

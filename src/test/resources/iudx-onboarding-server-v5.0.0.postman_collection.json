@@ -506,7 +506,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adminToken}}",
+								"value": "{{catAdminToken}}",
 								"type": "text"
 							}
 						],
@@ -711,7 +711,7 @@
 					"response": []
 				},
 				{
-					"name": "400 (invalid schema)- Update Resource Item DX entity Copy",
+					"name": "400 (invalid schema)- Update Resource Item DX entity",
 					"event": [
 						{
 							"listen": "test",
@@ -770,7 +770,7 @@
 					"response": []
 				},
 				{
-					"name": "401 (invalid jwt credentials)- Update Resource Item DX entity Copy",
+					"name": "401 (invalid jwt credentials)- Update Resource Item DX entity",
 					"event": [
 						{
 							"listen": "test",
@@ -829,7 +829,7 @@
 					"response": []
 				},
 				{
-					"name": "404 (not found)- Update Resource Item DX entity Copy",
+					"name": "404 (not found)- Update Resource Item DX entity",
 					"event": [
 						{
 							"listen": "test",
@@ -944,14 +944,14 @@
 					"response": []
 				},
 				{
-					"name": "200 (success)- Get DX entity by id Copy",
+					"name": "200 (success)- Get DX entity by id",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.be.notFound;\r",
+									"    pm.response.to.be.ok;\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Check response header\", function () {\r",
@@ -960,7 +960,7 @@
 									"\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:ItemNotFound\");\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
 									"});\r",
 									"\r",
 									"\r",
@@ -999,6 +999,174 @@
 		{
 			"name": "Delete Item",
 			"item": [
+				{
+					"name": "404 (not found) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid jwt credentials) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "jwt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid syntax) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4",
+							"host": [
+								"localhost"
+							],
+							"port": "8090",
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "200 (success) - Delete Resource Item DX Entity",
 					"event": [
@@ -1168,7 +1336,7 @@
 					"response": []
 				},
 				{
-					"name": "200 (success) - Delete Resource Server DX Entity Copy",
+					"name": "200 (success) - Delete Resource Server DX Entity",
 					"event": [
 						{
 							"listen": "test",
@@ -1198,7 +1366,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adminToken}}",
+								"value": "{{catAdminToken}}",
 								"type": "text"
 							}
 						],
@@ -1217,174 +1385,6 @@
 								{
 									"key": "id",
 									"value": "{{resource_server_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "400 (invalid syntax) - Delete Resource Server DX Entity",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(400);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{adminToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "304039a1-c6b6-361a-8ef4"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "401 (invalid jwt credentials) - Delete Resource Server DX Entity Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(401);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "jwt",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "{{resource_server_id}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "404 (not found) - Delete Resource Server DX Entity Copy 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Response status\", function () {\r",
-									"    pm.response.to.have.status(404);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{adminToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
-							"host": [
-								"localhost"
-							],
-							"port": "8090",
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"item"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
 								}
 							]
 						}
@@ -1517,7 +1517,7 @@
 							"response": []
 						},
 						{
-							"name": "401 (Invalid JWT Token) Create Instance Copy 2",
+							"name": "401 (Invalid JWT Token) Create Instance",
 							"event": [
 								{
 									"listen": "test",
@@ -1918,6 +1918,541 @@
 										{
 											"key": "id",
 											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Mlayer Domain",
+			"item": [
+				{
+					"name": "Create Domain",
+					"item": [
+						{
+							"name": "201 (Success) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"    pm.expect(body.results[0]).to.have.property(\"id\");\r",
+											"    const ID = body.results[0].id;\r",
+											"    pm.globals.set(\"domain_id\", ID);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {}
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 (Invalid Schema) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"descriptionn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 (Invalid JWT Token) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Domain",
+					"item": [
+						{
+							"name": "200(Success) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400(Invalid Schema) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"descriptionnn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(invalid JWT token) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get Domain",
+					"item": [
+						{
+							"name": "200(Success) Get Doamin",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete Domain",
+					"item": [
+						{
+							"name": "200(Success) Delete Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(Invalid JWT Token) Delete Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									}
+								],
+								"url": {
+									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"host": [
+										"localhost"
+									],
+									"port": "8090",
+									"path": [
+										"ngsi-ld",
+										"v1",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
 										}
 									]
 								}
