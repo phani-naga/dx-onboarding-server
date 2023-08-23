@@ -140,7 +140,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> createInstance(JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .post(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+        .post(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .sendJsonObject(
@@ -169,7 +169,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> getInstance(String id) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .get(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+        .get(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .addQueryParam("id", id)
         .send(
             httpResponseAsyncResult -> {
@@ -193,7 +193,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> updateInstance(String id, JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .put(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+        .put(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .addQueryParam("id", id)
@@ -223,7 +223,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> deleteInstance(String id, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .delete(8081, "localhost", catBasePath.concat("/internal/ui/instance"))
+        .delete(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .addQueryParam("id", id)
@@ -254,7 +254,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> createDomain(JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .post(8081, "localhost", catBasePath.concat("/internal/ui/domain"))
+        .post(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .sendJsonObject(
@@ -283,7 +283,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> getDomain(String id) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .get(8081, "localhost", catBasePath.concat("/internal/ui/domain"))
+        .get(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
         .addQueryParam("id", id)
         .send(
             httpResponseAsyncResult -> {
@@ -307,7 +307,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> updateDomain(String id, JsonObject request, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .put(8081, "localhost", catBasePath.concat("/internal/ui/domain"))
+        .put(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .addQueryParam("id", id)
@@ -337,7 +337,7 @@ public class CentralCatImpl implements CatalogueService {
   public Future<JsonObject> deleteDomain(String id, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .delete(8081, "localhost", catBasePath.concat("/internal/ui/domain"))
+        .delete(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .addQueryParam("id", id)
