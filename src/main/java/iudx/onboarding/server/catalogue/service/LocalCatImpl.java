@@ -258,4 +258,124 @@ public class LocalCatImpl implements CatalogueService {
             });
     return promise.future(); // Return the future outside the callback function
   }
+
+  @Override
+  public Future<JsonObject> createDomain(JsonObject request, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    request.remove(TOKEN);
+    catWebClient
+        .post(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
+        .putHeader("token", token)
+        .putHeader("Content-Type", "application/json")
+        .sendJsonObject(
+            request,
+            httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded()
+                  && httpResponseAsyncResult.result().statusCode() == 201) {
+                LOGGER.info(
+                    "request successful" + httpResponseAsyncResult.result().body().toJsonObject());
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
+                }
+                ; // Fail the promise with the failure cause
+              }
+            });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> getDomain(String id) {
+    LOGGER.info("id" + id);
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+        .get(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
+        .addQueryParam("id", id)
+        .send(
+            httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded()
+                  && httpResponseAsyncResult.result().statusCode() == 200) {
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
+                }
+                ; // Fail the promise with the failure cause
+              }
+            });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> updateDomain(String id, JsonObject request, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    request.remove(TOKEN);
+    catWebClient
+        .put(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
+        .putHeader("token", token)
+        .putHeader("Content-Type", "application/json")
+        .addQueryParam("id", id)
+        .sendJsonObject(
+            request,
+            httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded()
+                  && httpResponseAsyncResult.result().statusCode() == 200) {
+                LOGGER.info("request successful");
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
+                }
+                ; // Fail the promise with the failure cause
+              }
+            });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> deleteDomain(String id, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    catWebClient
+        .delete(catPort, catHost, catBasePath.concat("/internal/ui/domain"))
+        .putHeader("token", token)
+        .putHeader("Content-Type", "application/json")
+        .addQueryParam("id", id)
+        .send(
+            httpResponseAsyncResult -> {
+              if (httpResponseAsyncResult.succeeded()
+                  && httpResponseAsyncResult.result().statusCode() == 200) {
+                LOGGER.info(
+                    "local request successful"
+                        + httpResponseAsyncResult.result().bodyAsJsonObject());
+                JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+                promise.complete(response);
+              } else {
+                Throwable cause = httpResponseAsyncResult.cause();
+                if (cause != null) {
+                  LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
+                  promise.fail(cause);
+                } else {
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
+                }
+                ; // Fail the promise with the failure cause
+              }
+            });
+    return promise.future(); // Return the future outside the callback function
+  }
 }

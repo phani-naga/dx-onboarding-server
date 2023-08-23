@@ -213,48 +213,62 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     return promise.future();
   }
 
-    @Override
-    public Future<JsonObject> createInstance(JsonObject request, String token, CatalogueType catalogueType) {
-        Promise<JsonObject> promise = Promise.promise();
-        if (catalogueType.equals(CatalogueType.CENTRAL)) {
-            RetryPolicy<Object> retryPolicy = retryPolicyBuilder
-                    .onSuccess(successListener -> {
-                        promise.complete((JsonObject) successListener.getResult());
-                    })
-                    .onFailure(listener -> {
-                        LOGGER.warn("Failed to upload item to central");
-                        String id = request.getString("instanceId");
-                        Future.future(f -> inconsistencyHandler.handleDeleteInstanceOnLocal(id, token));
-                        promise.fail(handleFailure(listener.getException()));
-                    })
-                    .build();
+  @Override
+  public Future<JsonObject> createInstance(
+      JsonObject request, String token, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      RetryPolicy<Object> retryPolicy =
+          retryPolicyBuilder
+              .onSuccess(
+                  successListener -> {
+                    promise.complete((JsonObject) successListener.getResult());
+                  })
+              .onFailure(
+                  listener -> {
+                    LOGGER.warn("Failed to upload item to central");
+                    String id = request.getString("instanceId");
+                    Future.future(f -> inconsistencyHandler.handleDeleteInstanceOnLocal(id, token));
+                    promise.fail(handleFailure(listener.getException()));
+                  })
+              .build();
 
-            Failsafe.with(retryPolicy)
-                    .getAsyncExecution(asyncExecution -> {
-                        tokenService.createToken().compose(adminToken -> {
-                            return centralCat.createInstance(request, adminToken.getString(TOKEN));
-                        }).onComplete(ar -> {
-                            if (ar.succeeded()) {
-                                asyncExecution.recordResult(ar.result());
-                            } else {
-                                asyncExecution.recordException(ar.cause());
-                            }
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(
+              asyncExecution -> {
+                tokenService
+                    .createToken()
+                    .compose(
+                        adminToken -> {
+                          return centralCat.createInstance(request, adminToken.getString(TOKEN));
+                        })
+                    .onComplete(
+                        ar -> {
+                          if (ar.succeeded()) {
+                            asyncExecution.recordResult(ar.result());
+                          } else {
+                            asyncExecution.recordException(ar.cause());
+                          }
                         });
-                    });
-        } else if (catalogueType.equals(CatalogueType.LOCAL)) {
-            localCat.createInstance(request, token).onComplete(completeHandler -> {
+              });
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      localCat
+          .createInstance(request, token)
+          .onComplete(
+              completeHandler -> {
                 if (completeHandler.succeeded()) {
-                    promise.complete(completeHandler.result());
+                  promise.complete(completeHandler.result());
                 } else {
-                    promise.fail(completeHandler.cause());
+                  promise.fail(completeHandler.cause());
                 }
-            });
-        } else {
-            promise.fail("Invalid catalogue type");
-        }
-
-        return promise.future();
+              });
+    } else {
+      promise.fail("Invalid catalogue type");
     }
+
+    return promise.future();
+  }
+
   @Override
   public Future<JsonObject> deleteInstance(
       JsonObject request, String token, CatalogueType catalogueType) {
@@ -311,61 +325,60 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     return promise.future();
   }
 
-    @Override
-    public Future<JsonObject> updateInstance(
-            String instanceId, JsonObject request, String token, CatalogueType catalogueType) {
-        Promise<JsonObject> promise = Promise.promise();
-        if (catalogueType.equals(CatalogueType.CENTRAL)) {
-            RetryPolicy<Object> retryPolicy =
-                    retryPolicyBuilder
-                            .onSuccess(
-                                    successListener -> {
-                                        promise.complete((JsonObject) successListener.getResult());
-                                    })
-                            .onFailure(
-                                    listener -> {
-                                        LOGGER.warn("Failed to update instance to central");
-                                        String id = request.getString(ID);
-                                        Future.future(
-                                                f -> inconsistencyHandler.handleUpdateInstanceOnLocal(instanceId, token));
-                                        promise.fail(handleFailure(listener.getException()));
+  @Override
+  public Future<JsonObject> updateInstance(
+      String instanceId, JsonObject request, String token, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      RetryPolicy<Object> retryPolicy =
+          retryPolicyBuilder
+              .onSuccess(
+                  successListener -> {
+                    promise.complete((JsonObject) successListener.getResult());
+                  })
+              .onFailure(
+                  listener -> {
+                    LOGGER.warn("Failed to update instance to central");
+                    String id = request.getString(ID);
+                    Future.future(
+                        f -> inconsistencyHandler.handleUpdateInstanceOnLocal(instanceId, token));
+                    promise.fail(handleFailure(listener.getException()));
+                  })
+              .build();
 
-                                    })
-                            .build();
-
-            Failsafe.with(retryPolicy)
-                    .getAsyncExecution(
-                            asyncExecution -> {
-                                tokenService
-                                        .createToken()
-                                        .compose(
-                                                adminToken -> {
-                                                    return centralCat.updateInstance(
-                                                            instanceId, request, adminToken.getString(TOKEN));
-                                                })
-                                        .onComplete(
-                                                ar -> {
-                                                    if (ar.succeeded()) {
-                                                        asyncExecution.recordResult(ar.result());
-                                                    } else {
-                                                        asyncExecution.recordException(ar.cause());
-                                                    }
-                                                });
-                            });
-        } else if (catalogueType.equals(CatalogueType.LOCAL)) {
-            localCat
-                    .updateInstance(instanceId, request, token)
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(
+              asyncExecution -> {
+                tokenService
+                    .createToken()
+                    .compose(
+                        adminToken -> {
+                          return centralCat.updateInstance(
+                              instanceId, request, adminToken.getString(TOKEN));
+                        })
                     .onComplete(
-                            completeHandler -> {
-                                if (completeHandler.succeeded()) {
-                                    promise.complete(completeHandler.result());
-                                } else {
-                                    promise.fail(completeHandler.cause());
-                                }
-                            });
-        } else {
-            promise.fail("Invalid catalogue type");
-        }
+                        ar -> {
+                          if (ar.succeeded()) {
+                            asyncExecution.recordResult(ar.result());
+                          } else {
+                            asyncExecution.recordException(ar.cause());
+                          }
+                        });
+              });
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      localCat
+          .updateInstance(instanceId, request, token)
+          .onComplete(
+              completeHandler -> {
+                if (completeHandler.succeeded()) {
+                  promise.complete(completeHandler.result());
+                } else {
+                  promise.fail(completeHandler.cause());
+                }
+              });
+    } else {
+      promise.fail("Invalid catalogue type");
+    }
 
         return promise.future();
     }
@@ -390,5 +403,197 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
           .withDetail(cause.getMessage());
     }
     return respBuilder.getResponse();
+  }
+
+  @Override
+  public Future<JsonObject> getDomain(String id, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    Future<JsonObject> getFuture;
+    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getDomain(id);
+    else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      getFuture = localCat.getDomain(id);
+    } else {
+      promise.fail("Invalid catalogue type");
+      return promise.future();
+    }
+    getFuture.onComplete(
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail("Request failed");
+          }
+        });
+
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> createDomain(
+      JsonObject request, String token, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      RetryPolicy<Object> retryPolicy =
+          retryPolicyBuilder
+              .onSuccess(
+                  successListener -> {
+                    promise.complete((JsonObject) successListener.getResult());
+                  })
+              .onFailure(
+                  listener -> {
+                    LOGGER.warn("Failed to upload domain to central");
+                    String id = request.getString("domainId");
+                    Future.future(f -> inconsistencyHandler.handleDeleteDomainOnLocal(id, token));
+                    promise.fail(handleFailure(listener.getException()));
+                  })
+              .build();
+
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(
+              asyncExecution -> {
+                tokenService
+                    .createToken()
+                    .compose(
+                        adminToken -> {
+                          return centralCat.createDomain(request, adminToken.getString(TOKEN));
+                        })
+                    .onComplete(
+                        ar -> {
+                          if (ar.succeeded()) {
+                            asyncExecution.recordResult(ar.result());
+                          } else {
+                            asyncExecution.recordException(ar.cause());
+                          }
+                        });
+              });
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      localCat
+          .createDomain(request, token)
+          .onComplete(
+              completeHandler -> {
+                if (completeHandler.succeeded()) {
+                  promise.complete(completeHandler.result());
+                } else {
+                  promise.fail(completeHandler.cause());
+                }
+              });
+    } else {
+      promise.fail("Invalid catalogue type");
+    }
+
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> deleteDomain(
+      JsonObject request, String token, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    String id = request.getString(ID);
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      RetryPolicy<Object> retryPolicy =
+          retryPolicyBuilder
+              .onSuccess(
+                  successListener -> {
+                    promise.complete((JsonObject) successListener.getResult());
+                  })
+              .onFailure(
+                  listener -> {
+                    LOGGER.warn("Failed to delete instance from central");
+                    Future.future(f -> inconsistencyHandler.handleUploadDomainToLocal(id, token));
+                    promise.fail(handleFailure(listener.getException()));
+                  })
+              .build();
+
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(
+              asyncExecution -> {
+                tokenService
+                    .createToken()
+                    .compose(
+                        adminToken -> {
+                          return centralCat.deleteDomain(id, adminToken.getString(TOKEN));
+                        })
+                    .onComplete(
+                        ar -> {
+                          if (ar.succeeded()) {
+                            asyncExecution.recordResult(ar.result());
+                          } else {
+                            asyncExecution.recordException(ar.cause());
+                          }
+                        });
+              });
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      localCat
+          .deleteDomain(id, token)
+          .onComplete(
+              completeHandler -> {
+                if (completeHandler.succeeded()) {
+                  promise.complete(completeHandler.result());
+                } else {
+                  promise.fail(completeHandler.cause());
+                }
+              });
+    } else {
+      promise.fail("Invalid catalogue type");
+    }
+
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> updateDomain(
+      String domainId, JsonObject request, String token, CatalogueType catalogueType) {
+    Promise<JsonObject> promise = Promise.promise();
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      RetryPolicy<Object> retryPolicy =
+          retryPolicyBuilder
+              .onSuccess(
+                  successListener -> {
+                    promise.complete((JsonObject) successListener.getResult());
+                  })
+              .onFailure(
+                  listener -> {
+                    LOGGER.warn("Failed to update instance to central");
+                    Future.future(
+                        f -> inconsistencyHandler.handleUpdateDomainOnLocal(domainId, token));
+                    promise.fail(handleFailure(listener.getException()));
+                  })
+              .build();
+
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(
+              asyncExecution -> {
+                tokenService
+                    .createToken()
+                    .compose(
+                        adminToken -> {
+                          return centralCat.updateDomain(
+                              domainId, request, adminToken.getString(TOKEN));
+                        })
+                    .onComplete(
+                        ar -> {
+                          if (ar.succeeded()) {
+                            asyncExecution.recordResult(ar.result());
+                          } else {
+                            asyncExecution.recordException(ar.cause());
+                          }
+                        });
+              });
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      localCat
+          .updateDomain(domainId, request, token)
+          .onComplete(
+              completeHandler -> {
+                if (completeHandler.succeeded()) {
+                  promise.complete(completeHandler.result());
+                } else {
+                  promise.fail(completeHandler.cause());
+                }
+              });
+    } else {
+      promise.fail("Invalid catalogue type");
+    }
+
+    return promise.future();
   }
 }

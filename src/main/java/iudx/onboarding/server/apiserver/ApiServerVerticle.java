@@ -100,6 +100,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.patch(api.getInstanceUrl()).handler(this::updateInstance);
     router.get(api.getInstanceUrl()).handler(this::getAllInstance);
 
+    // domain API
+    router.post(api.getDomainUrl()).handler(this::createDomain);
+    router.delete(api.getDomainUrl()).handler(this::deleteDomain);
+    router.patch(api.getDomainUrl()).handler(this::updateDomain);
+    router.get(api.getDomainUrl()).handler(this::getDomain);
+
     // adapter API
     router.post(api.getIngestionUrl()).handler(this::registerAdapter);
 
@@ -240,7 +246,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onFailure(
             createLocalItemFailureHandler -> {
               LOGGER.info("Local Handler Failed {}", createLocalItemFailureHandler.getLocalizedMessage());
-              response.end(createLocalItemFailureHandler.getMessage());
+                handleResponse(response, createLocalItemFailureHandler);
             });
   }
 
@@ -276,7 +282,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onFailure(
             updateLocalItemFailureHandler -> {
               LOGGER.info("Local Handler Failed {}", updateLocalItemFailureHandler.getLocalizedMessage());
-              response.end(updateLocalItemFailureHandler.getMessage());
+                handleResponse(response, updateLocalItemFailureHandler);
             });
   }
 
@@ -318,7 +324,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onFailure(
             deleteLocalItemFailureHandler -> {
               LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
-              response.end(deleteLocalItemFailureHandler.getMessage());
+              handleResponse(response, deleteLocalItemFailureHandler);
             });
   }
 
@@ -343,7 +349,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             getLocalItemFailureHandler -> {
 
               LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
-              response.end(getLocalItemFailureHandler.getMessage());
+                handleResponse(response, getLocalItemFailureHandler);
             });
   }
 
@@ -482,17 +488,156 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
-    private void handleResponse(HttpServerResponse response, Throwable localInstance) {
-        String errorMessage = localInstance.getMessage();
+  private void createDomain(RoutingContext routingContext) {
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .createDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            localDomain -> {
+              LOGGER.info("results after local cat{}", localDomain);
+              String domainId = localDomain.getJsonArray(RESULTS).getJsonObject(0).getString("id");
+              requestBody.put("domainId", domainId);
+              LOGGER.info("request body" + requestBody);
+              catalogueService
+                  .createDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      centralInstance -> {
+                        response.setStatusCode(201).end(centralInstance.toString());
+                      })
+                  .onFailure(
+                      centralInstance -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end(centralInstance.getMessage());
+                      });
+            })
+        .onFailure(
+            localDomainFailure -> {
+              LOGGER.info("Local Handler Failed {}", localDomainFailure.getLocalizedMessage());
+              handleResponse(response, localDomainFailure);
+            });
+  }
 
-        if (errorMessage.contains("urn:dx:cat:InvalidSchema")) {
-            response.setStatusCode(400).end(errorMessage);
-        } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
-            response.setStatusCode(401).end(errorMessage);
-        } else {
-            response.setStatusCode(500).end(errorMessage);
-        }
+  private void deleteDomain(RoutingContext routingContext) {
+
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = new JsonObject().put(ID, request.getParam(ID));
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .deleteDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            deleteLocalDomain -> {
+              JsonObject localCreateResponse = deleteLocalDomain;
+              LOGGER.debug("item deleted in local cat {}", deleteLocalDomain.getJsonArray(RESULTS));
+
+              catalogueService
+                  .deleteDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      deleteCentralDomain -> {
+                        LOGGER.debug(
+                            "item deleted in central cat {}",
+                            deleteCentralDomain.getJsonArray(RESULTS));
+                        response.setStatusCode(200).end(deleteCentralDomain.toString());
+                      })
+                  .onFailure(
+                      deleteCentralDomainFailure -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end("Upload failed, try again later");
+                      });
+            })
+        .onFailure(
+            deleteLocalDomainFailure -> {
+              LOGGER.info(
+                  "Local Handler Failed {}", deleteLocalDomainFailure.getLocalizedMessage());
+              handleResponse(response, deleteLocalDomainFailure);
+            });
+  }
+
+  private void updateDomain(RoutingContext routingContext) {
+
+    MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerResponse response = routingContext.response();
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+
+    String id = routingContext.request().getParam("id");
+    catalogueService
+        .updateDomain(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .onSuccess(
+            updateLocalDomainSuccess -> {
+              JsonObject localUpdateResponse = updateLocalDomainSuccess;
+              LOGGER.debug(
+                  "domain updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
+
+              catalogueService
+                  .updateDomain(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .onSuccess(
+                      updateCentralDomainSuccess -> {
+                        response.setStatusCode(200).end(updateCentralDomainSuccess.toString());
+                      })
+                  .onFailure(
+                      centralCatDomainFailure -> {
+                        // This is after 3 retries and delete of item from local
+                        // TODO: notify user to try again
+                        response.setStatusCode(500).end(centralCatDomainFailure.getMessage());
+                      });
+            })
+        .onFailure(
+            updateLocalDomainFailure -> {
+              LOGGER.info(
+                  "Local Handler Failed {}", updateLocalDomainFailure.getLocalizedMessage());
+              handleResponse(response, updateLocalDomainFailure);
+            });
+  }
+
+  private void getDomain(RoutingContext routingContext) {
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    catalogueService
+        .getDomain(request.getParam(ID), CatalogueType.LOCAL)
+        .onSuccess(
+            getLocalDomainSuccess -> {
+              LOGGER.info("Response {}", getLocalDomainSuccess);
+              LOGGER.info(
+                  "item taken from local cat {}", getLocalDomainSuccess.getJsonArray(RESULTS));
+              // call only if response is 200 -success
+              response.setStatusCode(200).end(getLocalDomainSuccess.toString());
+            })
+        .onFailure(
+            getLocalDomainFailure -> {
+              LOGGER.info("Handler Failed {}", getLocalDomainFailure.getLocalizedMessage());
+              handleResponse(response, getLocalDomainFailure);
+            });
+  }
+
+  private void handleResponse(HttpServerResponse response, Throwable localInstance) {
+    String errorMessage = localInstance.getMessage();
+
+    if (errorMessage.contains("urn:dx:cat:InvalidSchema")) {
+      response.setStatusCode(400).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
+      response.setStatusCode(401).end(errorMessage);
+    } else if (errorMessage.contains( "urn:dx:cat:ItemNotFound")) {
+        response.setStatusCode(404).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:InvalidSyntax")) {
+        response.setStatusCode(400).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:OperationNotAllowed")) {
+        response.setStatusCode(400).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:InvalidUUID")) {
+        response.setStatusCode(400).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:LinkValidationFailed")) {
+        response.setStatusCode(400).end(errorMessage);
+    }else {
+      response.setStatusCode(500).end(errorMessage);
     }
+  }
 
   private void registerAdapter(RoutingContext routingContext) {}
 

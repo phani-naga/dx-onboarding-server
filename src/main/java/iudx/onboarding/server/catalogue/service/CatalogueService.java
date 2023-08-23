@@ -18,5 +18,9 @@ public interface CatalogueService {
   Future<JsonObject> deleteInstance(final String id, String token);
   Future<JsonObject> getInstance(final String id);
   Future<JsonObject> updateInstance(String id, final JsonObject request, String token);
+  Future<JsonObject> createDomain(final JsonObject request, String token);
+  Future<JsonObject> deleteDomain(final String id, String token);
+  Future<JsonObject> getDomain(final String id);
+  Future<JsonObject> updateDomain(String id, final JsonObject request, String token);
 
 }
