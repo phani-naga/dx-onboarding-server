@@ -8,4 +8,5 @@ public class Constants {
   /* Service Addresses */
   public static final String CATALOGUE_ADDRESS = "iudx.onboarding.server.catalogue";
   public static final String TOKEN_ADDRESS = "iudx.onboarding.server.token";
+  public static final String INGESTION_ADDRESS = "iudx.onboarding.server.ingestion";
 }

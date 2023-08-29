@@ -652,7 +652,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
   }
 
-  private void registerAdapter(RoutingContext routingContext) {}
+  private void registerAdapter(RoutingContext routingContext) {
+
+  }
 
   private void updateAdapter(RoutingContext routingContext) {}
 

@@ -1,5 +1,6 @@
 package iudx.onboarding.server.apiserver.util;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class RespBuilder {
@@ -18,6 +19,15 @@ public class RespBuilder {
   public RespBuilder withDetail(String detail) {
     response.put("detail", detail);
     return this;
+  }
+
+  public RespBuilder withResult(JsonObject result) {
+    response.put("results", result);
+    return this;
+  }
+
+  public JsonObject getJsonResponse() {
+    return response;
   }
 
   public String getResponse() {

@@ -5,9 +5,9 @@ import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
+import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +15,7 @@ import org.apache.logging.log4j.Logger;
 import java.net.UnknownHostException;
 import java.time.Duration;
 
-import static iudx.onboarding.server.common.Constants.CATALOGUE_ADDRESS;
-import static iudx.onboarding.server.common.Constants.TOKEN_ADDRESS;
+import static iudx.onboarding.server.common.Constants.*;
 
 public class CatalogueVerticle extends AbstractVerticle {
 
@@ -25,12 +24,14 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
+  private IngestionService ingestionService;
 
 
   @Override
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
+    ingestionService = IngestionService.createProxy(vertx, INGESTION_ADDRESS);
 
     RetryPolicyBuilder<Object> retryPolicyBuilder = RetryPolicy.builder()
         .handle(DxRuntimeException.class)
@@ -40,11 +41,11 @@ public class CatalogueVerticle extends AbstractVerticle {
         .withMaxAttempts(3)
         .onRetry(retryListener -> LOGGER.error("Operation on central failed... retrying"));
 
-    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, config());
+    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, ingestionService, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CATALOGUE_ADDRESS).register(CatalogueUtilService.class, catalogueUtilService);
 
-    LOGGER.info("Cache Verticle deployed.");
+    LOGGER.info("Catalogue Verticle deployed.");
   }
 
   @Override
