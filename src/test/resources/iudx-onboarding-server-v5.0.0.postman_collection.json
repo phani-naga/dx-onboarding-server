@@ -166,7 +166,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -226,7 +226,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -285,7 +285,7 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceGroup\",\n        \"iudx:IssueReporting\"\n    ],\n    \"name\": \"agra-swachhata-app\",\n    \"description\": \"Civic Issues like open defecation, garbage dumping, etc., reported in Agra city via Swachhata app. Publishes all the complaints/issues lodged on the current day, on a daily basis.\",\n    \"tags\": [\n        \"swachhata\",\n        \"complaints\",\n        \"reporting\",\n        \"issue\",\n        \"garbage dump\",\n        \"debris removal\",\n        \"open defecation\",\n        \"construction material\",\n        \"requests\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceServer\": \"{{resource_server_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -344,7 +344,7 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"name\": \"wifi-locations\",\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\n    \"description\": \"The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\n    \"tags\": [\n        \"Wi-Fi\",\n        \"Wi-Fi zone\",\n        \"hotspot\",\n        \"internet\",\n        \"Wi-Fi access\",\n        \"Wi-Fi location\",\n        \"wireless internet\",\n        \"internet access\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceGroup\": \"{{resource_group_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -400,7 +400,7 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\n    \"description\": \"The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\n    \"tags\": [\n        \"Wi-Fi\",\n        \"Wi-Fi zone\",\n        \"hotspot\",\n        \"internet\",\n        \"Wi-Fi access\",\n        \"Wi-Fi location\",\n        \"wireless internet\",\n        \"internet access\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceGroup\": \"{{resource_group_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -456,7 +456,7 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"description\": \"provider id for uuid test\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"_summary\": \"uuid-test provider id for uuid test \"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -520,7 +520,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -578,7 +578,7 @@
 							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:Provider\"\n          ],\n          \"name\": \"uuid-test\",\n          \"description\": \"provider id for uuid test\",\n          \"id\": \"{{provider_id}}\",\n          \"resourceServer\": \"{{resource_server_id}}\",\n          \"providerOrg\": {\n            \"name\": \"Datakaveri\",\n            \"additionalInfoURL\": \"https://datakaveri.org\",\n            \"location\": {\n              \"type\": \"Place\",\n              \"address\": \"IIsc\",\n              \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                  75.92,\n                  14.5\n                ]\n              }\n            }\n          },\n          \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n          \"_summary\": \"uuid test provider id\"\n        }"
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -637,7 +637,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -696,7 +696,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -755,7 +755,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -814,7 +814,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -873,7 +873,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item",
+							"raw": "localhost:8090/iudx/cat/v1/item",
 							"host": [
 								"localhost"
 							],
@@ -923,7 +923,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
 							"host": [
 								"localhost"
 							],
@@ -974,7 +974,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_item_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_item_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1035,7 +1035,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"raw": "localhost:8090/iudx/cat/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
 							"host": [
 								"localhost"
 							],
@@ -1091,7 +1091,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1147,7 +1147,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id=304039a1-c6b6-361a-8ef4",
+							"raw": "localhost:8090/iudx/cat/v1/item?id=304039a1-c6b6-361a-8ef4",
 							"host": [
 								"localhost"
 							],
@@ -1203,7 +1203,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_item_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_item_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1259,7 +1259,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_group_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_group_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1315,7 +1315,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{provider_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{provider_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1371,7 +1371,7 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/ngsi-ld/v1/item?id={{resource_server_id}}",
+							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
 							"host": [
 								"localhost"
 							],
@@ -1446,7 +1446,7 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"raw": "localhost:8090/iudx/cat/v1/instance",
 									"host": [
 										"localhost"
 									],
@@ -1502,7 +1502,7 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"coverrr\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"raw": "localhost:8090/iudx/cat/v1/instance",
 									"host": [
 										"localhost"
 									],
@@ -1557,7 +1557,7 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance",
+									"raw": "localhost:8090/iudx/cat/v1/instance",
 									"host": [
 										"localhost"
 									],
@@ -1617,7 +1617,7 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1679,7 +1679,7 @@
 									"raw": "{\n   \"nahhhme\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1740,7 +1740,7 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1793,7 +1793,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1851,7 +1851,7 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1904,7 +1904,7 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{instance_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
 									"host": [
 										"localhost"
 									],
@@ -1981,7 +1981,7 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"raw": "localhost:8090/iudx/cat/v1/domain",
 									"host": [
 										"localhost"
 									],
@@ -2037,7 +2037,7 @@
 									"raw": "{\n    \"descriptionn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"raw": "localhost:8090/iudx/cat/v1/domain",
 									"host": [
 										"localhost"
 									],
@@ -2092,7 +2092,7 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain",
+									"raw": "localhost:8090/iudx/cat/v1/domain",
 									"host": [
 										"localhost"
 									],
@@ -2152,7 +2152,7 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],
@@ -2214,7 +2214,7 @@
 									"raw": "{\n    \"descriptionnn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],
@@ -2275,7 +2275,7 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/instance?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/instance?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],
@@ -2328,7 +2328,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],
@@ -2386,7 +2386,7 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],
@@ -2439,7 +2439,7 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/ngsi-ld/v1/domain?id={{domain_id}}",
+									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
 									"host": [
 										"localhost"
 									],

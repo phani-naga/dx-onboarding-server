@@ -112,6 +112,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     // TODO : test URL - will be deleted later
     router.post(api.getTokenUrl()).handler(this::handleTokenRequest);
 
+    // documentation apis
+    router.get("/apis/spec")
+        .produces("application/json")
+        .handler(routingContext -> {
+          HttpServerResponse response = routingContext.response();
+          response.sendFile("docs/openapi.yaml");
+        });
+    router.get("/apis")
+        .produces("text/html")
+        .handler(routingContext -> {
+          HttpServerResponse response = routingContext.response();
+          response.sendFile("docs/apidoc.html");
+        });
+
     /* Read ssl configuration. */
     HttpServerOptions serverOptions = new HttpServerOptions();
     setServerOptions(serverOptions);
