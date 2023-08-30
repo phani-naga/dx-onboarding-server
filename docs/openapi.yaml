@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
     title: Data Exchange Onboarding Server APIs
-    version: 4.5.0
+    version: 5.0.0
     description: >
         # Introduction
         
@@ -16,7 +16,7 @@ info:
           - Base path is the path on which API is served, relative to the host
           - It is the initial part of the API
           - The base path for [DX AAA Server](https://github.com/datakaveri/iudx-aaa-server) is set to `/auth/v1`
-          - Currently, `/ngsi-ld/v1` is being used as base path for all the DX Onboarding Server APIs
+          - Currently, `/iudx/cat/v1` is being used as base path for all the DX Onboarding Server APIs
           - These value could be configured according to the deployment
         - **Request Samples**:
           - The `<tokeValue>` in the header of request sample could be replaced with respective token value that could be obtained from DX Auth Server
@@ -34,7 +34,7 @@ info:
         name: For support contact IUDX Team at
         email: support@iudx.org.in
 servers:
-    -  url: 'https://example-onboarding.com/ngsi-ld/v1'
+    -  url: 'https://example-onboarding.com/iudx/cat/v1/v1'
        description: Production Instance
 
 paths:
@@ -75,7 +75,7 @@ paths:
                     lang: cURL
                     label: 'item by id'
                     source: |
-                        curl --location --request GET 'https://example-onboarding.com/ngsi-ld/v1/item?id=802c4c64-b303-4ee1-a68a-69eae944323e'
+                        curl --location --request GET 'https://example-onboarding.com/iudx/cat/v1/v1/item?id=802c4c64-b303-4ee1-a68a-69eae944323e'
         put:
             requestBody:
                 content:
@@ -178,7 +178,7 @@ paths:
                     lang: cURL
                     label: 'update item'
                     source: |
-                        curl --location --request PUT 'https://example-onboarding.com/ngsi-ld/v1/item/' \
+                        curl --location --request PUT 'https://example-onboarding.com/iudx/cat/v1/v1/item/' \
                         --header 'token: <tokenValue>' \
                         --header 'Content-Type: application/json' \
                         --data-raw '<payload>'
@@ -261,7 +261,7 @@ paths:
                     lang: cURL
                     label: 'create item'
                     source: |
-                        curl --location --request POST 'https://example-onboarding.com/ngsi-ld/v1/item/' \
+                        curl --location --request POST 'https://example-onboarding.com/iudx/cat/v1/v1/item/' \
                         --header 'token: <tokenValue>' \
                         --header 'Content-Type: application/json' \
                         --data-raw '<payload>'
@@ -328,7 +328,7 @@ paths:
                     lang: cURL
                     label: 'delete item'
                     source: |
-                        curl --location --request DELETE 'https://example-onboarding.com/ngsi-ld/v1/item?id=802c4c64-b303-4ee1-a68a-69eae944323e' \
+                        curl --location --request DELETE 'https://example-onboarding.com/iudx/cat/v1/v1/item?id=802c4c64-b303-4ee1-a68a-69eae944323e' \
                         --header 'token: <tokenValue>'
 
 
@@ -390,7 +390,7 @@ paths:
                     lang: cURL
                     label: 'create instance'
                     source: |
-                        curl --location --request POST 'https://example-onboarding.com/ngsi-ld/v1/instance' \
+                        curl --location --request POST 'https://example-onboarding.com/iudx/cat/v1/v1/instance' \
                         --header 'token: <tokenValue>' \
                         --header 'Content-Type: application/json' \
                         --data-raw '<payload>'
@@ -449,7 +449,7 @@ paths:
                 - lang: cURL
                   label: 'update instance'
                   source: |
-                      curl --location --request PUT 'https://example-onboarding.com/ngsi-ld/v1/instance?id=191e35e3-99c2-43a5-ba8d-811a756b08de' \
+                      curl --location --request PUT 'https://example-onboarding.com/iudx/cat/v1/v1/instance?id=191e35e3-99c2-43a5-ba8d-811a756b08de' \
                       --header 'token: <tokenValue>' \
                       --header 'Content-Type: application/json' \
                       --data-raw '<payload>'
@@ -478,7 +478,7 @@ paths:
                 - lang: cURL
                   label: 'get instance'
                   source: |
-                      curl --location --request GET 'https://example-onboarding.com/ngsi-ld/v1/instance'
+                      curl --location --request GET 'https://example-onboarding.com/iudx/cat/v1/v1/instance'
 
         delete:
             tags:
@@ -519,7 +519,7 @@ paths:
                 - lang: cURL
                   label: 'delete instance'
                   source: |
-                      curl --location --request DELETE 'https://example-onboarding.com/ngsi-ld/v1/instance?id=191e35e3-99c2-43a5-ba8d-811a756b08de' \
+                      curl --location --request DELETE 'https://example-onboarding.com/iudx/cat/v1/v1/instance?id=191e35e3-99c2-43a5-ba8d-811a756b08de' \
                       --header 'token: <tokenValue>'
 
 
@@ -572,7 +572,7 @@ paths:
                 - lang: cURL
                   label: 'create domain'
                   source: |
-                      curl --location --request POST 'https://example-onboarding.com/ngsi-ld/v1/domain' \
+                      curl --location --request POST 'https://example-onboarding.com/iudx/cat/v1/v1/domain' \
                       --header 'token: <tokenValue>' \
                       --header 'Content-Type: application/json' \
                       --data-raw '<payload>'
@@ -633,7 +633,7 @@ paths:
                 - lang: cURL
                   label: 'update domain'
                   source: |
-                      curl --location --request PUT 'https://example-onboarding.com/ngsi-ld/v1/domain?id=3d73067f-2855-4155-b918-14d621b7a576' \
+                      curl --location --request PUT 'https://example-onboarding.com/iudx/cat/v1/v1/domain?id=3d73067f-2855-4155-b918-14d621b7a576' \
                       --header 'token: <tokenValue>' \
                       --header 'Content-Type: application/json' \
                       --data-raw '<payload>'
@@ -662,7 +662,7 @@ paths:
                 - lang: cURL
                   label: 'get domain'
                   source: |
-                      curl --location --request GET 'https://example-onboarding.com/ngsi-ld/v1/domain'
+                      curl --location --request GET 'https://example-onboarding.com/iudx/cat/v1/v1/domain'
 
         delete:
             tags:
@@ -703,7 +703,7 @@ paths:
                 - lang: cURL
                   label: 'delete domain'
                   source: |
-                      curl --location --request DELETE 'https://example-onboarding.com/ngsi-ld/v1/domain?id=3d73067f-2855-4155-b918-14d621b7a576' \
+                      curl --location --request DELETE 'https://example-onboarding.com/iudx/cat/v1/v1/domain?id=3d73067f-2855-4155-b918-14d621b7a576' \
                       --header 'token: <tokenValue>'                 
 
 components:
@@ -766,7 +766,6 @@ components:
                   },
                   "name": "<some_item_name>"
               }
-
         exampleEntityWId:
             title: payload for update item with ID
             description: payload for update item with ID
@@ -877,37 +876,6 @@ components:
                     - {}
                 type: 'urn:dx:cat:Success'
                 title: Success
-
-        successResponseForUIProvider:
-            title: Response for list of providers
-            description: Example success response for the User Interface Provider with ID
-            required:
-                - type
-            type: object
-            properties:
-                type:
-                    description: |
-                        URN type of the response indicating if the query was successful or if any errors have
-                        been triggered.
-                    type: string
-                title:
-                    description: A human readable title to the message response.
-                totalHits:
-                    format: int32
-                    description: Total number of documents which matched the query.
-                    type: integer
-                results:
-                    description: Results which matched the query. This is an array of objects.
-                    type: array
-                    items:
-                        type: object
-            example:
-                type: urn:dx:cat:Success
-                title: Success
-                totalHits: 10
-                results:
-                    - description: UI Test Provider-other
-                      id: 9760a820-85b0-40df-b6b0-73d3d1848109
         errorResponseForGetEntity:
             title: Root Type for standardResponse
             description: Standard Response for all requests
@@ -1116,40 +1084,6 @@ components:
                 results:
                     - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
                       detail: Instance created Successfully
-
-        successResponseForGetInstance:
-            title: Response for getting instance
-            description: Example success response for getting DX Catalogue instances
-            required:
-                - type
-            type: object
-            properties:
-                type:
-                    description: |
-                        URN type of the response indicating if the query was successful or if any errors have
-                        been triggered.
-                    type: string
-                title:
-                    description: A human readable title to the message response.
-                results:
-                    description: Results which matched the query. This is an array of objects.
-                    type: array
-                    items:
-                        type: object
-            example:
-                type: urn:dx:cat:Success
-                title: Success
-                totalHits: 9
-                results:
-                    - '10'
-                    - abcd
-                    - bengaluru
-                    - mumbai
-                    - poone
-                    - pune
-                    - stqc
-                    - surat
-
         successResponseForUpdatingInstance:
             title: Response for updating an instance
             description: Example success response for updating the given instance
@@ -1175,8 +1109,6 @@ components:
                 results:
                     - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
                       detail: Instance Updated Successfully
-
-
         successResponseForGettingInstance:
             title: Response for getting an instance
             description: Example success response for getting instance
@@ -1210,8 +1142,6 @@ components:
                       name: lucknow
                       icon: https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/lucknow.jpeg
                       logo: https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/lucknow.jpeg
-
-
         successResponseForDeletingInstance:
             title: Response for deleting an instance
             description: Example success response for deleting instance
@@ -1237,8 +1167,6 @@ components:
                 results:
                     - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
                       detail: Instance deleted Successfully
-
-
         successResponseForCreatingDomain:
             title: Response for creating a domain
             description: Example success response for creating a domain
@@ -1264,8 +1192,6 @@ components:
                 results:
                     - id: 3d73067f-2855-4155-b918-14d621b7a576
                       detail: domain Created Successfully
-
-
         successResponseForUpdatingDomain:
             title: Response for updating a domain
             description: Example success response for updating a domain
@@ -1291,8 +1217,6 @@ components:
                 results:
                     - id: 3d73067f-2855-4155-b918-14d621b7a576
                       detail: Domain Updated Successfully
-
-
         successResponseForGettingDomain:
             title: Response for getting a domain
             description: Example success response for getting a domain
@@ -1331,8 +1255,6 @@ components:
                       description: Data Models that pertain to civic domain
                       label: Civic
                       domainId: 3d73067f-2855-4155-b918-14d621b7a576
-
-
         successResponseForDeletingDomain:
             title: Response for deleting a domain
             description: Example success response for deleting a domain
@@ -1397,9 +1319,7 @@ components:
                 icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png'
                 label: Civic
                 name: civic
-
-
-
+                
 tags:
     -
         name: Entity
@@ -1407,25 +1327,6 @@ tags:
             Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
             These apis are intended to be used by DX(Data Exchange) Data *Providers*.
         x-displayName: Entity
-    -
-
-        name: Administrator
-        description: |
-            Catalogue administrator specific apis.
-        x-displayName: Administrator
-    -
-        name: Consumer
-        description: |
-            Catalogue consumer specific apis.
-        x-displayName: Consumer
-
-    -
-        name: MLayer
-        description: >
-            Catalogue middle layer specific APIs. 
-            <br>
-            These apis consist of providers, geo-query and overview APIs
-        x-displayName: MLayer
     -
         name: Mlayer Instance
         description: >
@@ -1438,9 +1339,3 @@ tags:
             Catalogue middle layer specific APIs. 
             Catalogue has data-domain models that describes each of the domains.
         x-displayName: Mlayer Domain
-    -
-        name: Mlayer Dataset
-        description: >
-            Catalogue middle layer specific API fetches all the datasets that belong to the Data Exchange
-        x-displayName: Mlayer Dataset
-
