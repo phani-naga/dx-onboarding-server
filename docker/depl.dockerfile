@@ -15,7 +15,7 @@ RUN mvn clean package -Dmaven.test.skip=true
 FROM eclipse-temurin:11-jre-focal
 
 ARG VERSION
-ENV JAR="iudx.onboarding.server-dev-${VERSION}-fat.jar"
+ENV JAR="iudx.onboarding.server-cluster-${VERSION}-fat.jar"
 
 WORKDIR /usr/share/app
 # Copying openapi docs
