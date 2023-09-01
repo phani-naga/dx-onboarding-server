@@ -91,19 +91,19 @@ public class ApiServerVerticle extends AbstractVerticle {
     // item API
     router.post(api.getOnboardingUrl()).handler(this::createItem);
     router.get(api.getOnboardingUrl()).handler(this::getItem);
-    router.patch(api.getOnboardingUrl()).handler(this::updateItem);
+    router.put(api.getOnboardingUrl()).handler(this::updateItem);
     router.delete(api.getOnboardingUrl()).handler(this::deleteItem);
 
     // instance API
     router.post(api.getInstanceUrl()).handler(this::createInstance);
     router.delete(api.getInstanceUrl()).handler(this::deleteInstance);
-    router.patch(api.getInstanceUrl()).handler(this::updateInstance);
+    router.put(api.getInstanceUrl()).handler(this::updateInstance);
     router.get(api.getInstanceUrl()).handler(this::getAllInstance);
 
     // domain API
     router.post(api.getDomainUrl()).handler(this::createDomain);
     router.delete(api.getDomainUrl()).handler(this::deleteDomain);
-    router.patch(api.getDomainUrl()).handler(this::updateDomain);
+    router.put(api.getDomainUrl()).handler(this::updateDomain);
     router.get(api.getDomainUrl()).handler(this::getDomain);
 
     // adapter API
@@ -272,13 +272,13 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService
         .updateItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
-            updateLocalItemSuccessHandler -> {
-              JsonObject localUpdateResponse = updateLocalItemSuccessHandler;
+            localItem -> {
+              JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
               LOGGER.debug(
-                  "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
+                  "item uploaded in local cat {}", itemBodyWithId);
 
               catalogueService
-                  .updateItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                  .updateItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       updateCentralCatItemSuccess -> {
                         response
@@ -312,9 +312,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             deleteLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
               LOGGER.debug(
-                  "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
+                  "item deleted in local cat {}", deleteLocalItemSuccessHandler.getJsonObject(RESULTS));
 
               catalogueService
                   .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
