@@ -693,34 +693,6 @@ tags:
       Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
       These apis are intended to be used by DX(Data Exchange) Data *Providers*.
     x-displayName: Entity
-  - name: Discovery
-    description: |
-      Discovery DX Entities using a rich discovery api supporting property, text and geo-based queries.
-      These apis are intended to be used by DX(Data Exchange) Data *Consumers*.
-      <br> Geo-Query APIs list the location of the dataset ids' given in the request body of a particular instance
-    x-displayName: Discovery
-  - name: List
-    description: |
-      List DX Entities of a certain type.
-      These apis are intended to be used by User Interfaces.
-    x-displayName: List
-  - name: Relationship
-    description: |
-      Discovery of entities through their relationships.
-      These apis are intended to be used by DX(Data Exchange) Data *Consumers*.
-    x-displayName: Relationship
-  - name: Administrator
-    description: |
-      Catalogue administrator specific apis.
-    x-displayName: Administrator
-  - name: Consumer
-    description: |
-      Catalogue consumer specific apis.
-    x-displayName: Consumer
-  - name: MLayer
-    description: |
-      Catalogue middle layer specific APIs.  <br> These apis consist of providers, geo-query and overview APIs
-    x-displayName: MLayer
   - name: Mlayer Instance
     description: |
       Catalogue middle layer specific APIs.  Instance refers to the name of the city/location.
@@ -729,14 +701,6 @@ tags:
     description: |
       Catalogue middle layer specific APIs.  Catalogue has data-domain models that describes each of the domains.
     x-displayName: Mlayer Domain
-  - name: Mlayer Dataset
-    description: |
-      Catalogue middle layer specific API fetches all the datasets that belong to the Data Exchange
-    x-displayName: Mlayer Dataset
-  - name: NLP
-    description: |
-      Natural Language Processing API is used a for a text based search to discover resources and resource groups on the catalogue server
-    x-displayName: NLP API
 components:
   schemas:
     successResponseWithObjects:
