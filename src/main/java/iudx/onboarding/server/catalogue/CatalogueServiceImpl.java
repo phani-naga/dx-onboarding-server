@@ -69,7 +69,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                 })
                 .compose(createItemHandler -> {
                   String itemType = dxItemType(request.getJsonArray("type"));
-                  if (itemType.equalsIgnoreCase("iudx:Resource")) {
+                  if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
                     String itemId = request.getString("id");
                     JsonObject ingestionRequestBody = new JsonObject()
                         .put("entities", new JsonArray().add(itemId));

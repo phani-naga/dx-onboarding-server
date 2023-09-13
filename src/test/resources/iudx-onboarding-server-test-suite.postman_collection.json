@@ -1,0 +1,3350 @@
+{
+	"info": {
+		"_postman_id": "baca2692-47a5-4766-af77-902b0c01b641",
+		"name": "iudx-onboarding-server-v5.0.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17194681"
+	},
+	"item": [
+		{
+			"name": "Get Tokens",
+			"item": [
+				{
+					"name": "Provider token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.environment.set(\"providerToken\", jsonData.results.accessToken);\r",
+									"postman.setEnvironmentVariable(\"providerToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{providerClientID}}"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{providerClientSecret}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"provider\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"auth-five",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RS Admin token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.environment.set(\"rsAdminToken\", jsonData.results.accessToken);\r",
+									"postman.setEnvironmentVariable(\"rsAdminToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{rsAdminClientID}}"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{rsAdminClientSecret}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"auth-five",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create Item",
+			"item": [
+				{
+					"name": "201 (success) - Create Owner item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");",
+									"    pm.expect(body.results).to.have.property(\"id\");",
+									"    const ID = body.results.id;",
+									"    pm.globals.set(\"owner_id_test\", ID);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Owner\"\n    ],\n    \"name\": \"IudxOwnerForTestSuite\",\n    \"description\": \"owner item for test suite\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item/",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create COS item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");",
+									"    pm.expect(body.results).to.have.property(\"id\");",
+									"    const ID = body.results.id;",
+									"    pm.globals.set(\"cos_id_test\", ID);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:COS\"\n    ],\n    \"name\": \"cos-item-for-test-suite\",\n    \"description\": \"Cos item created for test suite\",\n    \"owner\": \"{{owner_id_test}}\",\n    \"cosURL\": \"api.example.cos.iudx.org.in\",\n    \"cosUI\": \"https://example.cat.iudx.org.in\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item/",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create DX Resource Server item entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"    pm.expect(body.results).to.have.property(\"id\");\r",
+									"    const ID = body.results.id;\r",
+									"    pm.globals.set(\"resource_server_id_test\", ID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceServer\"\n    ],\n    \"name\": \"Iudx ResourceServer For Test Suite\",\n    \"description\": \"Multi tenanted IUDX resource server for test suite\",\n    \"tags\": [\n        \"IUDX\",\n        \"Resource\",\n        \"Server\",\n        \"Platform\"\n    ],\n    \"cos\": \"{{cos_id_test}}\",\n    \"owner\": \"{{owner_id_test}}\",\n    \"resourceServerOrg\": {\n        \"name\": \"iudx\",\n        \"additionalInfoURL\": \"https://iudx.org.in\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IISc, Bangalore\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    77.570423,\n                    13.013945\n                ]\n            }\n        }\n    },\n    \"resourceServerRegURL\": \"rs.iudx.io\",\n    \"resourceAccessModalities\": [\n        {\n            \"type\": [\n                \"iudx:HTTPAccess\"\n            ],\n            \"protocol\": \"http\",\n            \"accessURL\": \"rs\",\n            \"port\": 8080\n        }\n    ],\n    \"location\": {\n        \"type\": \"Place\",\n        \"address\": \"IISc, Bangalore\",\n        \"geometry\": {\n            \"type\": \"Point\",\n            \"coordinates\": [\n                77.570423,\n                13.013945\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create DX Provider item entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"    pm.expect(body.results).to.have.property(\"id\");\r",
+									"    const ID = body.results.id;\r",
+									"    pm.globals.set(\"provider_id_test\", ID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{rsAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"provider-for-test-suite\",\n    \"resourceServer\": \"{{resource_server_id_test}}\",\n    \"description\": \"provider id for test suite\",\n    \"ownerUserId\": \"b2c27f3f-2524-4a84-816e-91f9ab23f837\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create DX Resource Group item entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"    pm.expect(body.results).to.have.property(\"id\");\r",
+									"    const ID = body.results.id;\r",
+									"    pm.globals.set(\"resource_group_id_test\", ID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceGroup\",\n        \"iudx:IssueReporting\"\n    ],\n    \"name\": \"rg-for-test-suite\",\n    \"description\": \"\",\n    \"tags\": [\n        \"example-tags\"\n    ],\n    \"provider\": \"{{provider_id_test}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create DX Resource item entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"    pm.expect(body.results).to.have.property(\"id\");\r",
+									"    const ID = body.results.id;\r",
+									"    pm.globals.set(\"resource_item_id_test\", ID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"name\": \"ri-for-test-suite\",\n    \"label\": \"\",\n    \"description\": \"\",\n    \"tags\": [\n        \"example-tags\"\n    ],\n    \"apdURL\": \"apd.test.iudx.io\",\n    \"accessPolicy\": \"OPEN\",\n    \"provider\": \"{{provider_id_test}}\",\n    \"resourceGroup\": \"{{resource_group_id_test}}\",\n    \"resourceServer\": \"{{resource_server_id_test}}\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid Schema) - Create DX Resource item entity Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\n    \"description\": \"The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\n    \"tags\": [\n        \"Wi-Fi\",\n        \"Wi-Fi zone\",\n        \"hotspot\",\n        \"internet\",\n        \"Wi-Fi access\",\n        \"Wi-Fi location\",\n        \"wireless internet\",\n        \"internet access\"\n    ],\n    \"provider\": \"{{provider_id}}\"\n    \"resourceGroup\": \"{{resource_group_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (Invalid JWT credentials) - Create DX Resource item entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"description\": \"provider id for uuid test\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"resourceServer\": \"{{resource_server_id_test}}\",\n    \"ownerUserId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"_summary\": \"uuid-test provider id for uuid test \"\n}"
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Update Item",
+			"item": [
+				{
+					"name": "200 (success)- Update Owner item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Owner\"\n    ],\n    \"name\": \"IudxOwnerForTestSuite\",\n    \"description\": \"owner item for test\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success)- Update COS item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:COS\"\n    ],\n    \"name\": \"cos-item-for-test-suite\",\n    \"id\": \"{{cos_id_test}}\",\n    \"owner\": \"{{owner_id_test}}\",\n    \"description\": \"COS for test\",\n    \"cosURL\": \"api.example.cos.iudx.org.in\",\n    \"cosUI\": \"https://example.cat.iudx.org.in\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success)- Update Resource Server DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceServer\"\n    ],\n    \"name\": \"Iudx ResourceServer For Test Suite\",\n    \"description\": \"Multi tenanted IUDX resource server for test suite\",\n    \"tags\": [\n        \"IUDX\",\n        \"Resource\",\n        \"Server\",\n        \"Platform\"\n    ],\n    \"cos\": \"{{cos_id_test}}\",\n    \"owner\": \"{{owner_id_test}}\",\n    \"resourceServerOrg\": {\n        \"name\": \"iudx\",\n        \"additionalInfoURL\": \"https://iudx.org.in\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IISc, Bangalore\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    77.570423,\n                    13.013945\n                ]\n            }\n        }\n    },\n    \"resourceServerRegURL\": \"rs.iudx.io\",\n    \"resourceAccessModalities\": [\n        {\n            \"type\": [\n                \"iudx:HTTPAccess\"\n            ],\n            \"protocol\": \"http\",\n            \"accessURL\": \"rs\",\n            \"port\": 8080\n        }\n    ],\n    \"location\": {\n        \"type\": \"Place\",\n        \"address\": \"IISc, Bangalore\",\n        \"geometry\": {\n            \"type\": \"Point\",\n            \"coordinates\": [\n                77.570423,\n                13.013945\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success)- Update Provider DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{rsAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"provider-for-test-suite\",\n    \"resourceServer\": \"{{resource_server_id_test}}\",\n    \"description\": \"provider id for test suite\",\n    \"ownerUserId\": \"b2c27f3f-2524-4a84-816e-91f9ab23f837\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success)- Update Resource Group DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"@context\": \"https://voc.iudx.org.in/\",\r\n    \"type\": [\r\n        \"iudx:ResourceGroup\",\r\n        \"iudx:IssueReporting\"\r\n    ],\r\n    \"name\": \"rg-for-test-suite\",\r\n    \"id\": \"{{resource_group_id_test}}\",\r\n    \"description\": \"\",\r\n    \"tags\": [\r\n        \"example-tags\"\r\n    ],\r\n    \"provider\": \"{{provider_id_test}}\",\r\n    \"resourceServer\": \"{{resource_server_id_test}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success)- Update Resource Item DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"@context\": \"https://voc.iudx.org.in/\",\r\n    \"type\": [\r\n        \"iudx:Resource\",\r\n        \"iudx:PointOfInterest\"\r\n    ],\r\n    \"name\": \"ri-for-test-suite\",\r\n    \"label\": \"\",\r\n    \"description\": \"\",\r\n    \"tags\": [\r\n        \"example-tags\"\r\n    ],\r\n    \"apdURL\": \"apd.test.iudx.io\",\r\n    \"accessPolicy\": \"OPEN\",\r\n    \"provider\": \"{{provider_id_test}}\",\r\n    \"resourceGroup\": \"{{resource_group_id_test}}\",\r\n    \"resourceServer\": \"{{resource_server_id_test}}\",\r\n    \"id\": \"{{resource_item_id_test}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid schema)- Update Resource Item DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n         \"@context\": \"https://voc.iudx.org.in/\",\r\n          \"type\": [\r\n            \"iudx:Resource\",\r\n            \"iudx:PointOfInterest\"\r\n          ],\r\n          \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\r\n          \"description\": \"updated The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\r\n          \"tags\": [\r\n            \"Wi-Fi\",\r\n            \"Wi-Fi zone\",\r\n            \"hotspot\",\r\n            \"internet\",\r\n            \"Wi-Fi access\",\r\n            \"Wi-Fi location\",\r\n            \"wireless internet\",\r\n            \"internet access\"\r\n          ],\r\n          \"provider\": \"{{provider_id}}\",\r\n          \"resourceGroup\": \"{{resource_group_id}}\",\r\n          \"id\":\"{{resource_item_id}}\"\r\n        }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid jwt credentials)- Update Resource Item DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"@context\": \"https://voc.iudx.org.in/\",\r\n    \"type\": [\r\n        \"iudx:Resource\",\r\n        \"iudx:PointOfInterest\"\r\n    ],\r\n    \"name\": \"wifi-locations\",\r\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\r\n    \"description\": \"updated The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\r\n    \"tags\": [\r\n        \"Wi-Fi\",\r\n        \"Wi-Fi zone\",\r\n        \"hotspot\",\r\n        \"internet\",\r\n        \"Wi-Fi access\",\r\n        \"Wi-Fi location\",\r\n        \"wireless internet\",\r\n        \"internet access\"\r\n    ],\r\n    \"apdURL\": \"apd.test.iudx.io\",\r\n    \"accessPolicy\": \"OPEN\",\r\n    \"resourceServer\": \"{{resource_server_id_test}}\",\r\n    \"provider\": \"{{provider_id_test}}\",\r\n    \"resourceGroup\": \"{{resource_group_id}}\",\r\n    \"id\": \"{{resource_item_id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found)- Update Resource Item DX entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"@context\": \"https://voc.iudx.org.in/\",\r\n    \"type\": [\r\n        \"iudx:Resource\",\r\n        \"iudx:PointOfInterest\"\r\n    ],\r\n    \"name\": \"ri-for-test-suite-fail\",\r\n    \"label\": \"\",\r\n    \"description\": \"\",\r\n    \"tags\": [\r\n        \"example-tags\"\r\n    ],\r\n    \"apdURL\": \"apd.test.iudx.io\",\r\n    \"accessPolicy\": \"OPEN\",\r\n    \"provider\": \"{{provider_id_test}}\",\r\n    \"resourceGroup\": \"{{resource_group_id_test}}\",\r\n    \"resourceServer\": \"{{resource_server_id_test}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get item",
+			"item": [
+				{
+					"name": "200 - Get Owner at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{owner_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{owner_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Owner at Uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{owner_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{owner_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Owner at Onboarding",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id={{owner_id_test}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{owner_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Cos at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{cos_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{cos_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Cos at Uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{cos_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{cos_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource Server at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource Server at uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Provider at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{provider_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{provider_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Provider at Uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{provider_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{provider_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource Group at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{resource_group_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_group_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource Group at Uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{resource_group_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_group_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource at Cos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{cosCatalogue}}{{base}}/item?id={{resource_item_id_test}}",
+							"host": [
+								"{{cosCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_item_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - Get Resource at Uac",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.ok;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",\"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{uacCatalogue}}{{base}}/item?id={{resource_item_id_test}}",
+							"host": [
+								"{{uacCatalogue}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_item_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete Item",
+			"item": [
+				{
+					"name": "404 (not found) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:ItemNotFound\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4-efacdce02777"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid jwt credentials) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "jwt",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid syntax) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id=304039a1-c6b6-361a-8ef4",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "304039a1-c6b6-361a-8ef4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Out of turn) - Delete Resource Server",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Resource Item DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id={{resource_item_id_test}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_item_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Resource Group Item DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}{{base}}/item?id={{resource_group_id_test}}",
+							"host": [
+								"{{localhost}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_group_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Provider DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{rsAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}{{base}}/item?id={{provider_id_test}}",
+							"host": [
+								"{{localhost}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{provider_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Resource Server DX Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{localhost}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Cos item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}{{base}}/item?id={{cos_id_test}}",
+							"host": [
+								"{{localhost}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{cos_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Owner item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{localhost}}{{base}}/item?id={{owner_id_test}}",
+							"host": [
+								"{{localhost}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{owner_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mlayer Instance",
+			"item": [
+				{
+					"name": "Create Instance",
+					"item": [
+						{
+							"name": "201 (Success) Create Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"    pm.expect(body.results[0]).to.have.property(\"id\");\r",
+											"    const ID = body.results[0].id;\r",
+											"    pm.globals.set(\"instance_id\", ID);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {}
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 (Invalid Schema) Create Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"coverrr\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 (Invalid JWT Token) Create Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Instance",
+					"item": [
+						{
+							"name": "200(Success) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400(Invalid Schema) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"nahhhme\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(invalid JWT token) Update Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get Instance",
+					"item": [
+						{
+							"name": "200(Success) Get Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete Instance",
+					"item": [
+						{
+							"name": "200(Success) Delete Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{catAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(Invalid JWT Token) Delete Instance",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									}
+								],
+								"url": {
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"instance"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{instance_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Mlayer Domain",
+			"item": [
+				{
+					"name": "Create Domain",
+					"item": [
+						{
+							"name": "201 (Success) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(201);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"    pm.expect(body.results[0]).to.have.property(\"id\");\r",
+											"    const ID = body.results[0].id;\r",
+											"    pm.globals.set(\"domain_id\", ID);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {}
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400 (Invalid Schema) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"descriptionn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401 (Invalid JWT Token) Create Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Domain",
+					"item": [
+						{
+							"name": "200(Success) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "400(Invalid Schema) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSchema\");\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"descriptionnn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(invalid JWT token) Update Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
+								},
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get Domain",
+					"item": [
+						{
+							"name": "200(Success) Get Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200(Success) Get Domain at Cos",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{cosCatalogue}}{{base}}/internal/ui/domain?id={{domain_id}}",
+									"host": [
+										"{{cosCatalogue}}{{base}}"
+									],
+									"path": [
+										"internal",
+										"ui",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200(Success) Get Domain at Uac",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{uacCatalogue}}{{base}}/internal/ui/domain?id={{domain_id}}",
+									"host": [
+										"{{uacCatalogue}}{{base}}"
+									],
+									"path": [
+										"internal",
+										"ui",
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete Domain",
+					"item": [
+						{
+							"name": "200(Success) Delete Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "{{cosAdminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "401(Invalid JWT Token) Delete Domain",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Response status\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response header\", function () {\r",
+											"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Check response body\", function () {    \r",
+											"    const body = pm.response.json();\r",
+											"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "token",
+										"value": "abc"
+									}
+								],
+								"url": {
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"host": [
+										"{{host}}{{base}}"
+									],
+									"path": [
+										"domain"
+									],
+									"query": [
+										{
+											"key": "id",
+											"value": "{{domain_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

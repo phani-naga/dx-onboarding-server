@@ -53,6 +53,7 @@ public class LocalCatImpl implements CatalogueService {
               LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
+              LOGGER.debug("here 1");
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             ; // Fail the promise with the failure cause
