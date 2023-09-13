@@ -68,16 +68,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/successResponseWithObjects'
-              examples:
-                Create Success:
-                  value:
-                    type: 'urn:dx:cat:Success'
-                    results:
-                      id: uuid
-                      type: [ ]
-                      name: wifi-location ...
-                    title: 'urn:dx:cat:Success'
+                oneOf:
+                  - $ref: '#/components/schemas/successResponseWithObjects'
+                  - $ref: '#/components/schemas/successResponseForRgOnboarding'
         '400':
           description: Invalid document
           content:
@@ -748,135 +741,53 @@ components:
             name: wifi-location
             type:
               - 'iudx:Resource'
-    errorResponseForDiscovery:
+    successResponseForRgOnboarding:
       type: object
-      title: Root Type for Discovery APIs
-      description: 'Standard Error Response for the search, count and geo queries'
+      title: Root Type for resource group onboarding
+      description: Standard Response for all requests
       properties:
-        type:
-          type: string
-          description: |
-            Type of the response indicating if the query was successful or if any errors have been triggered.
-        title:
-          description: A human readable title to the message response.
-        detail:
-          type: string
-          description: Detailed description of the type or response
-      required:
-        - type
-      example:
-        type: <error urn>
-        title: <error title
-        detail: <error detail description>
-    successResponseForGeoLocations:
-      type: object
-      title: Response for get geolocations
-      description: Example response for a geocoding API
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
         results:
           type: array
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 3
-        results:
-          - name: Mallesvaram
-            country: India
-            region: Karnataka
-            county: Bangalore
-            locality: Bangalore
-            borough: West Bangalore
-            bbox:
-              - 77.563072
-              - 12.968362
-              - 77.573072
-              - 12.978362
-    listTypesSuccessResponse:
-      type: object
-      title: Response for list with instance type
-      description: Example response for list types
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 5
-        results:
-          - pune
-          - stqc
-          - surat
-    listTypesErrorResponse:
-      type: object
-      title: Response for bad request
-      description: Invalid item type in the given request
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the item type sent in request path param is invalid
-        title:
-          description: A human readable title to the message response
         detail:
           type: string
           description: Detailed description of the type or response
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:InvalidSyntax'
-        title: Invalid Syntax
-        detail: Wrong Item Type
-    invalidIdErrorResponse:
-      type: object
-      title: Invalid ID
-      properties:
         type:
           type: string
           description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
+            URN type of the response indicating if the query was successful or if any errors have been triggered.
         title:
           type: string
           description: A human readable title to the message response.
-        detail:
-          type: string
-          description: Detailed description of the type or response
       example:
-        type: 'urn:dx:cat:InvalidUUID'
-        title: Invalid syntax of uuid
-        detail: The id is invalid
+        type: Success
+        results:
+          item_details:
+            '@context': https://voc.iudx.org.in/
+            type:
+              - iudx:ResourceGroup
+              - iudx:IssueReporting
+            name: rg-for-test-suite
+            description: ''
+            tags:
+              - example-tags
+            provider: 05d3f01b-d2f1-36ac-ab09-36a7ae9d997c
+            ownerUserId: b2c27f3f-2524-4a84-816e-91f9ab23f837
+            cos: 35d8e0a3-3a33-3a11-908f-f06bd1f678db
+            id: bc41c6e1-3c41-337f-8736-2027b8f61bc8
+            itemStatus: ACTIVE
+            itemCreatedAt: 2023-09-14T12:14:51+0530
+            _summary: 'rg-for-test-suite example-tags  '
+          adapter_details:
+            username: b2c27f3f-2524-4a84-816e-91f9ab23f837
+            apiKey: Use the apiKey returned on registration, if lost please use /resetPassword API
+            id: bc41c6e1-3c41-337f-8736-2027b8f61bc8
+            URL: databroker.iudx.io
+            port: 24567
+            vHost: IUDX
+
     errorResponseForGetEntity:
       type: object
       title: Root Type for standardResponse
@@ -1339,8 +1250,6 @@ components:
         detail:
           type: string
           description: Detailed description of the type or response
-        required:
-          - type
       example:
         type: 'urn:dx:cat:InvalidSchema'
         title: Invalid Schema
@@ -1360,8 +1269,6 @@ components:
         detail:
           type: string
           description: Detailed description of the type or response
-        required:
-          - type
       example:
         type: urn:dx:cat:LinkValidationFailed
         title: Link Validation Failed
@@ -1402,18 +1309,18 @@ components:
       type: object
       title: Document not found
       properties:
-       type:
-        type: string
-        description: |
-          Type of the response indicating if the query was successful or if any errors have been triggered.
-       title:
-        type: string
-        description: A human readable title to the message response.\
-       results:
-        type: array
-        description: Results which matched the query. This is an array of objects.
-        items:
-          type: object
+        type:
+          type: string
+          description: |
+            Type of the response indicating if the query was successful or if any errors have been triggered.
+        title:
+          type: string
+          description: A human readable title to the message response.\
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
       description: Update Item Not Found
       example:
         type: urn:dx:cat:ItemNotFound
@@ -1817,510 +1724,6 @@ components:
         type: 'urn:dx:cat:InvalidAuthorizationToken'
         title: Token is invalid
         detail: 'failed to decode/validate jwt token : Invalid format for JWT'
-    relSearchErrorResponse:
-      type: object
-      title: Response for bad request
-      description: Invalid value in the query param
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the syntax in request query param is invalid
-        title:
-          description: A human readable title to the message response
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:InvalidSyntax'
-        title: Invalid Syntax
-    successResponseForRelationship:
-      type: object
-      title: Response for relationship search - Get resourceGroup for resource
-      description: Given the type of relationship is Provider mentioned in query param
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          type: string
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 1
-        results:
-          - '@context': 'https://voc.iudx.org.in/'
-            type:
-              - 'iudx:ResourceGroup'
-              - 'iudx:IssueReporting'
-            name: agra-swachhata-apps
-            description: 'Civic Issues like open defecation, garbage dumping, etc., reported in Agra city via Swachhata app. Publishes all the complaints/issues lodged on the current day, on a daily basis.'
-            tags:
-              - swachhata
-              - complaints
-              - reporting
-              - issue
-              - garbage dump
-              - debris removal
-              - open defecation
-              - construction material
-              - requests
-            provider: '{{UUID}}'
-    successResponseForRelationship2:
-      type: object
-      title: Response for relationship search - Get all parents for resourceGroup
-      description: Given the type of relationship is Provider mentioned in query param
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          type: string
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 4
-        results:
-          - '@context': 'https://voc.iudx.org.in/'
-            type:
-              - 'iudx:ResourceGroup'
-              - 'iudx:IssueReporting'
-            name: agra-swachhata-apps
-            description: 'Civic Issues like open defecation, garbage dumping, etc., reported in Agra city via Swachhata app. Publishes all the complaints/issues lodged on the current day, on a daily basis.'
-            tags:
-              - swachhata
-              - complaints
-              - reporting
-              - issue
-              - garbage dump
-              - debris removal
-              - open defecation
-              - construction material
-              - requests
-            provider: '{{UUID}}'
-          - '@context': 'https://voc.iudx.org.in/'
-            type:
-              - 'iudx:Provider'
-            name: IudxProvider
-            resourceServer: '{{UUID}}'
-            description: provider id for uuid test
-            providerUserId: UUID
-            providerOrg:
-              name: Datakaveri
-              additionalInfoURL: 'https://datakaveri.org'
-              location:
-                type: Place
-                address: IIsc
-                geometry:
-                  type: Point
-                  coordinates:
-                    - 75.92
-                    - 14.5
-          - '@context': 'https://voc.iudx.org.in/'
-            type:
-              - 'iudx:ResourceServer'
-            name: Iudx ResourceServer
-            description: Multi tenanted IUDX resource server
-            tags:
-              - IUDX
-              - Resource
-              - Server
-              - Platform
-            cos: 26d33603-c0bb-4ea0-85f8-4017020597ce
-            owner: 37d33603-c0bb-4ea0-85f8-4017031686df
-            resourceServerOrg:
-              name: iudx
-              additionalInfoURL: 'https://iudx.org.in'
-              location:
-                type: Place
-                address: 'IISc, Bangalore'
-                geometry:
-                  type: Point
-                  coordinates:
-                    - 77.570423
-                    - 13.013945
-            resourceServerRegURL: example.iudx.io
-            resourceAccessModalities:
-              - protocol: http
-                accessURL: rs
-                type:
-                  - 'iudx:HTTPAccess'
-              - protocol: amqps
-                accessURL: databroker
-                type:
-                  - 'iudx:StreamingAccess'
-              - protocol: ftp
-                accessURL: file
-                type:
-                  - 'iudx:FileAccess'
-            location:
-              type: Place
-              address: 'IISc, Bangalore'
-              geometry:
-                type: Point
-                coordinates:
-                  - 77.570423
-                  - 13.013945
-          - '@context': 'https://voc.iudx.org.in/'
-            type:
-              - 'iudx:COS'
-            name: cos.cop.iudx.org.in
-            owner: <owner-id>
-            description: COS Smart Kalyan-Dombivli Development Corporation Limited
-            cosURL: kdmc.cop-nec.iudx.org.in
-            cosUI: 'https://catalogue.kdmc.cop-nec.iudx.org.in/'
-    errorResponseForRelationship:
-      type: object
-      title: Indicates bad request
-      description: Error response due to invalid query param
-      properties:
-        type:
-          type: string
-          description: |
-            Error response due to invalid query param in the request
-        title:
-          description: A human readable title to the message response
-      required:
-        - type
-    successResponseCreateInstance:
-      type: object
-      title: Response for list with instance type
-      description: Example response for list types
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        results:
-          - id: Bengaluru
-            method: insert
-            title: 'urn:dx:cat:Success'
-    errorResponseForCreateInstance:
-      type: object
-      title: Response for bad request
-      description: Invalid id in query param
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the id sent in request is invalid
-        title:
-          description: A human readable title to the message response
-        detail:
-          type: string
-          description: Detailed description of the type or response
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:InvalidSyntax'
-        title: Invalid Syntax
-        detail: id not present in the request
-    successResponseForGetInstance:
-      type: object
-      title: Response for getting instance
-      description: Example success response for getting DX Catalogue instances
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 9
-        results:
-          - '10'
-          - abcd
-          - bengaluru
-          - mumbai
-          - poone
-          - pune
-          - stqc
-          - surat
-    successResponseForDeleteInstance:
-      type: object
-      title: Response for list with instance type
-      description: Example response for list types
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered
-        title:
-          type: string
-          description: A human readable title to the message response
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          - id: Bengaluru
-            method: delete
-            title: 'urn:dx:cat:Success'
-    errorResponseForDeleteInstance:
-      type: object
-      title: Response for bad request
-      description: Invalid item type in the given request
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the item type sent in request path param is invalid
-        title:
-          description: A human readable title to the message response
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:ItemNotFound'
-        title: Item is not found
-        results:
-          - id: Abcd
-            method: delete
-            title: failed
-            detail: 'Fail: Doc doesn''t exist, can''t delete'
-    exampleRating:
-      type: object
-      title: Root Type for exampleRating
-      description: An example rating object for a resource
-      properties:
-        rating:
-          type: number
-        comment:
-          type: string
-      example:
-        rating: 4.3
-        comment: some-comment
-    successResponseForConsumerRating:
-      type: object
-      title: Response for list with instance type
-      description: Example response for list types
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered
-        title:
-          type: string
-          description: A human readable title to the message response
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          - id: b8e43a3895373412725cd557730bcf8c6c60019b8092761a66248a927784cfbe
-            method: insert
-            title: 'urn:dx:cat:Success'
-    errorResponseForConsumerRating:
-      type: object
-      title: Response for bad request
-      description: Invalid item type in the given request
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the item type sent in request path param is invalid
-        title:
-          description: A human readable title to the message response
-        detail:
-          type: string
-          description: Detailed description of the type or response
-      required:
-        - type
-    successResponseForUpdateRating:
-      type: object
-      title: Response for update rating
-      description: Example response for consumer update rating
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered
-        title:
-          type: string
-          description: A human readable title to the message response
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          - id: b8e43a3895373412725cd557730bcf8c6c60019b8092761a66248a927784cfbe
-    errorResponseForUpdateRating:
-      type: object
-      title: Response for bad request
-      description: Invalid item type in the given request
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the item type sent in request path param is invalid
-        title:
-          description: A human readable title to the message response
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:InvalidSchema'
-        title: Invalid Schema
-    successResponseGetRating:
-      type: object
-      title: Success response for get rating
-      description: Example response for get ratings
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 1
-        results:
-          - rating: 4.8
-            id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
-    successResponseAvgRating:
-      type: object
-      title: Success response for average rating
-      description: Example response for get average ratings
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 6
-        results:
-          - id: datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053
-            totalRatings: '1'
-            average_rating: 4.099999904632568
-          - id: datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR057
-            totalRatings: '1'
-            average_rating: 4.599999904632568
-    successResponseForDeleteRatingObject:
-      type: object
-      title: Success response for delete rating object
-      description: Example response for delete rating object
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          - id: b8e43a3895373412725cd557730bcf8c6c60019b8092761a66248a927784cfbe
     exampleInstance:
       type: object
       title: Root Type for exampleInstance
@@ -2603,10 +2006,9 @@ components:
         results:
           - id: 3d73067f-2855-4155-b918-14d621b7a576
             detail: Domain deleted Successfully
-    successResponseForUIProvider:
+    invalidIdErrorResponse:
       type: object
-      title: Response for list of providers
-      description: Example success response for the User Interface Provider with ID
+      title: Invalid ID
       properties:
         type:
           type: string
@@ -2614,305 +2016,12 @@ components:
             URN type of the response indicating if the query was successful or if any errors have
             been triggered.
         title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 10
-        results:
-          - description: UI Test Provider-other
-            id: 9760a820-85b0-40df-b6b0-73d3d1848109
-    exampleReqBodyMapView:
-      type: object
-      title: Root Type for exampleReqBodyMapView
-      description: An example of requeted body of geoquery
-      properties:
-        id:
-          type: array
-          description: dataset_id's of resource group whose location is needed
-          items:
-            type: string
-        instance:
           type: string
-          description: name of the city/town from where the dataset belongs to
-      example:
-        id:
-          - 8b95ab80-2aaf-4636-a65e-7f2563d0d371
-          - 83c2e5c2-3574-4e11-9530-2b1fbdfce832
-        instance: surat
-    successResponseForGettingGeoquery:
-      type: object
-      title: Response for getting dataset locations.
-      description: Example success response for getting locations
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 3
-        results:
-          - instance: pune
-            location:
-              address: Agra
-              type: Place
-            label: Civic Issues Reported from Swachhata App in Agra city
-            id: datakaveri.org/b8bd3e3f39615c8ec96722131ae95056b5938f2f/rs.iudx.io/agra-swachhata-app
-            doc_id: 29JqFYUBeAMS8LEaZWtM
-    successResponseForGettingDatasets:
-      type: object
-      title: Response for getting dataset locations.
-      description: Example success response for getting datasets
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        totalHits:
-          type: integer
-          description: Total number of documents which matched the query.
-          format: int32
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        totalHits: 191
-        results:
-          - instance: pune
-            provider: 7b8ecc32-650f-485a-a0c8-64e340bb084f
-            label: Civic Issues Reported from Swachhata App in Agra city
-            id: b268d727-187d-4c78-a4c1-acde99b97ebb
-            accessPolicy: SECURE
-            tags:
-              - swachhata
-              - complaints
-              - reporting
-              - issue
-            icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/pune.jpg'
-            providerDescription: UI Test Provider-other
-            totalResources: 1
-    exampleReqBodyDataset:
-      type: object
-      title: Root Type for exampleReqBodyDataset
-      description: An example of requeted body of dataset API
-      properties:
-        id:
-          type: string
-          description: dataset_id of resource group that need to be retrieved
-        instance:
-          type: string
-          description: name of the city/town from where the dataset belongs to
-        domains:
-          type: array
-          description: domains consists of data models.
-      example:
-        id: 8b95ab80-2aaf-4636-a65e-7f2563d0d371
-        instance: surat
-        domains:
-          - flood
-          - env
-    successResponseForGettingDatasetResources:
-      type: object
-      title: Response for getting dataset locations based on the dataset_id.
-      description: Example success response for getting datasets based on dataset_id
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          - dataset:
-              provider:
-                id: datakaveri.org/b8bd3e3f39615c8ec96722131ae95056b5938f2f
-                description: UI Test Provider-other
-              id: datakaveri.org/b8bd3e3f39615c8ec96722131ae95056b5938f2f/rs.iudx.io/pune-env-aqm
-              label: Environment
-              description: 'Publishes realtime information of air pollutants from AQM sensors/ devices deployed in Pune city. It gives average values of air pollutant measures  like carbon monoxide, nitrogen dioxide, ozone, particulate matter etc., and also the associated environmental factors like temperature, humidity, illuminance over an time interval of 15 minutes. More details on the type of pollutant measured and units of measurement can be seen in the Data Descriptor.'
-              accessPolicy: OPEN
-              instance: pune
-              dataSample:
-                uv:
-                  avgOverTime: 0.81
-              dataSampleFile:
-                - relationType: REL_FILE
-                  hasObject: 'https://fs-sample-file-bucket.s3.ap-south-1.amazonaws.com/public-access/pune/pune-env-aqm.json'
-                  name: Pune air quality monitoring data sample
-                  description: Sample file for Air quality monitoring devices/sensors in Pune city
-              dataQualityFile:
-                - relationType: REL_FILE
-                  hasObject: 'https://fs-sample-file-bucket.s3.ap-south-1.amazonaws.com/public-access/pune/DataQuality/puneAQM_Jan22Feb22_DQReport.pdf'
-                  name: Pune AQM Data Quality Report Jan-Feb2022
-                  description: Data quality report file for Air quality monitoring devices/sensors in Pune city for the time range between Jan-Feb2022.
-              dataDescriptor:
-                uv:
-                  description: Describes instantaneous and/or aggregated values for Ultraviolet (UV) radiation.
-                  type:
-                    - TimeSeriesAggregation
-                  avgOverTime:
-                    dataSchema: 'iudx:Number'
-                    unitCode: C62
-                    description: Average value of UV radiation for the last 15 minutes
-                    type:
-                      - ValueDescriptor
-                schema: 'https://voc.iudx.org.in/EnvAQM'
-                totalResources: 1
-                instance_icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/pune.jpg'
-              resource:
-                - resourceId: datakaveri.org/b8bd3e3f39615c8ec96722131ae95056b5938f2f/rs.iudx.io/pune-env-aqm/c37c6979-6802-4a1c-c852-609b7706f5ba
-                  label: Environment
-                  description: Air quality monitoring devices (Bosch-Climo) in Pune city.
-                  dataSample: null
-                  dataDescriptor: null
-                  resourceType: null
-    errorResponseForObjectNotFound:
-      type: object
-      title: Response for bad request
-      description: Object with the given id is not found
-      properties:
-        type:
-          type: string
-          description: |
-            Indicates that the object belonging to the given id is not found.
-        title:
-          description: A human readable title to the message response
-        detail:
-          description: A human readable title to the message response saying the object is not present.
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:ItemNotFound'
-        title: Item is not found
-        detail: object belonging to Id requested is not present
-    successResponseForPopularDatasets:
-      type: object
-      title: Response for getting dataset locations.
-      description: Example success response for getting datasets
-      properties:
-        type:
-          type: string
-          description: |
-            URN type of the response indicating if the query was successful or if any errors have
-            been triggered.
-        title:
-          description: A human readable title to the message response.
-        results:
-          type: array
-          description: Results which matched the query. This is an array of objects.
-          items:
-            type: object
-      required:
-        - type
-      example:
-        type: 'urn:dx:cat:Success'
-        title: Success
-        results:
-          totalInstance: 4
-          totalDomain: 1
-          totalPublishers: 10
-          totalDatasets: 191
-          totalResources: 994
-          domains:
-            - icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/environment.png'
-              name: environment
-              description: Data Models that pertain to environment domain
-              label: Environment
-              domainId: 143db678-0816-4bb5-999d-b62ac0ca1b4b
-          instance:
-            - cover: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/agartala.jpg'
-              name: agartala
-              icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/agartala.jpg'
-          featuredDataset:
-            - itemCreatedAt: '2020-09-28T08:07:06+0530'
-              instance: surat
-              provider: Administrator of the IUDX platform
-              description: Realtime information for tracking public transit buses in Surat city.
-              label: Surat Realtime Bus Position Info
-              accessPolicy: SECURE
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
-              type:
-                - 'iudx:ResourceGroup'
-                - 'iudx:TransitManagement'
-              totalResources: 1
-              icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/surat.jpeg'
-          latestDataset:
-            - itemCreatedAt: '2023-03-09T09:08:20+0530'
-              instance: surveyofindia
-              provider: Administrator of the IUDX platform
-              description: 'GIS Layers for roads, railways, water bodies and streams, vegetation and surveyed buildings in Bangalore'
-              label: Features of interest in Bangalore
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/geoserver.iudx.io/bangalore_features_of_interest
-              accessPolicy: SECURE
-              type:
-                - 'iudx:ResourceGroup'
-                - 'iudx:FeaturesOfInterest'
-              totalResources: 6
-              icon: null
-    errorResponseForNlpSearch:
-      type: object
-      title: Root Type for standardResponse
-      description: Standard Response for all requests
-      properties:
-        type:
-          type: string
-          description: |
-            Type of the response indicating if the query was successful or if any errors have been triggered.
-        title:
           description: A human readable title to the message response.
         detail:
           type: string
           description: Detailed description of the type or response
-      required:
-        - type
       example:
-        type: 'urn:dx:cat:ItemNotFound'
-        title: Item is not found
-        detail: Failed to find coordinates
+        type: 'urn:dx:cat:InvalidUUID'
+        title: Invalid syntax of uuid
+        detail: The id is invalid

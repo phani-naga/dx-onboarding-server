@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "a209fe0e-7e15-4e76-918a-a2c9c441db34",
+		"_postman_id": "be8cb21b-f91b-48ca-99d6-cfff92f3ea86",
 		"name": "iudx-onboarding-server-v5.0.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "27217689"
+		"_exporter_id": "17194681"
 	},
 	"item": [
 		{
@@ -18,7 +18,7 @@
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
 									"pm.environment.set(\"token\", jsonData.results.accessToken);\r",
-									"postman.setEnvironmentVariable(\"token\", jsonData.results.accessToken);"
+									"postman.setEnvironmentVariable(\"providerToken\", jsonData.results.accessToken);"
 								],
 								"type": "text/javascript"
 							}
@@ -38,7 +38,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"cat-test.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"provider\"\n}",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"provider\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -46,10 +46,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"raw": "https://auth-five.iudx.io/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"authvertx",
+								"auth-five",
 								"iudx",
 								"io"
 							],
@@ -121,6 +121,122 @@
 			"name": "Create Item",
 			"item": [
 				{
+					"name": "201 (success) - Create Owner item Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");",
+									"    pm.expect(body.results).to.have.property(\"id\");",
+									"    const ID = body.results.id;",
+									"    pm.globals.set(\"owner_id\", ID);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Owner\"\n    ],\n    \"name\": \"IudxOwnerForTestSuite\",\n    \"description\": \"owner item for test suite\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item/",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (success) - Create COS item Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");",
+									"    pm.expect(body.results).to.have.property(\"id\");",
+									"    const ID = body.results.id;",
+									"    pm.globals.set(\"cos_id\", ID);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:COS\"\n    ],\n    \"name\": \"cos-item-for-test-suite\",\n    \"description\": \"Cos item created for test suite\",\n    \"owner\": \"{{owner_id_test}}\",\n    \"cosURL\": \"api.example.cos.iudx.org.in\",\n    \"cosUI\": \"https://example.cat.iudx.org.in\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/item/",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "201 (success) - Create DX Resource Server item entity",
 					"event": [
 						{
@@ -152,13 +268,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{catAdminToken}}",
+								"value": "{{cosAdminToken}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:ResourceServer\"\n          ],\n          \"name\": \"rs.iudx.io\",\n          \"description\": \"dummy  IUDX resource server\",\n          \"tags\": [\n            \"IUDX\",\n            \"Resource\",\n            \"Server\",\n            \"Platform\"\n          ],\n          \"owner\": \"fd47486b-3497-4248-ac1e-082e4d37a66c\",\n          \"resourceServerHTTPAccessURL\": \"cop.iudx.io\",\n          \"resourceServerOrg\":  {\n                    \"name\": \"iudx\",\n                    \"additionalInfoURL\": \"https://iudx.org.in\",\n                    \"location\": {\n                        \"type\": \"Place\",\n                        \"address\": \"IISc, Bangalore\",\n                        \"geometry\": {\n                            \"type\": \"Point\",\n                            \"coordinates\": [\n                                77.570423,\n                                13.013945\n                            ]\n                        }\n                    }\n                }\n        }",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceServer\"\n    ],\n    \"name\": \"Iudx ResourceServer For Test Suite\",\n    \"description\": \"Multi tenanted IUDX resource server for test suite\",\n    \"tags\": [\n        \"IUDX\",\n        \"Resource\",\n        \"Server\",\n        \"Platform\"\n    ],\n    \"cos\": \"{{cos_id}}\",\n    \"owner\": \"{{owner_id}}\",\n    \"resourceServerOrg\": {\n        \"name\": \"iudx\",\n        \"additionalInfoURL\": \"https://iudx.org.in\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IISc, Bangalore\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    77.570423,\n                    13.013945\n                ]\n            }\n        }\n    },\n    \"resourceServerRegURL\": \"rs.iudx.io\",\n    \"resourceAccessModalities\": [\n        {\n            \"type\": [\n                \"iudx:HTTPAccess\"\n            ],\n            \"protocol\": \"http\",\n            \"accessURL\": \"rs\",\n            \"port\": 8080\n        }\n    ],\n    \"location\": {\n        \"type\": \"Place\",\n        \"address\": \"IISc, Bangalore\",\n        \"geometry\": {\n            \"type\": \"Point\",\n            \"coordinates\": [\n                77.570423,\n                13.013945\n            ]\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -166,14 +282,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -212,13 +325,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{token}}",
+								"value": "{{rsAdminToken}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"description\": \"provider id for uuid test\",\n    \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"_summary\": \"uuid test provider id\"\n}",
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"provider-for-test-suite\",\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"description\": \"provider id for test suite\",\n    \"ownerUserId\": \"b2c27f3f-2524-4a84-816e-91f9ab23f837\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -226,14 +339,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -276,23 +386,20 @@
 							},
 							{
 								"key": "token",
-								"value": "{{token}}",
+								"value": "{{providerToken}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceGroup\",\n        \"iudx:IssueReporting\"\n    ],\n    \"name\": \"agra-swachhata-app\",\n    \"description\": \"Civic Issues like open defecation, garbage dumping, etc., reported in Agra city via Swachhata app. Publishes all the complaints/issues lodged on the current day, on a daily basis.\",\n    \"tags\": [\n        \"swachhata\",\n        \"complaints\",\n        \"reporting\",\n        \"issue\",\n        \"garbage dump\",\n        \"debris removal\",\n        \"open defecation\",\n        \"construction material\",\n        \"requests\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceServer\": \"{{resource_server_id}}\"\n}"
+							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:ResourceGroup\",\n        \"iudx:IssueReporting\"\n    ],\n    \"name\": \"rg-for-test-suite\",\n    \"description\": \"\",\n    \"tags\": [\n        \"example-tags\"\n    ],\n    \"provider\": \"{{provider_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -344,14 +451,11 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"name\": \"wifi-locations\",\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\n    \"description\": \"The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\n    \"tags\": [\n        \"Wi-Fi\",\n        \"Wi-Fi zone\",\n        \"hotspot\",\n        \"internet\",\n        \"Wi-Fi access\",\n        \"Wi-Fi location\",\n        \"wireless internet\",\n        \"internet access\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceGroup\": \"{{resource_group_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -400,14 +504,11 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Resource\",\n        \"iudx:PointOfInterest\"\n    ],\n    \"label\": \"Wi-Fi Locations in Pimpri-Chinchwad City\",\n    \"description\": \"The physical coordinates of Wi-Fi system locations in Pimpri-Chinchwad city.\",\n    \"tags\": [\n        \"Wi-Fi\",\n        \"Wi-Fi zone\",\n        \"hotspot\",\n        \"internet\",\n        \"Wi-Fi access\",\n        \"Wi-Fi location\",\n        \"wireless internet\",\n        \"internet access\"\n    ],\n    \"provider\": \"{{provider_id}}\",\n    \"resourceGroup\": \"{{resource_group_id}}\"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -456,14 +557,11 @@
 							"raw": "{\n    \"@context\": \"https://voc.iudx.org.in/\",\n    \"type\": [\n        \"iudx:Provider\"\n    ],\n    \"name\": \"uuid-test\",\n    \"description\": \"provider id for uuid test\",\n    \"providerOrg\": {\n        \"name\": \"Datakaveri\",\n        \"additionalInfoURL\": \"https://datakaveri.org\",\n        \"location\": {\n            \"type\": \"Place\",\n            \"address\": \"IIsc\",\n            \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    75.92,\n                    14.5\n                ]\n            }\n        }\n    },\n    \"resourceServer\": \"{{resource_server_id}}\",\n    \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n    \"_summary\": \"uuid-test provider id for uuid test \"\n}"
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -520,14 +618,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -578,14 +673,11 @@
 							"raw": "{\n          \"@context\": \"https://voc.iudx.org.in/\",\n          \"type\": [\n            \"iudx:Provider\"\n          ],\n          \"name\": \"uuid-test\",\n          \"description\": \"provider id for uuid test\",\n          \"id\": \"{{provider_id}}\",\n          \"resourceServer\": \"{{resource_server_id}}\",\n          \"providerOrg\": {\n            \"name\": \"Datakaveri\",\n            \"additionalInfoURL\": \"https://datakaveri.org\",\n            \"location\": {\n              \"type\": \"Place\",\n              \"address\": \"IIsc\",\n              \"geometry\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                  75.92,\n                  14.5\n                ]\n              }\n            }\n          },\n          \"providerKcId\": \"d8e46706-b9db-44e1-a9aa-e40839396b01\",\n          \"_summary\": \"uuid test provider id\"\n        }"
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -637,14 +729,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -696,14 +785,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -755,14 +841,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -814,14 +897,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -873,14 +953,11 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item",
+							"raw": "{{host}}{{base}}/item",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							]
 						}
@@ -923,14 +1000,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -974,14 +1048,11 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_item_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_item_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1035,14 +1106,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
+							"raw": "{{host}}{{base}}/item?id=304039a1-c6b6-361a-8ef4-efacdce02777",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1091,14 +1159,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1147,14 +1212,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id=304039a1-c6b6-361a-8ef4",
+							"raw": "{{host}}{{base}}/item?id=304039a1-c6b6-361a-8ef4",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1203,14 +1265,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_item_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_item_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1259,14 +1318,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_group_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_group_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1315,14 +1371,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{provider_id}}",
+							"raw": "{{host}}{{base}}/item?id={{provider_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1371,14 +1424,11 @@
 							}
 						],
 						"url": {
-							"raw": "localhost:8090/iudx/cat/v1/item?id={{resource_server_id}}",
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id}}",
 							"host": [
-								"localhost"
+								"{{host}}{{base}}"
 							],
-							"port": "8090",
 							"path": [
-								"ngsi-ld",
-								"v1",
 								"item"
 							],
 							"query": [
@@ -1446,14 +1496,11 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance",
+									"raw": "{{host}}{{base}}/instance",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									]
 								}
@@ -1502,14 +1549,11 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"coverrr\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance",
+									"raw": "{{host}}{{base}}/instance",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									]
 								}
@@ -1557,14 +1601,11 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance",
+									"raw": "{{host}}{{base}}/instance",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									]
 								}
@@ -1617,14 +1658,11 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1679,14 +1717,11 @@
 									"raw": "{\n   \"nahhhme\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1740,14 +1775,11 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1793,14 +1825,11 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1851,14 +1880,11 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1904,14 +1930,11 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -1981,14 +2004,11 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain",
+									"raw": "{{host}}{{base}}/domain",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									]
 								}
@@ -2037,14 +2057,11 @@
 									"raw": "{\n    \"descriptionn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain",
+									"raw": "{{host}}{{base}}/domain",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									]
 								}
@@ -2092,14 +2109,11 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain",
+									"raw": "{{host}}{{base}}/domain",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									]
 								}
@@ -2152,14 +2166,11 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									],
 									"query": [
@@ -2214,14 +2225,11 @@
 									"raw": "{\n    \"descriptionnn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -2275,14 +2283,11 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/instance?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/instance?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"instance"
 									],
 									"query": [
@@ -2328,14 +2333,11 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									],
 									"query": [
@@ -2386,14 +2388,11 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									],
 									"query": [
@@ -2439,14 +2438,11 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8090/iudx/cat/v1/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
 									"host": [
-										"localhost"
+										"{{host}}{{base}}"
 									],
-									"port": "8090",
 									"path": [
-										"ngsi-ld",
-										"v1",
 										"domain"
 									],
 									"query": [

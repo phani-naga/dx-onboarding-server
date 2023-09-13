@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
 import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.TOKEN;
 
@@ -69,24 +70,20 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                 })
                 .compose(createItemHandler -> {
                   String itemType = dxItemType(request.getJsonArray("type"));
+//                  Future<JsonObject> itemCreationFuture;
                   if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
                     String itemId = request.getString("id");
-                    JsonObject ingestionRequestBody = new JsonObject()
-                        .put("entities", new JsonArray().add(itemId));
-                    JsonObject ingestionResult = ingestionService.registerAdapter(ingestionRequestBody, token).result();
-                    JsonObject response = new JsonObject()
-                        .put("item_details", request)
-                        .put("amqp_details", ingestionResult);
-
-                    RespBuilder respBuilder = new RespBuilder()
-                        .withType("urn:dx:cat:Success")
-                        .withType("Success")
-                        .withResult(response);
-
-                    return Future.succeededFuture(respBuilder.getJsonResponse());
+                    return localCat.getRelatedEntity(itemId, "resourceServer", new JsonArray().add("resourceServerRegURL"))
+                        .compose(rsUrlResult -> {
+                          String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
+                          return Future.succeededFuture(resourceServerUrl);
+                        }).compose(rsUrl -> {
+                          return ingestionService.registerAdapter(rsUrl, request, token);
+                        });
                   } else {
-                    return Future.succeededFuture();
+                    return Future.succeededFuture(createItemHandler);
                   }
+//                  return itemCreationFuture;
                 }).onComplete(ar -> {
                   if (ar.succeeded()) {
                     asyncExecution.recordResult(ar.result());
