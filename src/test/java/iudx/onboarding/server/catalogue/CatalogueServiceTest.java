@@ -8,6 +8,7 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
+import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +38,9 @@ public class CatalogueServiceTest {
 
   @BeforeEach
   void setUp() {
+
+    IngestionService ingestionService = mock(IngestionService.class);
+
     JsonObject config =
         new JsonObject()
             .put("centralCatServerHost", "localhost")
@@ -50,7 +54,7 @@ public class CatalogueServiceTest {
       lenient().when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
       lenient().when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
       catalogueService =
-        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, config);
+        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, ingestionService,config);
   }
 
   @Test

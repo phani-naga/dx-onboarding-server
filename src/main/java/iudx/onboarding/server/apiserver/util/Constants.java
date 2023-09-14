@@ -18,6 +18,7 @@ public class Constants {
   public static final String HEADER_OPTIONS = "options";
   public static final String HEADER_PUBLIC_KEY = "publicKey";
   public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
+  public static final String MIME_APPLICATION_JSON = "application/json";
   public static final Set<String> ALLOWED_HEADERS =
     new HashSet<>(Arrays.asList(HEADER_ACCEPT, HEADER_TOKEN, HEADER_CONTENT_LENGTH,
       HEADER_CONTENT_TYPE, HEADER_HOST, HEADER_ORIGIN, HEADER_REFERER, HEADER_ALLOW_ORIGIN));

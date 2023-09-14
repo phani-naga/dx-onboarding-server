@@ -3,6 +3,7 @@ package iudx.onboarding.server.catalogue.service;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -134,6 +135,33 @@ public class LocalCatImpl implements CatalogueService {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             ; // Fail the promise with the failure cause
+          }
+        });
+    return promise.future();
+  }
+
+  public Future<JsonObject> getRelatedEntity(String id, String rel, JsonArray filter) {
+    Promise<JsonObject> promise = Promise.promise();
+
+    LOGGER.debug(filter);
+    catWebClient
+        .get(catPort, catHost, catBasePath.concat("/relationship"))
+        .addQueryParam("id", id)
+        .addQueryParam("rel", rel)
+        .addQueryParam("filter", filter.toString().replace("\"", ""))
+        .send(relatedEntityHandler -> {
+          LOGGER.debug(relatedEntityHandler.result().body().toJsonObject());
+          if (relatedEntityHandler.succeeded() && relatedEntityHandler.result().statusCode() == 200) {
+            LOGGER.debug(relatedEntityHandler.result().body());
+            promise.complete(relatedEntityHandler.result().body().toJsonObject());
+          } else {
+            Throwable cause = relatedEntityHandler.cause();
+            if (cause != null) {
+              LOGGER.info("Failure {}", relatedEntityHandler.cause());
+              promise.fail(cause);
+            } else {
+              promise.fail(relatedEntityHandler.result().bodyAsString());
+            }
           }
         });
     return promise.future();

@@ -6,12 +6,15 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.TimeoutHandler;
+import iudx.onboarding.server.apiserver.util.ExceptionHandler;
+import iudx.onboarding.server.apiserver.util.RespBuilder;
 import iudx.onboarding.server.catalogue.CatalogueUtilService;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
@@ -19,6 +22,7 @@ import iudx.onboarding.server.common.HttpStatusCode;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.stream.Stream;
 
 import static iudx.onboarding.server.apiserver.util.Constants.*;
@@ -75,6 +79,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Define the APIs, methods, endpoints and associated methods. */
 
+    ExceptionHandler exceptionHandler = new ExceptionHandler();
     router = Router.router(vertx);
     configureCorsHandler(router);
 
@@ -86,31 +91,23 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
     router.route().handler(TimeoutHandler.create(28000, 408));
 
-    /* NGSI-LD api endpoints */
-
     // item API
-    router.post(api.getOnboardingUrl()).handler(this::createItem);
-    router.get(api.getOnboardingUrl()).handler(this::getItem);
-    router.put(api.getOnboardingUrl()).handler(this::updateItem);
-    router.delete(api.getOnboardingUrl()).handler(this::deleteItem);
+    router.post(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::createItem);
+    router.get(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::getItem);
+    router.put(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::updateItem);
+    router.delete(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::deleteItem);
 
     // instance API
-    router.post(api.getInstanceUrl()).handler(this::createInstance);
-    router.delete(api.getInstanceUrl()).handler(this::deleteInstance);
-    router.put(api.getInstanceUrl()).handler(this::updateInstance);
-    router.get(api.getInstanceUrl()).handler(this::getAllInstance);
+    router.post(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::createInstance);
+    router.delete(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::deleteInstance);
+    router.put(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::updateInstance);
+    router.get(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::getAllInstance);
 
     // domain API
-    router.post(api.getDomainUrl()).handler(this::createDomain);
-    router.delete(api.getDomainUrl()).handler(this::deleteDomain);
-    router.put(api.getDomainUrl()).handler(this::updateDomain);
-    router.get(api.getDomainUrl()).handler(this::getDomain);
-
-    // adapter API
-    router.post(api.getIngestionUrl()).handler(this::registerAdapter);
-
-    // TODO : test URL - will be deleted later
-    router.post(api.getTokenUrl()).handler(this::handleTokenRequest);
+    router.post(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::createDomain);
+    router.delete(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::deleteDomain);
+    router.put(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::updateDomain);
+    router.get(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::getDomain);
 
     // documentation apis
     router.get("/apis/spec")
@@ -214,32 +211,26 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
   }
 
-  private void handleTokenRequest(RoutingContext routingContext) {
-    HttpServerResponse response = routingContext.response();
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    tokenService.createToken()
-        .onSuccess(successHandler -> {
-          response.setStatusCode(200)
-              .end(successHandler.toString());
-        })
-        .onFailure(failureHandler -> {
-          response.setStatusCode(400)
-              .end(failureHandler.getMessage());
-        });
-  }
-
   private void createItem(RoutingContext routingContext) {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerResponse response = routingContext.response();
-    JsonObject requestBody = routingContext.body().asJsonObject();
+    JsonObject requestBody;
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    try {
+      requestBody = routingContext.body().asJsonObject();
+    } catch (DecodeException e) {
+      response.setStatusCode(400)
+          .end(new RespBuilder()
+              .withType("urn:dx:cat:InvalidSchema")
+              .withTitle("Invalid Schema")
+              .withDetail("Invalid json payload").getResponse());
+      return;
+    }
     catalogueService
         .createItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             localItem -> {
               JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
-              LOGGER.debug(
-                  "item uploaded in local cat {}", itemBodyWithId);
 
               catalogueService
                   .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
@@ -260,7 +251,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onFailure(
             createLocalItemFailureHandler -> {
               LOGGER.info("Local Handler Failed {}", createLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, createLocalItemFailureHandler);
+              handleResponse(response, createLocalItemFailureHandler);
             });
   }
 
@@ -274,8 +265,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onSuccess(
             localItem -> {
               JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
-              LOGGER.debug(
-                  "item uploaded in local cat {}", itemBodyWithId);
 
               catalogueService
                   .updateItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
@@ -296,7 +285,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onFailure(
             updateLocalItemFailureHandler -> {
               LOGGER.info("Local Handler Failed {}", updateLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, updateLocalItemFailureHandler);
+              handleResponse(response, updateLocalItemFailureHandler);
             });
   }
 
@@ -312,16 +301,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             deleteLocalItemSuccessHandler -> {
-              LOGGER.debug(
-                  "item deleted in local cat {}", deleteLocalItemSuccessHandler.getJsonObject(RESULTS));
 
               catalogueService
                   .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       deleteCentralCatItemSuccess -> {
-                        LOGGER.debug(
-                            "item deleted in central cat {}",
-                            deleteCentralCatItemSuccess.getJsonArray(RESULTS));
                         response
                             .setStatusCode(200)
                             .end(
@@ -348,10 +332,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService.getItem(request.getParam(ID), CatalogueType.LOCAL)
         .onSuccess(
             getLocalItemSuccessHandler -> {
-              LOGGER.info("Response {}", getLocalItemSuccessHandler);
-              LOGGER.info(
-                  "item taken from local cat {}", getLocalItemSuccessHandler.getJsonArray(RESULTS));
-              // call only if response is 200 -success
               response
                   .setStatusCode(200)
                   .end(
@@ -362,7 +342,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             getLocalItemFailureHandler -> {
 
               LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, getLocalItemFailureHandler);
+              handleResponse(response, getLocalItemFailureHandler);
             });
   }
 
@@ -420,7 +400,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             getLocalItemFailureHandler -> {
 
               LOGGER.info("Handler Failed {}", getLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, getLocalItemFailureHandler);
+              handleResponse(response, getLocalItemFailureHandler);
             });
   }
 
@@ -458,7 +438,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             updateLocalItemFailureHandler -> {
               LOGGER.info(
                   "Local Handler Failed {}", updateLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, updateLocalItemFailureHandler);
+              handleResponse(response, updateLocalItemFailureHandler);
             });
   }
 
@@ -497,7 +477,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             deleteLocalItemFailureHandler -> {
               LOGGER.info(
                   "Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
-                handleResponse(response, deleteLocalItemFailureHandler);
+              handleResponse(response, deleteLocalItemFailureHandler);
             });
   }
 
@@ -637,26 +617,18 @@ public class ApiServerVerticle extends AbstractVerticle {
       response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
       response.setStatusCode(401).end(errorMessage);
-    } else if (errorMessage.contains( "urn:dx:cat:ItemNotFound")) {
-        response.setStatusCode(404).end(errorMessage);
+    } else if (errorMessage.contains("urn:dx:cat:ItemNotFound")) {
+      response.setStatusCode(404).end(errorMessage);
     } else if (errorMessage.contains("urn:dx:cat:InvalidSyntax")) {
-        response.setStatusCode(400).end(errorMessage);
+      response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains("urn:dx:cat:OperationNotAllowed")) {
-        response.setStatusCode(400).end(errorMessage);
+      response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains("urn:dx:cat:InvalidUUID")) {
-        response.setStatusCode(400).end(errorMessage);
+      response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains("urn:dx:cat:LinkValidationFailed")) {
-        response.setStatusCode(400).end(errorMessage);
-    }else {
+      response.setStatusCode(400).end(errorMessage);
+    } else {
       response.setStatusCode(500).end(errorMessage);
     }
   }
-
-  private void registerAdapter(RoutingContext routingContext) {}
-
-  private void updateAdapter(RoutingContext routingContext) {}
-
-  private void deleteAdapter(RoutingContext routingContext) {}
-
-  private void getAdapter(RoutingContext routingContext) {}
 }

@@ -34,6 +34,14 @@
       "keycloakSite": "{{protocol}}://{{keycloakHost}}:{{keycloakPort}}/auth/realms/{{keycloakRealm}}",
       "keycloakClientId": "auth.iudx.org.in",
       "keycloakClientSecret": "6ba618a0-06c6-49a0-a824-d5dfc6d025f3"
+    },
+    {
+      "id": "iudx.onboarding.server.ingestion.IngestionVerticle",
+      "isWorkerVerticle": false,
+      "verticleInstances": 1,
+      "resourceServerPort": 1234,
+      "resourceServerBasePath": ""
     }
+
   ]
 }
