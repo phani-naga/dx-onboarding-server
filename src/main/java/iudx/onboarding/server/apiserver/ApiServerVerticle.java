@@ -91,8 +91,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
     router.route().handler(TimeoutHandler.create(28000, 408));
 
-    /* NGSI-LD api endpoints */
-
     // item API
     router.post(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::createItem);
     router.get(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::getItem);
@@ -110,12 +108,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.delete(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::deleteDomain);
     router.put(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::updateDomain);
     router.get(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::getDomain);
-
-    // adapter API
-    router.post(api.getIngestionUrl()).failureHandler(exceptionHandler).handler(this::registerAdapter);
-
-    // TODO : test URL - will be deleted later
-    router.post(api.getTokenUrl()).failureHandler(exceptionHandler).handler(this::handleTokenRequest);
 
     // documentation apis
     router.get("/apis/spec")
@@ -217,20 +209,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       serverOptions.setSsl(false);
       port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
     }
-  }
-
-  private void handleTokenRequest(RoutingContext routingContext) {
-    HttpServerResponse response = routingContext.response();
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    tokenService.createToken()
-        .onSuccess(successHandler -> {
-          response.setStatusCode(200)
-              .end(successHandler.toString());
-        })
-        .onFailure(failureHandler -> {
-          response.setStatusCode(400)
-              .end(failureHandler.getMessage());
-        });
   }
 
   private void createItem(RoutingContext routingContext) {
@@ -652,18 +630,5 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       response.setStatusCode(500).end(errorMessage);
     }
-  }
-
-  private void registerAdapter(RoutingContext routingContext) {
-
-  }
-
-  private void updateAdapter(RoutingContext routingContext) {
-  }
-
-  private void deleteAdapter(RoutingContext routingContext) {
-  }
-
-  private void getAdapter(RoutingContext routingContext) {
   }
 }
