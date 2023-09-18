@@ -31,8 +31,8 @@ public class Api {
     onboardingUrl = new StringBuilder(dxApiBasePath).append(ONBOARDING_API);
     ingestionUrl = new StringBuilder(dxApiBasePath).append(INGESTION_API);
     tokenUrl = new StringBuilder(dxApiBasePath).append(TOKEN_API);
-    instanceUrl = new StringBuilder(dxApiBasePath).append(INSTANCE_API);
-    domainUrl = new StringBuilder(dxApiBasePath).append(DOMAIN_API);
+    instanceUrl = new StringBuilder(dxApiBasePath).append("/internal/ui").append(INSTANCE_API);
+    domainUrl = new StringBuilder(dxApiBasePath).append("/internal/ui").append(DOMAIN_API);
   }
 
   public String getOnboardingUrl() {
