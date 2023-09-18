@@ -2293,12 +2293,12 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance",
+									"raw": "{{host}}{{base}}/internal/ui/instance",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									]
 								}
 							},
@@ -2346,12 +2346,12 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"coverrr\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance",
+									"raw": "{{host}}{{base}}/internal/ui/instance",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									]
 								}
 							},
@@ -2394,12 +2394,12 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance",
+									"raw": "{{host}}{{base}}/internal/ui/instance",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									]
 								}
 							},
@@ -2451,12 +2451,12 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2510,12 +2510,12 @@
 									"raw": "{\n   \"nahhhme\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2568,12 +2568,12 @@
 									"raw": "{\n   \"name\": \"poonay\",\n   \"cover\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/poonay_cover.jpg\",\n   \"icon\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/poonay_icon.jpg\",\n   \"logo\": \"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/logo/poonay_logo.jpg\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2618,12 +2618,12 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2673,12 +2673,12 @@
 									}
 								],
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2723,12 +2723,12 @@
 									}
 								],
 								"url": {
-									"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/instance?id={{instance_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"instance"
+										"/internal/ui/instance"
 									],
 									"query": [
 										{
@@ -2797,12 +2797,12 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain",
+									"raw": "{{host}}{{base}}/internal/ui/domain",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									]
 								}
 							},
@@ -2850,12 +2850,12 @@
 									"raw": "{\n    \"descriptionn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain",
+									"raw": "{{host}}{{base}}/internal/ui/domain",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									]
 								}
 							},
@@ -2902,12 +2902,12 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain",
+									"raw": "{{host}}{{base}}/internal/ui/domain",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									]
 								}
 							},
@@ -2959,12 +2959,12 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.jpeg\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
@@ -3018,12 +3018,12 @@
 									"raw": "{\n    \"descriptionnn\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
@@ -3076,12 +3076,12 @@
 									"raw": "{\n    \"description\":\"Data Models that pertain to civic domain\",\n    \"icon\":\"https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/civic.png\",\n    \"label\":\"Civic\",\n    \"name\":\"domain name\"\n}"
 								},
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
@@ -3126,12 +3126,12 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
@@ -3275,12 +3275,12 @@
 									}
 								],
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
@@ -3325,12 +3325,12 @@
 									}
 								],
 								"url": {
-									"raw": "{{host}}{{base}}/domain?id={{domain_id}}",
+									"raw": "{{host}}{{base}}/internal/ui/domain?id={{domain_id}}",
 									"host": [
 										"{{host}}{{base}}"
 									],
 									"path": [
-										"domain"
+										"/internal/ui/domain"
 									],
 									"query": [
 										{
