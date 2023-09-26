@@ -5,6 +5,7 @@ import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.token.TokenService;
@@ -48,6 +49,33 @@ public class InconsistencyHandler {
               .onSuccess(successHandler -> {
                 asyncExecution.complete();
               }).onFailure(asyncExecution::recordException);
+        });
+
+    return Future.succeededFuture();
+  }
+
+  Future<Void> handleDeleteOfResourceGroup(final String id, final String token) {
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(listener -> LOGGER.info("Item deleted from local and central after ingestion fails"))
+        .onFailure(failureListener -> {
+          LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT DELETED AFTER INGESTION FAIL");
+        })
+        .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          localCat.deleteItem(id, token)
+              .compose(localHandler -> {
+                return tokenService.createToken();
+              }).compose(tokenHandler -> {
+                return centralCat.deleteItem(id, tokenHandler.getString("token"));
+              }).onComplete(completeHandler -> {
+                if(completeHandler.succeeded()) {
+                  asyncExecution.recordResult(completeHandler.result());
+                } else {
+                  asyncExecution.recordException(new DxRuntimeException(400,completeHandler.cause().getMessage()));
+                }
+              });
         });
 
     return Future.succeededFuture();

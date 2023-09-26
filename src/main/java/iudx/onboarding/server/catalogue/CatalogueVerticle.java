@@ -2,6 +2,7 @@ package iudx.onboarding.server.catalogue;
 
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
+import io.netty.channel.ConnectTimeoutException;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -39,7 +40,7 @@ public class CatalogueVerticle extends AbstractVerticle {
         .abortOn(e -> e instanceof UnknownHostException)
         .withBackoff(Duration.ofSeconds(5), Duration.ofSeconds(7), 1.1)
         .withMaxAttempts(3)
-        .onRetry(retryListener -> LOGGER.error("Operation on central failed... retrying"));
+        .onRetry(retryListener -> LOGGER.error("Operation failed... retrying"));
 
     catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, ingestionService, config());
     binder = new ServiceBinder(vertx);

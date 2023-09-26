@@ -7,8 +7,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
-import iudx.onboarding.server.apiserver.util.RespBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,11 +31,11 @@ public class IngestionServiceImpl implements IngestionService {
   }
 
   @Override
-  public Future<JsonObject> registerAdapter(String resourceServerUrl, JsonObject requestJson, String token) {
+  public Future<JsonObject> registerAdapter(String resourceServerUrl, String id, String token) {
     Promise<JsonObject> promise = Promise.promise();
 
     JsonObject ingestionRequestBody = new JsonObject()
-        .put("entities", new JsonArray().add(requestJson.getString("id")));
+        .put("entities", new JsonArray().add(id));
 
     rsWebClient
         .post(rsPort, resourceServerUrl, rsBasePath.concat("/ingestion"))
@@ -46,22 +44,18 @@ public class IngestionServiceImpl implements IngestionService {
         .sendJsonObject(ingestionRequestBody, responseHandler -> {
           if (responseHandler.succeeded() && responseHandler.result().statusCode() == 201) {
             JsonObject result = responseHandler.result().body().toJsonObject().getJsonArray("results").getJsonObject(0);
-
-            JsonObject response = new JsonObject()
-                .put("item_details", requestJson)
-                .put("adapter_details", result);
-
-            RespBuilder respBuilder = new RespBuilder()
-                .withType("urn:dx:cat:Success")
-                .withType("Success")
-                .withResult(response);
-            promise.complete(respBuilder.getJsonResponse());
+            promise.complete(result);
           } else {
             Throwable cause = responseHandler.cause();
             if (cause != null) {
+              LOGGER.debug("here 1");
+              LOGGER.debug(cause.getClass());
               promise.fail(cause);
             } else {
-              promise.fail(new DxRuntimeException(responseHandler.result().statusCode(), responseHandler.result().bodyAsString()));
+              LOGGER.debug("here 2");
+              LOGGER.debug(responseHandler.result().statusCode());
+              LOGGER.debug(responseHandler.result().body());
+              promise.fail(responseHandler.result().bodyAsString());
             }
           }
         });

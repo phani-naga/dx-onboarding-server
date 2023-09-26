@@ -1,12 +1,13 @@
 package iudx.onboarding.server.apiserver;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -23,6 +24,10 @@ import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static iudx.onboarding.server.apiserver.util.Constants.*;
@@ -216,43 +221,61 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody;
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    try {
-      requestBody = routingContext.body().asJsonObject();
-    } catch (DecodeException e) {
-      response.setStatusCode(400)
-          .end(new RespBuilder()
-              .withType("urn:dx:cat:InvalidSchema")
-              .withTitle("Invalid Schema")
-              .withDetail("Invalid json payload").getResponse());
-      return;
-    }
+    requestBody = routingContext.body().asJsonObject();
+    ResultContainer resultContainer = new ResultContainer();
+
     catalogueService
         .createItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
-        .onSuccess(
-            localItem -> {
-              JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
+        .compose(localItem -> {
+          JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
+          return catalogueService
+              .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL);
+        })
+        .compose(centralItem -> {
 
-              catalogueService
-                  .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      centralItem -> {
-                        response
-                            .setStatusCode(201)
-                            .end(
-                                centralItem
-                                    .toString());
-                      })
-                  .onFailure(centralCatItemFailure -> {
-                    // This is after 3 retries and delete of item from local
-                    // TODO: notify user to try again
-                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
-                  });
-            })
-        .onFailure(
-            createLocalItemFailureHandler -> {
-              LOGGER.info("Local Handler Failed {}", createLocalItemFailureHandler.getLocalizedMessage());
-              handleResponse(response, createLocalItemFailureHandler);
-            });
+          String itemType = dxItemType(centralItem.getJsonArray("type"));
+          if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+            resultContainer.result = new JsonObject().put("item_details", centralItem);
+            String itemId = centralItem.getString("id");
+            LOGGER.debug(itemId);
+            return catalogueService.adapterDetails(itemId, tokenHeadersMap.get(TOKEN));
+          } else {
+            resultContainer.result = centralItem;
+            return Future.succeededFuture();
+          }
+        }).compose(adapterHandler -> {
+          if (resultContainer.result.containsKey("item_details")) {
+            resultContainer.result.put("adapter_details", adapterHandler);
+          }
+          return Future.succeededFuture();
+        })
+        .onComplete(completeHandler -> {
+          if (completeHandler.succeeded()) {
+            RespBuilder respBuilder = new RespBuilder()
+                .withType("urn:dx:cat:Success")
+                .withTitle("Success")
+                .withResult(resultContainer.result);
+            response
+                .setStatusCode(201)
+                .end(
+                    respBuilder.getResponse());
+          } else {
+            response.setStatusCode(400)
+                .end(completeHandler.cause().getMessage());
+          }
+        });
+  }
+
+  private String dxItemType(JsonArray type) {
+    ArrayList<String> ITEM_TYPES =
+        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
+            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
+
+    Set<String> types =
+        new HashSet<String>(type.getList());
+    types.retainAll(ITEM_TYPES);
+
+    return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }
 
   private void updateItem(RoutingContext routingContext) {
@@ -306,6 +329,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                   .onSuccess(
                       deleteCentralCatItemSuccess -> {
+                        LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
                         response
                             .setStatusCode(200)
                             .end(
@@ -631,4 +655,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       response.setStatusCode(500).end(errorMessage);
     }
   }
+
+  final class ResultContainer {
+    JsonObject result;
+  }
+
 }

@@ -3,6 +3,7 @@ package iudx.onboarding.server.catalogue;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
+import io.netty.channel.ConnectTimeoutException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -59,36 +60,21 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
             LOGGER.warn("Failed to upload item to central");
             String id = request.getString(ID);
             Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(id, token));
-            promise.fail(handleFailure(listener.getException()));
+            promise.fail(listener.getException().getMessage());
           })
           .build();
 
       Failsafe.with(retryPolicy)
           .getAsyncExecution(asyncExecution -> {
-            tokenService.createToken().compose(adminToken -> {
+            tokenService.createToken()
+                .compose(adminToken -> {
                   return centralCat.createItem(request, adminToken.getString(TOKEN));
                 })
-                .compose(createItemHandler -> {
-                  String itemType = dxItemType(request.getJsonArray("type"));
-//                  Future<JsonObject> itemCreationFuture;
-                  if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
-                    String itemId = request.getString("id");
-                    return localCat.getRelatedEntity(itemId, "resourceServer", new JsonArray().add("resourceServerRegURL"))
-                        .compose(rsUrlResult -> {
-                          String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
-                          return Future.succeededFuture(resourceServerUrl);
-                        }).compose(rsUrl -> {
-                          return ingestionService.registerAdapter(rsUrl, request, token);
-                        });
-                  } else {
-                    return Future.succeededFuture(createItemHandler);
-                  }
-//                  return itemCreationFuture;
-                }).onComplete(ar -> {
+                .onComplete(ar -> {
                   if (ar.succeeded()) {
-                    asyncExecution.recordResult(ar.result());
+                    asyncExecution.recordResult(ar.result().getJsonObject(RESULTS));
                   } else {
-                    asyncExecution.recordException(ar.cause());
+                    asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
                   }
                 });
           });
@@ -107,16 +93,47 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     return promise.future();
   }
 
-  private String dxItemType(JsonArray type) {
-    ArrayList<String> ITEM_TYPES =
-        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
-            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
+  @Override
+  public Future<JsonObject> adapterDetails(String id, String token) {
+    Promise<JsonObject> promise = Promise.promise();
 
-    Set<String> types =
-        new HashSet<String>(type.getList());
-    types.retainAll(ITEM_TYPES);
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(successListener -> {
+          promise.complete((JsonObject) successListener.getResult());
+        })
+        .onFailure(listener -> {
+          LOGGER.warn("Failed to create adapter for resource group");
+          LOGGER.debug(listener.getException());
+          LOGGER.debug(listener.getResult());
+          LOGGER.debug(listener.getException().getMessage());
+          Future.future(f -> inconsistencyHandler.handleDeleteOfResourceGroup(id, token));
+          promise.fail(listener.getException().getMessage());
+        })
+        .build();
 
-    return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          localCat.getRelatedEntity(id, "resourceServer", new JsonArray().add("resourceServerRegURL"))
+              .compose(rsUrlResult -> {
+                String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
+                return Future.succeededFuture(resourceServerUrl);
+              }).compose(rsUrl -> {
+                return ingestionService.registerAdapter(rsUrl, id, token);
+              }).onComplete(ar -> {
+                if (ar.succeeded()) {
+                  asyncExecution.recordResult(ar.result());
+                } else {
+                  LOGGER.debug(ar.cause().getMessage());
+                  if (ar.cause() instanceof ConnectTimeoutException) {
+                    asyncExecution.recordException(ar.cause());
+                  } else {
+                    asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
+                  }
+                }
+              });
+        });
+
+    return promise.future();
   }
 
   @Override
@@ -425,6 +442,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
     RespBuilder respBuilder;
     if (cause instanceof DxRuntimeException) {
+      LOGGER.debug("here xx");
       respBuilder = new RespBuilder()
           .withType("urn:dx:cat:RuntimeException")
           .withTitle("Dx Runtime Exception")
@@ -634,4 +652,5 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
     return promise.future();
   }
+
 }

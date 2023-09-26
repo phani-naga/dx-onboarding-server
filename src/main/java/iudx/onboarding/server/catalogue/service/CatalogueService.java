@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import iudx.onboarding.server.catalogue.CatalogueServiceImpl;
 import iudx.onboarding.server.common.CatalogueType;
 
 @VertxGen

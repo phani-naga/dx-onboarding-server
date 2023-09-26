@@ -23,6 +23,7 @@ public interface CatalogueUtilService {
   Future<JsonObject> deleteDomain(final JsonObject request, final String token, CatalogueType catalogueType);
   Future<JsonObject> updateDomain(String id, final JsonObject request, final String token, CatalogueType catalogueType);
   Future<JsonObject> getDomain(final String request, CatalogueType catalogueType);
+  Future<JsonObject> adapterDetails(String id, String token);
   @GenIgnore
   static CatalogueUtilService createProxy(Vertx vertx, String address) {
     return new CatalogueUtilServiceVertxEBProxy(vertx, address);
