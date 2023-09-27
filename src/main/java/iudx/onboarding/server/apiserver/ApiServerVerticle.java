@@ -20,6 +20,7 @@ import iudx.onboarding.server.catalogue.CatalogueUtilService;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
+import iudx.onboarding.server.resourceserver.ResourceServerService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,6 +65,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String dxApiBasePath;
   private TokenService tokenService;
   private CatalogueUtilService catalogueService;
+  private ResourceServerService resourceServerService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -137,6 +139,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
     catalogueService = CatalogueUtilService.createProxy(vertx, CATALOGUE_ADDRESS);
+    resourceServerService = ResourceServerService.createProxy(vertx, RS_SERVICE_ADDRESS);
     /* Print the deployed endpoints */
     LOGGER.info("API server deployed on: " + port);
   }
@@ -238,7 +241,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             resultContainer.result = new JsonObject().put("item_details", centralItem);
             String itemId = centralItem.getString("id");
             LOGGER.debug(itemId);
-            return catalogueService.adapterDetails(itemId, tokenHeadersMap.get(TOKEN));
+            return resourceServerService.createAdapter(itemId, tokenHeadersMap.get(TOKEN));
           } else {
             resultContainer.result = centralItem;
             return Future.succeededFuture();

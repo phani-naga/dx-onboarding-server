@@ -48,13 +48,9 @@ public class IngestionServiceImpl implements IngestionService {
           } else {
             Throwable cause = responseHandler.cause();
             if (cause != null) {
-              LOGGER.debug("here 1");
               LOGGER.debug(cause.getClass());
               promise.fail(cause);
             } else {
-              LOGGER.debug("here 2");
-              LOGGER.debug(responseHandler.result().statusCode());
-              LOGGER.debug(responseHandler.result().body());
               promise.fail(responseHandler.result().bodyAsString());
             }
           }

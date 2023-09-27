@@ -54,7 +54,7 @@ public class CatalogueServiceTest {
       lenient().when(LocalCatImpl.catWebClient.delete(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
       lenient().when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
       catalogueService =
-        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, ingestionService,config);
+        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), null, config);
   }
 
   @Test

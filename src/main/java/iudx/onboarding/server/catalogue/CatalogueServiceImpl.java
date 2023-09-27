@@ -14,16 +14,13 @@ import iudx.onboarding.server.apiserver.util.RespBuilder;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
+import iudx.onboarding.server.common.InconsistencyHandler;
 import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
 import static iudx.onboarding.server.common.Constants.ID;
@@ -37,15 +34,13 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   private CentralCatImpl centralCat;
   private LocalCatImpl localCat;
   private InconsistencyHandler inconsistencyHandler;
-  private IngestionService ingestionService;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, IngestionService ingestionService, JsonObject config) {
+  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, JsonObject config) {
     this.tokenService = tokenService;
     this.retryPolicyBuilder = retryPolicyBuilder;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
     this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat, centralCat, retryPolicyBuilder);
-    this.ingestionService = ingestionService;
   }
 
   @Override
@@ -89,49 +84,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     } else {
       promise.fail("Invalid catalogue type");
     }
-
-    return promise.future();
-  }
-
-  @Override
-  public Future<JsonObject> adapterDetails(String id, String token) {
-    Promise<JsonObject> promise = Promise.promise();
-
-    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
-        .onSuccess(successListener -> {
-          promise.complete((JsonObject) successListener.getResult());
-        })
-        .onFailure(listener -> {
-          LOGGER.warn("Failed to create adapter for resource group");
-          LOGGER.debug(listener.getException());
-          LOGGER.debug(listener.getResult());
-          LOGGER.debug(listener.getException().getMessage());
-          Future.future(f -> inconsistencyHandler.handleDeleteOfResourceGroup(id, token));
-          promise.fail(listener.getException().getMessage());
-        })
-        .build();
-
-    Failsafe.with(retryPolicy)
-        .getAsyncExecution(asyncExecution -> {
-          localCat.getRelatedEntity(id, "resourceServer", new JsonArray().add("resourceServerRegURL"))
-              .compose(rsUrlResult -> {
-                String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
-                return Future.succeededFuture(resourceServerUrl);
-              }).compose(rsUrl -> {
-                return ingestionService.registerAdapter(rsUrl, id, token);
-              }).onComplete(ar -> {
-                if (ar.succeeded()) {
-                  asyncExecution.recordResult(ar.result());
-                } else {
-                  LOGGER.debug(ar.cause().getMessage());
-                  if (ar.cause() instanceof ConnectTimeoutException) {
-                    asyncExecution.recordException(ar.cause());
-                  } else {
-                    asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
-                  }
-                }
-              });
-        });
 
     return promise.future();
   }
@@ -442,7 +394,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
     RespBuilder respBuilder;
     if (cause instanceof DxRuntimeException) {
-      LOGGER.debug("here xx");
       respBuilder = new RespBuilder()
           .withType("urn:dx:cat:RuntimeException")
           .withTitle("Dx Runtime Exception")

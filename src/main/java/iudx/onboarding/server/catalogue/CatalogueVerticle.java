@@ -2,7 +2,6 @@ package iudx.onboarding.server.catalogue;
 
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
-import io.netty.channel.ConnectTimeoutException;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -25,14 +24,12 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
-  private IngestionService ingestionService;
 
 
   @Override
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
-    ingestionService = IngestionService.createProxy(vertx, INGESTION_ADDRESS);
 
     RetryPolicyBuilder<Object> retryPolicyBuilder = RetryPolicy.builder()
         .handle(DxRuntimeException.class)
@@ -42,7 +39,7 @@ public class CatalogueVerticle extends AbstractVerticle {
         .withMaxAttempts(3)
         .onRetry(retryListener -> LOGGER.error("Operation failed... retrying"));
 
-    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, ingestionService, config());
+    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CATALOGUE_ADDRESS).register(CatalogueUtilService.class, catalogueUtilService);
 
