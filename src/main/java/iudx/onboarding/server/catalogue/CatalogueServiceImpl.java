@@ -3,6 +3,7 @@ package iudx.onboarding.server.catalogue;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
+import io.netty.channel.ConnectTimeoutException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -13,16 +14,13 @@ import iudx.onboarding.server.apiserver.util.RespBuilder;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
+import iudx.onboarding.server.common.InconsistencyHandler;
 import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
 import static iudx.onboarding.server.common.Constants.ID;
@@ -36,15 +34,13 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   private CentralCatImpl centralCat;
   private LocalCatImpl localCat;
   private InconsistencyHandler inconsistencyHandler;
-  private IngestionService ingestionService;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, IngestionService ingestionService, JsonObject config) {
+  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, JsonObject config) {
     this.tokenService = tokenService;
     this.retryPolicyBuilder = retryPolicyBuilder;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
     this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat, centralCat, retryPolicyBuilder);
-    this.ingestionService = ingestionService;
   }
 
   @Override
@@ -59,36 +55,21 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
             LOGGER.warn("Failed to upload item to central");
             String id = request.getString(ID);
             Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(id, token));
-            promise.fail(handleFailure(listener.getException()));
+            promise.fail(listener.getException().getMessage());
           })
           .build();
 
       Failsafe.with(retryPolicy)
           .getAsyncExecution(asyncExecution -> {
-            tokenService.createToken().compose(adminToken -> {
+            tokenService.createToken()
+                .compose(adminToken -> {
                   return centralCat.createItem(request, adminToken.getString(TOKEN));
                 })
-                .compose(createItemHandler -> {
-                  String itemType = dxItemType(request.getJsonArray("type"));
-//                  Future<JsonObject> itemCreationFuture;
-                  if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
-                    String itemId = request.getString("id");
-                    return localCat.getRelatedEntity(itemId, "resourceServer", new JsonArray().add("resourceServerRegURL"))
-                        .compose(rsUrlResult -> {
-                          String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
-                          return Future.succeededFuture(resourceServerUrl);
-                        }).compose(rsUrl -> {
-                          return ingestionService.registerAdapter(rsUrl, request, token);
-                        });
-                  } else {
-                    return Future.succeededFuture(createItemHandler);
-                  }
-//                  return itemCreationFuture;
-                }).onComplete(ar -> {
+                .onComplete(ar -> {
                   if (ar.succeeded()) {
-                    asyncExecution.recordResult(ar.result());
+                    asyncExecution.recordResult(ar.result().getJsonObject(RESULTS));
                   } else {
-                    asyncExecution.recordException(ar.cause());
+                    asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
                   }
                 });
           });
@@ -105,18 +86,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     }
 
     return promise.future();
-  }
-
-  private String dxItemType(JsonArray type) {
-    ArrayList<String> ITEM_TYPES =
-        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
-            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
-
-    Set<String> types =
-        new HashSet<String>(type.getList());
-    types.retainAll(ITEM_TYPES);
-
-    return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }
 
   @Override
@@ -634,4 +603,5 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
     return promise.future();
   }
+
 }

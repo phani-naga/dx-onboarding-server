@@ -51,7 +51,7 @@ public class CentralCatImpl implements CatalogueService {
               LOGGER.debug(cause.getMessage());
               promise.fail(cause);
             } else {
-              promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+              promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             ; // Fail the promise with the failure cause
           }

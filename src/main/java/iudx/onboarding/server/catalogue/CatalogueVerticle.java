@@ -24,14 +24,12 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
-  private IngestionService ingestionService;
 
 
   @Override
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
-    ingestionService = IngestionService.createProxy(vertx, INGESTION_ADDRESS);
 
     RetryPolicyBuilder<Object> retryPolicyBuilder = RetryPolicy.builder()
         .handle(DxRuntimeException.class)
@@ -39,9 +37,9 @@ public class CatalogueVerticle extends AbstractVerticle {
         .abortOn(e -> e instanceof UnknownHostException)
         .withBackoff(Duration.ofSeconds(5), Duration.ofSeconds(7), 1.1)
         .withMaxAttempts(3)
-        .onRetry(retryListener -> LOGGER.error("Operation on central failed... retrying"));
+        .onRetry(retryListener -> LOGGER.error("Operation failed... retrying"));
 
-    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, ingestionService, config());
+    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CATALOGUE_ADDRESS).register(CatalogueUtilService.class, catalogueUtilService);
 

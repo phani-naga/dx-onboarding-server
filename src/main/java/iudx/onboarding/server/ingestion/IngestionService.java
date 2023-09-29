@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 @ProxyGen
 public interface IngestionService {
 
-  Future<JsonObject> registerAdapter(final String resourceServerUrl, final JsonObject requestJson, final String token);
+  Future<JsonObject> registerAdapter(final String resourceServerUrl, final String id, final String token);
 
   @GenIgnore
   static IngestionService createProxy(Vertx vertx, String address) {

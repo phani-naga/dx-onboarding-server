@@ -1,10 +1,11 @@
-package iudx.onboarding.server.catalogue;
+package iudx.onboarding.server.common;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.token.TokenService;
@@ -21,7 +22,7 @@ public class InconsistencyHandler {
   CentralCatImpl centralCat;
   RetryPolicyBuilder<Object> retryPolicyBuilder;
 
-  InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, RetryPolicyBuilder<Object> retryPolicyBuilder) {
+  public InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, RetryPolicyBuilder<Object> retryPolicyBuilder) {
     this.tokenService = tokenService;
     this.localCat = localCat;
     this.centralCat = centralCat;
@@ -33,7 +34,7 @@ public class InconsistencyHandler {
    *
    * @return Future which of the type void
    */
-  Future<Void> handleDeleteOnLocal(final String id, final String token) {
+  public Future<Void> handleDeleteOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Item deleted from local after upload to central failed"))
@@ -53,12 +54,39 @@ public class InconsistencyHandler {
     return Future.succeededFuture();
   }
 
+  public Future<Void> handleDeleteOfResourceGroup(final String id, final String token) {
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+        .onSuccess(listener -> LOGGER.info("Item deleted from local and central after ingestion fails"))
+        .onFailure(failureListener -> {
+          LOGGER.error("INCONSISTENCY DETECTED : ITEM NOT DELETED AFTER INGESTION FAIL");
+        })
+        .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(asyncExecution -> {
+          localCat.deleteItem(id, token)
+              .compose(localHandler -> {
+                return tokenService.createToken();
+              }).compose(tokenHandler -> {
+                return centralCat.deleteItem(id, tokenHandler.getString("token"));
+              }).onComplete(completeHandler -> {
+                if(completeHandler.succeeded()) {
+                  asyncExecution.recordResult(completeHandler.result());
+                } else {
+                  asyncExecution.recordException(new DxRuntimeException(400,completeHandler.cause().getMessage()));
+                }
+              });
+        });
+
+    return Future.succeededFuture();
+  }
+
   /**
    * This method is meant to restore item on local when update on central fails
    *
    * @return Future which of the type void
    */
-  Future<Void> handleUpdateOnLocal(final String id, final String token) {
+  public Future<Void> handleUpdateOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
@@ -87,7 +115,7 @@ public class InconsistencyHandler {
    *
    * @return Future which of the type void
    */
-  Future<Void> handleUploadToLocal(final String id, final String token) {
+  public Future<Void> handleUploadToLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy = retryPolicyBuilder
         .onSuccess(listener -> LOGGER.info("Update on local reverted after failure on central"))
@@ -116,7 +144,7 @@ public class InconsistencyHandler {
      *
      * @return Future which is of the type void
      */
-  Future<Void> handleDeleteInstanceOnLocal(final String id, final String token) {
+  public Future<Void> handleDeleteInstanceOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -150,7 +178,7 @@ public class InconsistencyHandler {
      *
      * @return Future which is of the type void
      */
-  Future<Void> handleUploadInstanceToLocal(final String id, final String token) {
+  public Future<Void> handleUploadInstanceToLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -189,7 +217,7 @@ public class InconsistencyHandler {
      *
      * @return Future which is of the type void
      */
-  Future<Void> handleUpdateInstanceOnLocal(final String id, final String token) {
+  public Future<Void> handleUpdateInstanceOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -227,7 +255,7 @@ public class InconsistencyHandler {
    *
    * @return Future which is of the type void
    */
-  Future<Void> handleDeleteDomainOnLocal(final String id, final String token) {
+  public Future<Void> handleDeleteDomainOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -260,7 +288,7 @@ public class InconsistencyHandler {
    *
    * @return Future which is of the type void
    */
-  Future<Void> handleUploadDomainToLocal(final String id, final String token) {
+  public Future<Void> handleUploadDomainToLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -299,7 +327,7 @@ public class InconsistencyHandler {
    *
    * @return Future which is of the type void
    */
-  Future<Void> handleUpdateDomainOnLocal(final String id, final String token) {
+  public Future<Void> handleUpdateDomainOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
