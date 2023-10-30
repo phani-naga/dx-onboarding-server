@@ -143,13 +143,14 @@ public class LocalCatImpl implements CatalogueService {
   public Future<JsonObject> getRelatedEntity(String id, String rel, JsonArray filter) {
     Promise<JsonObject> promise = Promise.promise();
 
-    LOGGER.debug(filter);
+    LOGGER.debug(filter.toString().replace("\"", ""));
     catWebClient
         .get(catPort, catHost, catBasePath.concat("/relationship"))
         .addQueryParam("id", id)
         .addQueryParam("rel", rel)
         .addQueryParam("filter", filter.toString().replace("\"", ""))
         .send(relatedEntityHandler -> {
+          LOGGER.debug(id);
           LOGGER.debug(relatedEntityHandler.result().body().toJsonObject());
           if (relatedEntityHandler.succeeded() && relatedEntityHandler.result().statusCode() == 200) {
             LOGGER.debug(relatedEntityHandler.result().body());
