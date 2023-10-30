@@ -62,6 +62,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private Router router;
   private int port;
   private boolean isSSL;
+  private boolean isUacAvailable;
   private String dxApiBasePath;
   private TokenService tokenService;
   private CatalogueUtilService catalogueService;
@@ -77,6 +78,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
     /* Create a reference to HazelcastClusterManager. */
+
+    isUacAvailable = config().getBoolean("isUacAvailable");
 
     router = Router.router(vertx);
 
@@ -229,26 +232,30 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     catalogueService
         .createItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
-        .compose(localItem -> {
-          JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
-          return catalogueService
-              .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL);
-        })
-        .compose(centralItem -> {
-
-          String itemType = dxItemType(centralItem.getJsonArray("type"));
-          if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
-            resultContainer.result = new JsonObject().put("item_details", centralItem);
-            String itemId = centralItem.getString("id");
-            LOGGER.debug(itemId);
-            return resourceServerService.createAdapter(itemId, tokenHeadersMap.get(TOKEN));
+        .compose(firstHandler -> {
+          JsonObject itemBodyWithId = firstHandler.getJsonObject(RESULTS);
+          if (isUacAvailable) {
+            return catalogueService
+                .createItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL);
           } else {
-            resultContainer.result = centralItem;
+            return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, itemBodyWithId);
+          }
+        })
+        .compose(nextHandler -> {
+          if (isUacAvailable) {
+            return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, nextHandler);
+          } else {
+            if (resultContainer.result.containsKey("item_details")) {
+              resultContainer.result.put("adapter_details", nextHandler);
+            }
             return Future.succeededFuture();
           }
-        }).compose(adapterHandler -> {
-          if (resultContainer.result.containsKey("item_details")) {
-            resultContainer.result.put("adapter_details", adapterHandler);
+        })
+        .compose(lastHandler -> {
+          if (isUacAvailable) {
+            if (resultContainer.result.containsKey("item_details")) {
+              resultContainer.result.put("adapter_details", lastHandler);
+            }
           }
           return Future.succeededFuture();
         })
@@ -267,6 +274,18 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .end(completeHandler.cause().getMessage());
           }
         });
+  }
+
+  private Future<JsonObject> createAdapterForResourceGroup(MultiMap tokenHeadersMap, ResultContainer resultContainer, JsonObject item) {
+    String itemType = dxItemType(item.getJsonArray("type"));
+    if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+      resultContainer.result = new JsonObject().put("item_details", item);
+      String itemId = item.getString("id");
+      return resourceServerService.createAdapter(itemId, tokenHeadersMap.get(TOKEN));
+    } else {
+      resultContainer.result = item;
+      return Future.succeededFuture();
+    }
   }
 
   private String dxItemType(JsonArray type) {
@@ -292,21 +311,26 @@ public class ApiServerVerticle extends AbstractVerticle {
             localItem -> {
               JsonObject itemBodyWithId = localItem.getJsonObject(RESULTS);
 
-              catalogueService
-                  .updateItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      updateCentralCatItemSuccess -> {
-                        response
-                            .setStatusCode(200)
-                            .end(
-                                updateCentralCatItemSuccess
-                                    .toString());
-                      })
-                  .onFailure(centralCatItemFailure -> {
-                    // This is after 3 retries and delete of item from local
-                    // TODO: notify user to try again
-                    response.setStatusCode(500).end(centralCatItemFailure.getMessage());
-                  });
+              if (isUacAvailable) {
+                catalogueService
+                    .updateItem(itemBodyWithId, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        centralItem -> {
+                          response
+                              .setStatusCode(200)
+                              .end(
+                                  centralItem
+                                      .toString());
+                        })
+                    .onFailure(centralCatItemFailure -> {
+                      // This is after 3 retries and delete of item from local
+                      // TODO: notify user to try again
+                      response.setStatusCode(500).end(centralCatItemFailure.getMessage());
+                    });
+              } else {
+                response.setStatusCode(200)
+                    .end(localItem.toString());
+              }
             })
         .onFailure(
             updateLocalItemFailureHandler -> {
@@ -326,24 +350,32 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService
         .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
-            deleteLocalItemSuccessHandler -> {
+            localItem -> {
 
-              catalogueService
-                  .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      deleteCentralCatItemSuccess -> {
-                        LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
-                        response
-                            .setStatusCode(200)
-                            .end(
-                                deleteCentralCatItemSuccess
-                                    .toString());
-                      })
-                  .onFailure(centralCatItemFailure -> {
-                    // This is after 3 retries and delete of item from local
-                    // TODO: notify user to try again
-                    response.setStatusCode(500).end("Upload failed, try again later");
-                  });
+              if (isUacAvailable) {
+                catalogueService
+                    .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        centralItem -> {
+                          LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
+                          response
+                              .setStatusCode(200)
+                              .end(
+                                  centralItem
+                                      .toString());
+                        })
+                    .onFailure(centralCatItemFailure -> {
+                      // This is after 3 retries and delete of item from local
+                      // TODO: notify user to try again
+                      response.setStatusCode(500).end("Upload failed, try again later");
+                    });
+              } else {
+                response
+                    .setStatusCode(200)
+                    .end(
+                        localItem
+                            .toString());
+              }
             })
         .onFailure(
             deleteLocalItemFailureHandler -> {
@@ -387,18 +419,23 @@ public class ApiServerVerticle extends AbstractVerticle {
                   localInstance.getJsonArray(RESULTS).getJsonObject(0).getString("id");
               requestBody.put("instanceId", instanceId);
               LOGGER.info("request body" + requestBody);
-              catalogueService
-                  .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      centralInstance -> {
-                        response.setStatusCode(201).end(centralInstance.toString());
-                      })
-                  .onFailure(
-                      centralinstance -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end(centralinstance.getMessage());
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        centralInstance -> {
+                          response.setStatusCode(201).end(centralInstance.toString());
+                        })
+                    .onFailure(
+                        centralinstance -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end(centralinstance.getMessage());
+                        });
+              } else {
+
+                response.setStatusCode(201).end(localInstance.toString());
+              }
             })
         .onFailure(
             localInstance -> {
@@ -447,19 +484,24 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.debug(
                   "item updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
 
-              catalogueService
-                  .updateInstance(
-                      id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      updateCentralCatItemSuccess -> {
-                        response.setStatusCode(200).end(updateCentralCatItemSuccess.toString());
-                      })
-                  .onFailure(
-                      centralCatItemFailure -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end(centralCatItemFailure.getMessage());
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .updateInstance(
+                        id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        updateCentralCatItemSuccess -> {
+                          response.setStatusCode(200).end(updateCentralCatItemSuccess.toString());
+                        })
+                    .onFailure(
+                        centralCatItemFailure -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end(centralCatItemFailure.getMessage());
+                        });
+              } else {
+
+                response.setStatusCode(200).end(updateLocalItemSuccessHandler.toString());
+              }
             })
         .onFailure(
             updateLocalItemFailureHandler -> {
@@ -479,26 +521,30 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService
         .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
-            deleteLocalItemSuccessHandler -> {
-              JsonObject localCreateResponse = deleteLocalItemSuccessHandler;
+            localInstance -> {
               LOGGER.debug(
-                  "item deleted in local cat {}", localCreateResponse.getJsonArray(RESULTS));
+                  "item deleted in local cat {}", localInstance.getJsonArray(RESULTS));
 
-              catalogueService
-                  .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      deleteCentralCatItemSuccess -> {
-                        LOGGER.debug(
-                            "item deleted in central cat {}",
-                            deleteCentralCatItemSuccess.getJsonArray(RESULTS));
-                        response.setStatusCode(200).end(deleteCentralCatItemSuccess.toString());
-                      })
-                  .onFailure(
-                      centralCatItemFailure -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end("Upload failed, try again later");
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        deleteCentralCatItemSuccess -> {
+                          LOGGER.debug(
+                              "item deleted in central cat {}",
+                              deleteCentralCatItemSuccess.getJsonArray(RESULTS));
+                          response.setStatusCode(200).end(deleteCentralCatItemSuccess.toString());
+                        })
+                    .onFailure(
+                        centralCatItemFailure -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end("Upload failed, try again later");
+                        });
+              } else {
+
+                response.setStatusCode(200).end(localInstance.toString());
+              }
             })
         .onFailure(
             deleteLocalItemFailureHandler -> {
@@ -521,18 +567,23 @@ public class ApiServerVerticle extends AbstractVerticle {
               String domainId = localDomain.getJsonArray(RESULTS).getJsonObject(0).getString("id");
               requestBody.put("domainId", domainId);
               LOGGER.info("request body" + requestBody);
-              catalogueService
-                  .createDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      centralInstance -> {
-                        response.setStatusCode(201).end(centralInstance.toString());
-                      })
-                  .onFailure(
-                      centralInstance -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end(centralInstance.getMessage());
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .createDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        centralInstance -> {
+                          response.setStatusCode(201).end(centralInstance.toString());
+                        })
+                    .onFailure(
+                        centralInstance -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end(centralInstance.getMessage());
+                        });
+              } else {
+
+                response.setStatusCode(201).end(localDomain.toString());
+              }
             })
         .onFailure(
             localDomainFailure -> {
@@ -555,21 +606,26 @@ public class ApiServerVerticle extends AbstractVerticle {
               JsonObject localCreateResponse = deleteLocalDomain;
               LOGGER.debug("item deleted in local cat {}", deleteLocalDomain.getJsonArray(RESULTS));
 
-              catalogueService
-                  .deleteDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      deleteCentralDomain -> {
-                        LOGGER.debug(
-                            "item deleted in central cat {}",
-                            deleteCentralDomain.getJsonArray(RESULTS));
-                        response.setStatusCode(200).end(deleteCentralDomain.toString());
-                      })
-                  .onFailure(
-                      deleteCentralDomainFailure -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end("Upload failed, try again later");
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .deleteDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        deleteCentralDomain -> {
+                          LOGGER.debug(
+                              "item deleted in central cat {}",
+                              deleteCentralDomain.getJsonArray(RESULTS));
+                          response.setStatusCode(200).end(deleteCentralDomain.toString());
+                        })
+                    .onFailure(
+                        deleteCentralDomainFailure -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end("Upload failed, try again later");
+                        });
+              } else {
+                response.setStatusCode(200).end(deleteLocalDomain.toString());
+
+              }
             })
         .onFailure(
             deleteLocalDomainFailure -> {
@@ -590,23 +646,27 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService
         .updateDomain(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
-            updateLocalDomainSuccess -> {
-              JsonObject localUpdateResponse = updateLocalDomainSuccess;
+            updateLocalDomain -> {
               LOGGER.debug(
-                  "domain updated in local cat {}", localUpdateResponse.getJsonArray(RESULTS));
+                  "domain updated in local cat {}", updateLocalDomain.getJsonArray(RESULTS));
 
-              catalogueService
-                  .updateDomain(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                  .onSuccess(
-                      updateCentralDomainSuccess -> {
-                        response.setStatusCode(200).end(updateCentralDomainSuccess.toString());
-                      })
-                  .onFailure(
-                      centralCatDomainFailure -> {
-                        // This is after 3 retries and delete of item from local
-                        // TODO: notify user to try again
-                        response.setStatusCode(500).end(centralCatDomainFailure.getMessage());
-                      });
+              if (isUacAvailable) {
+                catalogueService
+                    .updateDomain(id, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .onSuccess(
+                        updateCentralDomainSuccess -> {
+                          response.setStatusCode(200).end(updateCentralDomainSuccess.toString());
+                        })
+                    .onFailure(
+                        centralCatDomainFailure -> {
+                          // This is after 3 retries and delete of item from local
+                          // TODO: notify user to try again
+                          response.setStatusCode(500).end(centralCatDomainFailure.getMessage());
+                        });
+              } else {
+                response.setStatusCode(200).end(updateLocalDomain.toString());
+
+              }
             })
         .onFailure(
             updateLocalDomainFailure -> {

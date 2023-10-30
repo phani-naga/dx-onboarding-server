@@ -10,6 +10,7 @@
     "dxAuthBasePath": "",
     "localCatServerHost": "",
     "localCatServerPort": 1234,
+    "isUacAvailable": true,
     "centralCatServerHost": "",
     "centralCatServerPort":1234
   },
