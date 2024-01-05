@@ -59,6 +59,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
 
   private HttpServer server;
+
   private Router router;
   private int port;
   private boolean isSSL;
@@ -339,6 +340,18 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
+  private Future<Void> deleteAdapterForResourceGroup(MultiMap tokenHeaderMap, ResultContainer resultContainer, JsonObject item){
+    String itemType = dxItemType(item.getJsonArray("key"));
+    if(itemType.equalsIgnoreCase("iudx:ResourceGroup")){
+      resultContainer.result = new JsonObject().put("item details", item);
+      String itemId = item.getString(("id"));
+      return resourceServerService.deleteAdapter(itemId,tokenHeaderMap.get(TOKEN));
+    }else{
+      resultContainer.result = item;
+      return Future.succeededFuture();
+    }
+  }
+
   private void deleteItem(RoutingContext routingContext) {
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerRequest request = routingContext.request();
@@ -347,41 +360,46 @@ public class ApiServerVerticle extends AbstractVerticle {
         .put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
 
-    catalogueService
-        .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
-        .onSuccess(
-            localItem -> {
+    resourceServerService
+      .deleteAdapter("","")
+        .onSuccess( adapterDeletion -> {
+          catalogueService
+            .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+            .onSuccess(
+              localItem ->
+              {
 
-              if (isUacAvailable) {
-                catalogueService
+                if (isUacAvailable) {
+                  catalogueService
                     .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                     .onSuccess(
-                        centralItem -> {
-                          LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
-                          response
-                              .setStatusCode(200)
-                              .end(
-                                  centralItem
-                                      .toString());
-                        })
+                      centralItem -> {
+                        LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
+                        response
+                          .setStatusCode(200)
+                          .end(
+                            centralItem
+                              .toString());
+                      })
                     .onFailure(centralCatItemFailure -> {
                       // This is after 3 retries and delete of item from local
                       // TODO: notify user to try again
                       response.setStatusCode(500).end("Upload failed, try again later");
                     });
-              } else {
-                response
+                } else {
+                  response
                     .setStatusCode(200)
                     .end(
-                        localItem
-                            .toString());
-              }
-            })
-        .onFailure(
-            deleteLocalItemFailureHandler -> {
-              LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
-              handleResponse(response, deleteLocalItemFailureHandler);
-            });
+                      localItem
+                        .toString());
+                }
+              });
+        })
+                  .onFailure(
+                    deleteLocalItemFailureHandler -> {
+                      LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
+                      handleResponse(response, deleteLocalItemFailureHandler);
+                    });
   }
 
   private void getItem(RoutingContext routingContext) {

@@ -81,4 +81,48 @@ public class ResourceServerServiceImpl implements ResourceServerService {
     return promise.future();
   }
 
+  //delete adapter added
+  @Override
+  public Future<Void> deleteAdapter(String id, String token) {
+    Promise<Void> promise = Promise.promise();
+
+    RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+      .onSuccess(successListener -> {
+        promise.complete();
+      })
+      .onFailure(listener -> {
+        LOGGER.warn("Failed to delete adapter for resource group");
+        LOGGER.debug(listener.getException());
+        LOGGER.debug(listener.getResult());
+        LOGGER.debug(listener.getException().getMessage());
+        Future.future(f -> inconsistencyHandler.handleDeleteOfResourceGroup(id, token));
+        promise.fail(listener.getException().getMessage());
+      })
+      .build();
+
+    Failsafe.with(retryPolicy)
+      .getAsyncExecution(asyncExecution -> {
+        localCat.getItem(id)
+          .compose(adapterInfo -> {
+            LOGGER.info("Deleting adapter with ID: {}", id);
+            return Future.succeededFuture();
+          })
+          .onComplete(ar -> {
+            if (ar.succeeded()) {
+              asyncExecution.recordResult(ar.result());
+            } else {
+              LOGGER.debug(ar.cause().getMessage());
+              if (ar.cause() instanceof ConnectTimeoutException) {
+                asyncExecution.recordException(ar.cause());
+              } else {
+                asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
+              }
+            }
+          });
+      });
+
+    return promise.future();
+  }
+
+
 }

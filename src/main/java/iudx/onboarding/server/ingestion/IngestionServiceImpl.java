@@ -57,4 +57,34 @@ public class IngestionServiceImpl implements IngestionService {
         });
     return promise.future();
   }
+
+  @Override
+  public Future<JsonObject> unregisteredAdapter(String resourceServerUrl, String id, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+
+    JsonObject unregistrationRequestBody = new JsonObject()
+      .put("unregister", true)
+      .put("adapterId", id);
+
+    rsWebClient
+      .delete(rsPort, resourceServerUrl, rsBasePath.concat("/adapters/" + id)) // Or appropriate endpoint
+      .putHeader("token", token)
+      .putHeader("Content-Type", "application/json")
+      .sendJsonObject(unregistrationRequestBody, responseHandler -> {
+        if (responseHandler.succeeded() && responseHandler.result().statusCode() == 204) {
+          promise.complete();
+        } else {
+          Throwable cause = responseHandler.cause();
+          if (cause != null) {
+            LOGGER.debug(cause.getClass());
+            promise.fail(cause);
+          } else {
+            promise.fail(responseHandler.result().bodyAsString());
+          }
+        }
+      });
+
+    return promise.future();
+  }
+
 }
