@@ -1,8 +1,11 @@
 package iudx.onboarding.server.apiserver;
 
+import com.amazonaws.http.AmazonHttpClient;
+import com.fasterxml.jackson.core.TreeNode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -17,6 +20,7 @@ import io.vertx.ext.web.handler.TimeoutHandler;
 import iudx.onboarding.server.apiserver.util.ExceptionHandler;
 import iudx.onboarding.server.apiserver.util.RespBuilder;
 import iudx.onboarding.server.catalogue.CatalogueUtilService;
+import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
@@ -24,6 +28,7 @@ import iudx.onboarding.server.resourceserver.ResourceServerService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.yetus.audience.InterfaceAudience;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +73,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private TokenService tokenService;
   private CatalogueUtilService catalogueService;
   private ResourceServerService resourceServerService;
+  private LocalCatImpl localCat;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -340,28 +346,42 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
-  private Future<Void> deleteAdapterForResourceGroup(MultiMap tokenHeaderMap, ResultContainer resultContainer, JsonObject item){
-    String itemType = dxItemType(item.getJsonArray("key"));
-    if(itemType.equalsIgnoreCase("iudx:ResourceGroup")){
-      resultContainer.result = new JsonObject().put("item details", item);
-      String itemId = item.getString(("id"));
-      return resourceServerService.deleteAdapter(itemId,tokenHeaderMap.get(TOKEN));
-    }else{
-      resultContainer.result = item;
-      return Future.succeededFuture();
-    }
+  private Future<JsonObject> deleteAdapterForResourceGroup(String id, MultiMap tokenHeaderMap) {
+    Promise<JsonObject> promise = Promise.promise();
+    LOGGER.debug("delete adapter started");
+    localCat.getItem(id)
+      .compose(localCatResult -> {
+        LOGGER.debug("debugging localCat :{}", localCatResult);
+        String itemType = dxItemType(localCatResult.getJsonArray("type"));
+        LOGGER.debug("debugging itemTpe :{}", itemType);
+        if(itemType.equalsIgnoreCase("iudx:ResourceGroup")){
+          return resourceServerService.deleteAdapter(id,tokenHeaderMap.get(TOKEN));
+        }else{
+          //resultContainer.result = itemType;
+          return Future.succeededFuture();
+        }
+
+    }).onComplete(completeHandler ->{
+      if(completeHandler.succeeded()){
+        promise.complete(completeHandler.result());
+      }else{
+        LOGGER.error("fail to delete adapter: {}", completeHandler.cause().getMessage());
+        promise.fail(completeHandler.cause());
+      }
+    });
+    return promise.future();
   }
 
   private void deleteItem(RoutingContext routingContext) {
+    String itemId = routingContext.request().getParam("id");
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = new JsonObject()
         .put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-
-    resourceServerService
-      .deleteAdapter("","")
+    LOGGER.debug("debugging itemid:{}",itemId);
+    deleteAdapterForResourceGroup(itemId,tokenHeadersMap)
         .onSuccess( adapterDeletion -> {
           catalogueService
             .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
@@ -401,6 +421,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                       handleResponse(response, deleteLocalItemFailureHandler);
                     });
   }
+
 
   private void getItem(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();

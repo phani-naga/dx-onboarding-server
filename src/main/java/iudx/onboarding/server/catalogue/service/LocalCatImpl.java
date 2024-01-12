@@ -125,13 +125,16 @@ public class LocalCatImpl implements CatalogueService {
         .send(httpResponseAsyncResult -> {
           if (httpResponseAsyncResult.succeeded() && httpResponseAsyncResult.result().statusCode() == 200) {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+            LOGGER.debug("getItem id :{}", response);
             promise.complete(response);
           } else {
+            LOGGER.debug("get item fail :{}",httpResponseAsyncResult.result().bodyAsString());
             Throwable cause = httpResponseAsyncResult.cause();
             if (cause != null) {
               LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
+              LOGGER.debug("get item fail :{}",httpResponseAsyncResult.result().bodyAsString());
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             ; // Fail the promise with the failure cause
