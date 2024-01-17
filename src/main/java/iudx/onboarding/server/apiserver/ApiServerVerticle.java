@@ -1,7 +1,5 @@
 package iudx.onboarding.server.apiserver;
 
-import com.amazonaws.http.AmazonHttpClient;
-import com.fasterxml.jackson.core.TreeNode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -28,7 +26,6 @@ import iudx.onboarding.server.resourceserver.ResourceServerService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.yetus.audience.InterfaceAudience;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -349,26 +346,24 @@ public class ApiServerVerticle extends AbstractVerticle {
   private Future<JsonObject> deleteAdapterForResourceGroup(String id, MultiMap tokenHeaderMap) {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.debug("delete adapter started");
-    localCat.getItem(id)
-      .compose(localCatResult -> {
-        LOGGER.debug("debugging localCat :{}", localCatResult);
-        String itemType = dxItemType(localCatResult.getJsonArray("type"));
-        LOGGER.debug("debugging itemTpe :{}", itemType);
-        if(itemType.equalsIgnoreCase("iudx:ResourceGroup")){
-          return resourceServerService.deleteAdapter(id,tokenHeaderMap.get(TOKEN));
-        }else{
-          //resultContainer.result = itemType;
-          return Future.succeededFuture();
-        }
-
-    }).onComplete(completeHandler ->{
-      if(completeHandler.succeeded()){
-        promise.complete(completeHandler.result());
-      }else{
-        LOGGER.error("fail to delete adapter: {}", completeHandler.cause().getMessage());
-        promise.fail(completeHandler.cause());
-      }
-    });
+    catalogueService.getItem(id,CatalogueType.LOCAL)
+        .compose(localCatResult -> {
+          LOGGER.debug("debugging localCat :{}", localCatResult);
+          String itemType = dxItemType(localCatResult.getJsonArray("results").getJsonObject(0).getJsonArray("type"));
+          LOGGER.debug("debugging itemTpe :{}", itemType);
+          if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+            return resourceServerService.deleteAdapter(id, tokenHeaderMap.get(TOKEN));
+          } else {
+            return Future.succeededFuture();
+          }
+        }).onComplete(completeHandler -> {
+          if (completeHandler.succeeded()) {
+            promise.complete(completeHandler.result());
+          } else {
+            LOGGER.error("fail to delete adapter: {}", completeHandler.cause().getMessage());
+            promise.fail(completeHandler.cause());
+          }
+        });
     return promise.future();
   }
 
@@ -380,46 +375,26 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestBody = new JsonObject()
         .put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
-    LOGGER.debug("debugging itemid:{}",itemId);
-    deleteAdapterForResourceGroup(itemId,tokenHeadersMap)
-        .onSuccess( adapterDeletion -> {
-          catalogueService
-            .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
-            .onSuccess(
-              localItem ->
-              {
-
-                if (isUacAvailable) {
-                  catalogueService
-                    .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                    .onSuccess(
-                      centralItem -> {
-                        LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
-                        response
-                          .setStatusCode(200)
-                          .end(
-                            centralItem
-                              .toString());
-                      })
-                    .onFailure(centralCatItemFailure -> {
-                      // This is after 3 retries and delete of item from local
-                      // TODO: notify user to try again
-                      response.setStatusCode(500).end("Upload failed, try again later");
-                    });
-                } else {
-                  response
-                    .setStatusCode(200)
-                    .end(
-                      localItem
-                        .toString());
-                }
-              });
+    LOGGER.debug("debugging itemid:{}", itemId);
+    deleteAdapterForResourceGroup(itemId, tokenHeadersMap)
+        .compose(adapterDel -> {
+          return catalogueService.deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL);
         })
-                  .onFailure(
-                    deleteLocalItemFailureHandler -> {
-                      LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
-                      handleResponse(response, deleteLocalItemFailureHandler);
-                    });
+        .compose(localItem -> {
+          if (isUacAvailable) {
+            return catalogueService
+                .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL);
+          } else {
+            return Future.succeededFuture(localItem);
+          }
+        }).onComplete(completeHandler -> {
+          if (completeHandler.succeeded()) {
+            response.end(completeHandler.toString());
+          } else {
+            response.end(completeHandler.cause().getMessage());
+          }
+        });
+
   }
 
 

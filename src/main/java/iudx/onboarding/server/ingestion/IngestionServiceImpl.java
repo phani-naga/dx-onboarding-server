@@ -67,7 +67,7 @@ public class IngestionServiceImpl implements IngestionService {
       .putHeader("token", token)
       .send()
       .onSuccess(response -> {
-        if (response.statusCode() == 201) {
+        if (response.statusCode() == 200) {
           promise.complete(new JsonObject());
         } else {
           promise.fail(response.bodyAsString());
