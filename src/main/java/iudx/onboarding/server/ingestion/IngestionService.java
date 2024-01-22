@@ -13,6 +13,8 @@ public interface IngestionService {
 
   Future<JsonObject> registerAdapter(final String resourceServerUrl, final String id, final String token);
 
+  Future<JsonObject> unregisteredAdapter(final String resourceServerUrl, final String id, final String token);
+
   @GenIgnore
   static IngestionService createProxy(Vertx vertx, String address) {
     return new IngestionServiceVertxEBProxy(vertx, address);

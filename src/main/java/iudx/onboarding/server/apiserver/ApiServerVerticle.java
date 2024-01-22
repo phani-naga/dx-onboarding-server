@@ -3,6 +3,7 @@ package iudx.onboarding.server.apiserver;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
@@ -17,6 +18,7 @@ import io.vertx.ext.web.handler.TimeoutHandler;
 import iudx.onboarding.server.apiserver.util.ExceptionHandler;
 import iudx.onboarding.server.apiserver.util.RespBuilder;
 import iudx.onboarding.server.catalogue.CatalogueUtilService;
+import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.Api;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
@@ -59,6 +61,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
 
   private HttpServer server;
+
   private Router router;
   private int port;
   private boolean isSSL;
@@ -67,6 +70,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private TokenService tokenService;
   private CatalogueUtilService catalogueService;
   private ResourceServerService resourceServerService;
+  private LocalCatImpl localCat;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -339,50 +343,61 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
+  private Future<JsonObject> deleteAdapterForResourceGroup(String id, MultiMap tokenHeaderMap) {
+    Promise<JsonObject> promise = Promise.promise();
+    LOGGER.debug("delete adapter started");
+    catalogueService.getItem(id,CatalogueType.LOCAL)
+        .compose(localCatResult -> {
+          LOGGER.debug("debugging localCat :{}", localCatResult);
+          String itemType = dxItemType(localCatResult.getJsonArray("results").getJsonObject(0).getJsonArray("type"));
+          LOGGER.debug("debugging itemTpe :{}", itemType);
+          if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+            return resourceServerService.deleteAdapter(id, tokenHeaderMap.get(TOKEN));
+          } else {
+            return Future.succeededFuture();
+          }
+        }).onComplete(completeHandler -> {
+          if (completeHandler.succeeded()) {
+            promise.complete(completeHandler.result());
+          } else {
+            LOGGER.error("fail to delete adapter: {}", completeHandler.cause().getMessage());
+            promise.fail(completeHandler.cause());
+          }
+        });
+    return promise.future();
+  }
+
   private void deleteItem(RoutingContext routingContext) {
+    String itemId = routingContext.request().getParam("id");
     MultiMap tokenHeadersMap = routingContext.request().headers();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = new JsonObject()
         .put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    LOGGER.debug("debugging itemid:{}", itemId);
+    deleteAdapterForResourceGroup(itemId, tokenHeadersMap)
+        .compose(adapterDel -> {
+          return catalogueService.deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL);
 
-    catalogueService
-        .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
-        .onSuccess(
-            localItem -> {
+        })
+        .compose(localItem -> {
+          if (isUacAvailable) {
+            return catalogueService
+                .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL);
+          } else {
+            return Future.succeededFuture(localItem);
+          }
+        }).onComplete(completeHandler -> {
+          if (completeHandler.succeeded()) {
+            response.setStatusCode(200).end(completeHandler.result().toString());
+          } else {
+            handleResponse(response, completeHandler.cause());
+          }
+        });
 
-              if (isUacAvailable) {
-                catalogueService
-                    .deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
-                    .onSuccess(
-                        centralItem -> {
-                          LOGGER.warn("DELETE adapter for resource group : {}", request.getParam(ID));
-                          response
-                              .setStatusCode(200)
-                              .end(
-                                  centralItem
-                                      .toString());
-                        })
-                    .onFailure(centralCatItemFailure -> {
-                      // This is after 3 retries and delete of item from local
-                      // TODO: notify user to try again
-                      response.setStatusCode(500).end("Upload failed, try again later");
-                    });
-              } else {
-                response
-                    .setStatusCode(200)
-                    .end(
-                        localItem
-                            .toString());
-              }
-            })
-        .onFailure(
-            deleteLocalItemFailureHandler -> {
-              LOGGER.info("Local Handler Failed {}", deleteLocalItemFailureHandler.getLocalizedMessage());
-              handleResponse(response, deleteLocalItemFailureHandler);
-            });
   }
+
 
   private void getItem(RoutingContext routingContext) {
     HttpServerRequest request = routingContext.request();
@@ -700,19 +715,19 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void handleResponse(HttpServerResponse response, Throwable localInstance) {
     String errorMessage = localInstance.getMessage();
 
-    if (errorMessage.contains("urn:dx:cat:InvalidSchema")) {
+    if (errorMessage.contains(":InvalidSchema")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
+    } else if (errorMessage.contains(":InvalidAuthorizationToken") || errorMessage.contains(":invalidAuthorizationToken")) {
       response.setStatusCode(401).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:ItemNotFound")) {
+    } else if (errorMessage.contains(":ItemNotFound")) {
       response.setStatusCode(404).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidSyntax")) {
+    } else if (errorMessage.contains(":InvalidSyntax")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:OperationNotAllowed")) {
+    } else if (errorMessage.contains(":OperationNotAllowed")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidUUID")) {
+    } else if (errorMessage.contains(":InvalidUUID")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:LinkValidationFailed")) {
+    } else if (errorMessage.contains(":LinkValidationFailed")) {
       response.setStatusCode(400).end(errorMessage);
     } else {
       response.setStatusCode(500).end(errorMessage);

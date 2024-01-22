@@ -119,12 +119,14 @@ public class LocalCatImpl implements CatalogueService {
   @Override
   public Future<JsonObject> getItem(String id) {
     Promise<JsonObject> promise = Promise.promise();
+    LOGGER.debug("here xx");
     catWebClient
         .get(catPort, catHost, catBasePath.concat("/item"))
         .addQueryParam("id", id)
         .send(httpResponseAsyncResult -> {
           if (httpResponseAsyncResult.succeeded() && httpResponseAsyncResult.result().statusCode() == 200) {
             JsonObject response = httpResponseAsyncResult.result().body().toJsonObject();
+            LOGGER.debug("getItem id :{}", response);
             promise.complete(response);
           } else {
             Throwable cause = httpResponseAsyncResult.cause();
@@ -132,6 +134,7 @@ public class LocalCatImpl implements CatalogueService {
               LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
+              LOGGER.debug("get item fail :{}",httpResponseAsyncResult.result().bodyAsString());
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             ; // Fail the promise with the failure cause

@@ -24,7 +24,7 @@ public class IngestionServiceImpl implements IngestionService {
     this.rsBasePath = config.getString("resourceServerBasePath"); // will this always be `/ngsi-ld/v1` ?
 
     WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+      new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
     if (rsWebClient == null) {
       rsWebClient = WebClient.create(vertx, options);
     }
@@ -35,26 +35,47 @@ public class IngestionServiceImpl implements IngestionService {
     Promise<JsonObject> promise = Promise.promise();
 
     JsonObject ingestionRequestBody = new JsonObject()
-        .put("entities", new JsonArray().add(id));
+      .put("entities", new JsonArray().add(id));
 
     rsWebClient
-        .post(rsPort, resourceServerUrl, rsBasePath.concat("/ingestion"))
-        .putHeader("token", token)
-        .putHeader("Content-Type", "application/json")
-        .sendJsonObject(ingestionRequestBody, responseHandler -> {
-          if (responseHandler.succeeded() && responseHandler.result().statusCode() == 201) {
-            JsonObject result = responseHandler.result().body().toJsonObject().getJsonArray("results").getJsonObject(0);
-            promise.complete(result);
+      .post(rsPort, resourceServerUrl, rsBasePath.concat("/ingestion"))
+      .putHeader("token", token)
+      .putHeader("Content-Type", "application/json")
+      .sendJsonObject(ingestionRequestBody, responseHandler -> {
+        if (responseHandler.succeeded() && responseHandler.result().statusCode() == 201) {
+          JsonObject result = responseHandler.result().body().toJsonObject().getJsonArray("results").getJsonObject(0);
+          promise.complete(result);
+        } else {
+          Throwable cause = responseHandler.cause();
+          if (cause != null) {
+            LOGGER.debug(cause.getClass());
+            promise.fail(cause);
           } else {
-            Throwable cause = responseHandler.cause();
-            if (cause != null) {
-              LOGGER.debug(cause.getClass());
-              promise.fail(cause);
-            } else {
-              promise.fail(responseHandler.result().bodyAsString());
-            }
+            promise.fail(responseHandler.result().bodyAsString());
           }
-        });
+        }
+      });
     return promise.future();
   }
+
+  @Override
+  public Future<JsonObject> unregisteredAdapter(String resourceServerUrl, String id, String token) {
+    Promise<JsonObject> promise = Promise.promise();
+
+    rsWebClient
+      .delete(rsPort, resourceServerUrl, rsBasePath.concat("/ingestion/" + id))
+      .putHeader("token", token)
+      .send()
+      .onSuccess(response -> {
+        if (response.statusCode() == 200) {
+          promise.complete(new JsonObject());
+        } else {
+          promise.fail(response.bodyAsString());
+        }
+      })
+      .onFailure(promise::fail);
+
+    return promise.future();
+  }
+
 }
