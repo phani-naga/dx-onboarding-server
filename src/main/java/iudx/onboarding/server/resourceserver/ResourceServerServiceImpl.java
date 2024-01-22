@@ -97,7 +97,7 @@ public class ResourceServerServiceImpl implements ResourceServerService {
         LOGGER.debug(listener.getException());
         LOGGER.debug(listener.getResult());
         LOGGER.debug(listener.getException().getMessage());
-//        Future.future(f -> inconsistencyHandler.handleDeleteOfResourceGroup(id, token));
+//       Future.future(f -> inconsistencyHandler.handleDeleteOfResourceGroup(id, token));
         promise.fail(listener.getException().getMessage());
       })
       .build();

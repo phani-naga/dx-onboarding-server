@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
+import iudx.onboarding.server.resourceserver.ResourceServerService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,7 @@ public class InconsistencyHandler {
   LocalCatImpl localCat;
   CentralCatImpl centralCat;
   RetryPolicyBuilder<Object> retryPolicyBuilder;
+  ResourceServerService resourceServerService;
 
   public InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, RetryPolicyBuilder<Object> retryPolicyBuilder) {
     this.tokenService = tokenService;

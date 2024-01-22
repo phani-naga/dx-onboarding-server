@@ -379,6 +379,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     deleteAdapterForResourceGroup(itemId, tokenHeadersMap)
         .compose(adapterDel -> {
           return catalogueService.deleteItem(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL);
+
         })
         .compose(localItem -> {
           if (isUacAvailable) {
@@ -389,9 +390,9 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         }).onComplete(completeHandler -> {
           if (completeHandler.succeeded()) {
-            response.end(completeHandler.toString());
+            response.setStatusCode(200).end(completeHandler.result().toString());
           } else {
-            response.end(completeHandler.cause().getMessage());
+            handleResponse(response, completeHandler.cause());
           }
         });
 
@@ -714,19 +715,19 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void handleResponse(HttpServerResponse response, Throwable localInstance) {
     String errorMessage = localInstance.getMessage();
 
-    if (errorMessage.contains("urn:dx:cat:InvalidSchema")) {
+    if (errorMessage.contains(":InvalidSchema")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidAuthorizationToken")) {
+    } else if (errorMessage.contains(":InvalidAuthorizationToken") || errorMessage.contains(":invalidAuthorizationToken")) {
       response.setStatusCode(401).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:ItemNotFound")) {
+    } else if (errorMessage.contains(":ItemNotFound")) {
       response.setStatusCode(404).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidSyntax")) {
+    } else if (errorMessage.contains(":InvalidSyntax")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:OperationNotAllowed")) {
+    } else if (errorMessage.contains(":OperationNotAllowed")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:InvalidUUID")) {
+    } else if (errorMessage.contains(":InvalidUUID")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains("urn:dx:cat:LinkValidationFailed")) {
+    } else if (errorMessage.contains(":LinkValidationFailed")) {
       response.setStatusCode(400).end(errorMessage);
     } else {
       response.setStatusCode(500).end(errorMessage);
