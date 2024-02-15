@@ -190,7 +190,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail("Request failed");
+        promise.fail(handler.cause());
       }
     });
 
