@@ -16,13 +16,12 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
   @Override
   public void beforeAll(ExtensionContext context) {
     JsonObject config = Configuration.getConfiguration("./secrets/all-verticles-configs/config-test.json", 0);
-    System.out.println("config: "+config);
     // String testHost = config.getString("ip");
     String authServerHost = config.getString("authServerHost");
     // String authUrl=config.getString("authUrl");
     boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
     if (testOnDepl) {
-      String testHost = "cos.iudx.org.in";
+      String testHost = "onboarding.iudx.io";
       baseURI = "https://" + testHost;
       port = 443;
     } else {
