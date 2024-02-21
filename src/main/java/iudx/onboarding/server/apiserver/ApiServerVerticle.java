@@ -274,14 +274,14 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .end(
                     respBuilder.getResponse());
           } else {
-            response.setStatusCode(400)
-                .end(completeHandler.cause().getMessage());
+            handleResponse(response, completeHandler.cause());
           }
         });
   }
 
   private Future<JsonObject> createAdapterForResourceGroup(MultiMap tokenHeadersMap, ResultContainer resultContainer, JsonObject item) {
     String itemType = dxItemType(item.getJsonArray("type"));
+    LOGGER.debug(item);
     if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
       resultContainer.result = new JsonObject().put("item_details", item);
       String itemId = item.getString("id");
@@ -715,6 +715,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void handleResponse(HttpServerResponse response, Throwable localInstance) {
     String errorMessage = localInstance.getMessage();
 
+    LOGGER.debug(errorMessage);
+
     if (errorMessage.contains(":InvalidSchema")) {
       response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains(":InvalidAuthorizationToken") || errorMessage.contains(":invalidAuthorizationToken")) {
@@ -729,7 +731,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains(":LinkValidationFailed")) {
       response.setStatusCode(400).end(errorMessage);
-    } else {
+    } else if(errorMessage.contains(":urn:dx:cat:InvalidUUID")){
+      response.setStatusCode(400).end(errorMessage);
+    }else {
       response.setStatusCode(500).end(errorMessage);
     }
   }
