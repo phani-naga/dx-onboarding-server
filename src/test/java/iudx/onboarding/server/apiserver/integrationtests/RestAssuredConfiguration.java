@@ -21,7 +21,8 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
     // String authUrl=config.getString("authUrl");
     boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
     if (testOnDepl) {
-      String testHost = "onboarding.iudx.io";
+//      String testHost = "onboarding.iudx.io";
+      String testHost = config.getString("testHost");
       baseURI = "https://" + testHost;
       port = 443;
     } else {
