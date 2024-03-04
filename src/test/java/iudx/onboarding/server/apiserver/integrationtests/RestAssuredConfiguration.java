@@ -2,8 +2,8 @@ package iudx.onboarding.server.apiserver.integrationtests;
 
 import io.vertx.core.json.JsonObject;
 import iudx.onboarding.server.apiserver.integrationtests.tokens.TokenSetup;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 

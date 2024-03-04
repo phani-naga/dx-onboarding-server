@@ -9,29 +9,29 @@
   <version>1.0.0-SNAPSHOT</version>
 
   <properties>
-    <vertx.version>4.3.2</vertx.version>
+    <vertx.version>4.5.4</vertx.version>
     <openjdk.version>11</openjdk.version>
     <hazelcast.version>4.0.2</hazelcast.version>
-    <micrometer.version>1.9.2</micrometer.version>
-    <curator.version>5.3.0</curator.version>
-    <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
-    <junit-jupiter-engine.version>5.8.2</junit-jupiter-engine.version>
-    <apache-log4j2.version>2.17.1</apache-log4j2.version>
-    <lmax-disruptor.version>3.4.4</lmax-disruptor.version>
-    <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-    <checkstyle.version>10.5.0</checkstyle.version>
-    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
-    <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
-    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
-    <maven-pmd-plugin.version>3.17.0</maven-pmd-plugin.version>
-    <maven-checkstyle-plugin-google.version>3.1.2</maven-checkstyle-plugin-google.version>
-    <maven-surefire-report-plugin.version>3.0.0-M7</maven-surefire-report-plugin.version>
-    <junit-jupiter.params>5.8.2</junit-jupiter.params>
-    <testcontainer.params>1.17.3</testcontainer.params>
-    <testcontainer-postgres.version>1.17.3</testcontainer-postgres.version>
-    <jts2geojson.version>0.17.0</jts2geojson.version>
-    <elasticsearch-rest-client.version>8.3.3</elasticsearch-rest-client.version>
+    <micrometer.version>1.12.3</micrometer.version>
+    <curator.version>5.6.0</curator.version>
+    <apache-commons-lang3.version>3.14.0</apache-commons-lang3.version>
+    <junit-jupiter-engine.version>5.10.2</junit-jupiter-engine.version>
+    <apache-log4j2.version>2.23.0</apache-log4j2.version>
+    <lmax-disruptor.version>4.0.0</lmax-disruptor.version>
+    <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+    <checkstyle.version>10.14.0</checkstyle.version>
+    <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+    <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
+    <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+    <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
+    <maven-pmd-plugin.version>3.21.2</maven-pmd-plugin.version>
+    <maven-checkstyle-plugin-google.version>3.3.1</maven-checkstyle-plugin-google.version>
+    <maven-surefire-report-plugin.version>3.2.5</maven-surefire-report-plugin.version>
+    <junit-jupiter.params>5.10.2</junit-jupiter.params>
+    <testcontainer.params>1.19.6</testcontainer.params>
+    <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
+    <jts2geojson.version>0.18.1</jts2geojson.version>
+    <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>iudx.onboarding.server.deploy.Deployer</exec.mainClass>
     <exec.mainClassDev>iudx.onboarding.server.deploy.DeployerDev
@@ -62,46 +62,58 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-codegen</artifactId>
+      <version>${vertx.version}</version>
       <classifier>processor</classifier>
     </dependency>
 
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-service-proxy</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-service-discovery</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.goterl</groupId>
       <artifactId>lazysodium-java</artifactId>
-      <version>5.1.1</version>
+      <version>5.1.4</version>
     </dependency>
 
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>5.12.1</version>
+      <version>5.14.0</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-client</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-checkstyle-plugin</artifactId>
       <version>${maven-checkstyle-plugin-google.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.collections</groupId>
+          <artifactId>google-collections</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -120,21 +132,25 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
+      <version>${vertx.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- log4j2 logging dependencies-->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
+      <version>${apache-log4j2.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-api</artifactId>
+      <version>${apache-log4j2.version}</version>
     </dependency>
     <!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
     </dependency>
     <!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
     <dependency>
@@ -145,6 +161,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-micrometer-metrics</artifactId>
+      <version>${vertx.version}</version>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
@@ -179,7 +196,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-rx-java2</artifactId>
-      <version>${vertx.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -214,30 +230,49 @@
 
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>3.11.1</version>
+      <version>5.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.11.1</version>
+      <version>5.11.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.261</version>
+      <version>1.12.671</version>
     </dependency>
     <!--HLC transition dependency -->
     <dependency>
       <groupId>co.elastic.clients</groupId>
       <artifactId>elasticsearch-java</artifactId>
-      <version>8.3.3</version>
+      <version>8.12.2</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+      <version>2.17.0-rc1</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.17.0-rc1</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.17.0-rc1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>33.0.0-jre</version>
     </dependency>
     <dependency>
       <groupId>dev.failsafe</groupId>
