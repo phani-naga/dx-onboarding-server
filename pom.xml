@@ -31,7 +31,6 @@
     <testcontainer.params>1.19.6</testcontainer.params>
     <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
     <jts2geojson.version>0.18.1</jts2geojson.version>
-    <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>iudx.onboarding.server.deploy.Deployer</exec.mainClass>
     <exec.mainClassDev>iudx.onboarding.server.deploy.DeployerDev
@@ -75,12 +74,6 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-service-discovery</artifactId>
       <version>${vertx.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.goterl</groupId>
-      <artifactId>lazysodium-java</artifactId>
-      <version>5.1.4</version>
     </dependency>
 
     <dependency>
@@ -218,11 +211,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
-      <version>${elasticsearch-rest-client.version}</version>
-    </dependency>
-    <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-auth-oauth2</artifactId>
     </dependency>
@@ -238,11 +226,6 @@
       <artifactId>mockito-junit-jupiter</artifactId>
       <version>5.11.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>1.12.671</version>
     </dependency>
     <!--HLC transition dependency -->
     <dependency>
