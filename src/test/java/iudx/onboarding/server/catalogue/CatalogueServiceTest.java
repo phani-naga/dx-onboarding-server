@@ -352,7 +352,6 @@ public class CatalogueServiceTest {
             ar -> {
               if (ar.succeeded()) {
                 verify(httpRequest, times(1)).send(any());
-
                 testContext.failNow(ar.cause());
               } else {
                 testContext.completeNow();
