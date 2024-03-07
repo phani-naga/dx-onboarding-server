@@ -680,6 +680,174 @@ paths:
           source: |
             curl --location --request DELETE 'https://example-cat.com/iudx/cat/v1/internal/ui/domain?domainId=3d73067f-2855-4155-b918-14d621b7a576' \
             --header 'token: <token>'
+  /instance:
+    post:
+      tags:
+        - Administrator
+      description: Create an DX instance
+      operationId: create instance
+      parameters:
+        - name: token
+          in: header
+          description: DX Auth token to process the request
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+            maxLength: 512
+        - name: id
+          in: query
+          description: |
+            `id` of the instance. In most cases this is a city name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Successfully inserted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/successResponseCreateInstance'
+              examples:
+                Created instance successfully:
+                  value:
+                    type: "urn:dx:cat:Success"
+                    results: {
+                      "id": "Bengaluru",
+                      "type": [
+                        "iudx:Instance"
+                      ],
+                      "instance": "",
+                      "_summary": ""
+                    }
+                    detail: "Success: Item created"
+                    title: "Success"
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponseForCreateInstance'
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/unAuthorizedAccess'
+              examples:
+                Unauthorized request:
+                  value:
+                    type: "urn:dx:cat:InvalidAuthorizationToken"
+                    title: "Token is invalid"
+                    detail: "Incorrect audience value in jwt"
+      servers:
+        - url: 'https://example-cat.com/iudx/cat/v1'
+          description: Production Instance
+      x-codeSamples:
+        - lang: cURL
+          label: create instance
+          source: |
+            curl --location --request POST 'https://example-cat.com/iudx/cat/v1/instance?id=Bengaluru' \
+            --header 'token: <token>' \
+            --data-raw ''
+  /list/instance:
+    get:
+      tags:
+        - Administrator
+      description: This API gets the list of instances from the DX Catalogue Server
+      operationId: get instances
+      responses:
+        '200':
+          description: Successfully fetched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/successResponseForGetInstance'
+      servers:
+        - url: 'https://example-cat.com/iudx/cat/v1'
+          description: Production Instance
+      x-codeSamples:
+        - lang: cURL
+          label: create instance
+          source: |
+            curl --location --request GET 'https://example-cat.com/iudx/cat/v1/list/instance'
+    delete:
+      tags:
+        - Administrator
+      description: Delete an DX instance
+      operationId: delete instance
+      parameters:
+        - name: token
+          in: header
+          description: DX Auth token to process the request
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: |
+            id of the instance. In most cases this is a city name.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/successResponseForDeleteInstance'
+              examples:
+                Successfully deleted:
+                  value:
+                    type: "urn:dx:cat:Success"
+                    title: "Success"
+                    results: [
+                      {
+                        "id": "poone"
+                      }
+                    ]
+                    detail: "Success: Item deleted successfully"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/unAuthorizedAccess'
+              examples:
+                Unauthorized access:
+                  value:
+                    type: "urn:dx:cat:InvalidAuthorizationToken"
+                    title: "Token is invalid"
+                    detail: "Incorrect audience value in jwt"
+        '404':
+          description: Instance doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponseForDeleteInstance'
+              examples:
+                Item not found:
+                  value:
+                    type: "urn:dx:cat:ItemNotFound"
+                    title: "Item is not found"
+                    results: [
+                      {
+                        "id": "non-exisiting-id",
+                        "detail": "Fail: Doc doesn't exist, can't delete"
+                      }
+                    ]
+      servers:
+        - url: 'https://example-cat.com/iudx/cat/v1'
+          description: Production Instance
+      x-codeSamples:
+        - lang: cURL
+          label: delete instance
+          source: |
+            curl --location --request DELETE 'https://example-cat.com/iudx/cat/v1/instance?id=Bengaluru' \
+            --header 'token: <token>'
 tags:
   - name: Entity
     description: |
@@ -694,6 +862,10 @@ tags:
     description: |
       Catalogue middle layer specific APIs.  Catalogue has data-domain models that describes each of the domains.
     x-displayName: Mlayer Domain
+  - name: Administrator
+    description: |
+      Catalogue administrator specific apis.
+    x-displayName: Administrator
 components:
   schemas:
     successResponseWithObjects:
@@ -2025,3 +2197,134 @@ components:
         type: 'urn:dx:cat:InvalidUUID'
         title: Invalid syntax of uuid
         detail: The id is invalid
+    successResponseCreateInstance:
+      type: object
+      title: Response for list with instance type
+      description: Example response for list types
+      properties:
+        type:
+          type: string
+          description: |
+            URN type of the response indicating if the query was successful or if any errors have
+            been triggered
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+      required:
+        - type
+      example:
+        type: 'urn:dx:cat:Success'
+        results:
+          - id: Bengaluru
+            method: insert
+            title: 'urn:dx:cat:Success'
+    errorResponseForCreateInstance:
+      type: object
+      title: Response for bad request
+      description: Invalid id in query param
+      properties:
+        type:
+          type: string
+          description: |
+            Indicates that the id sent in request is invalid
+        title:
+          description: A human readable title to the message response
+        detail:
+          type: string
+          description: Detailed description of the type or response
+      required:
+        - type
+      example:
+        type: 'urn:dx:cat:InvalidSyntax'
+        title: Invalid Syntax
+        detail: id not present in the request
+    successResponseForGetInstance:
+      type: object
+      title: Response for getting instance
+      description: Example success response for getting DX Catalogue instances
+      properties:
+        type:
+          type: string
+          description: |
+            URN type of the response indicating if the query was successful or if any errors have
+            been triggered.
+        totalHits:
+          type: integer <int32>
+          description: Total number of documents which matched the query.
+        title:
+          description: A human readable title to the message response.
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+      required:
+        - type
+      example:
+        type: 'urn:dx:cat:Success'
+        title: Success
+        totalHits: 9
+        results:
+          - '10'
+          - abcd
+          - bengaluru
+          - mumbai
+          - poone
+          - pune
+          - stqc
+          - surat
+    successResponseForDeleteInstance:
+      type: object
+      title: Response for list with instance type
+      description: Example response for list types
+      properties:
+        type:
+          type: string
+          description: |
+            URN type of the response indicating if the query was successful or if any errors have
+            been triggered
+        title:
+          type: string
+          description: A human readable title to the message response
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+      required:
+        - type
+      example:
+        type: 'urn:dx:cat:Success'
+        title: Success
+        results:
+          - id: Bengaluru
+            method: delete
+            title: 'urn:dx:cat:Success'
+    errorResponseForDeleteInstance:
+      type: object
+      title: Response for bad request
+      description: Invalid item type in the given request
+      properties:
+        type:
+          type: string
+          description: |
+            Indicates that the item type sent in request path param is invalid
+        title:
+          description: A human readable title to the message response
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+      required:
+        - type
+      example:
+        type: 'urn:dx:cat:ItemNotFound'
+        title: Item is not found
+        results:
+          - id: Abcd
+            method: delete
+            title: failed
+            detail: 'Fail: Doc doesn''t exist, can''t delete'
