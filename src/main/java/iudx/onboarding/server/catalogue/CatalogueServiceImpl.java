@@ -3,11 +3,9 @@ package iudx.onboarding.server.catalogue;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
-import io.netty.channel.ConnectTimeoutException;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.apiserver.util.RespBuilder;
@@ -15,7 +13,6 @@ import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.InconsistencyHandler;
-import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -161,13 +158,27 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
             });
           });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
-      localCat.deleteItem(id, token).onComplete(completeHandler -> {
-        if (completeHandler.succeeded()) {
-          promise.complete(completeHandler.result());
-        } else {
-          promise.fail(completeHandler.cause());
-        }
-      });
+      RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+          .onSuccess(successListener -> {
+            promise.complete((JsonObject) successListener.getResult());
+          })
+          .onFailure(listener -> {
+            LOGGER.warn("Failed to delete item from local catalogue");
+            Future.future(f -> inconsistencyHandler.handleRecreateAdapter(id, token));
+            promise.fail(handleFailure(listener.getException()));
+          })
+          .build();
+      Failsafe.with(retryPolicy)
+          .getAsyncExecution(asyncExecution -> {
+            localCat.deleteItem(id, token)
+                .onComplete(completeHandler -> {
+                  if (completeHandler.succeeded()) {
+                    promise.complete(completeHandler.result());
+                  } else {
+                    promise.fail(completeHandler.cause());
+                  }
+                });
+          });
     } else {
       promise.fail("Invalid catalogue type");
     }

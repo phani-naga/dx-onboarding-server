@@ -72,10 +72,10 @@ public class InconsistencyHandler {
               }).compose(tokenHandler -> {
                 return centralCat.deleteItem(id, tokenHandler.getString("token"));
               }).onComplete(completeHandler -> {
-                if(completeHandler.succeeded()) {
+                if (completeHandler.succeeded()) {
                   asyncExecution.recordResult(completeHandler.result());
                 } else {
-                  asyncExecution.recordException(new DxRuntimeException(400,completeHandler.cause().getMessage()));
+                  asyncExecution.recordException(new DxRuntimeException(400, completeHandler.cause().getMessage()));
                 }
               });
         });
@@ -141,11 +141,11 @@ public class InconsistencyHandler {
     return Future.succeededFuture();
   }
 
-    /**
-     * This method is meant to delete instance on local when upload to central fails
-     *
-     * @return Future which is of the type void
-     */
+  /**
+   * This method is meant to delete instance on local when upload to central fails
+   *
+   * @return Future which is of the type void
+   */
   public Future<Void> handleDeleteInstanceOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
@@ -175,11 +175,11 @@ public class InconsistencyHandler {
     return Future.succeededFuture();
   }
 
-    /**
-     * This method is meant to restore instance on local when update on central fails
-     *
-     * @return Future which is of the type void
-     */
+  /**
+   * This method is meant to restore instance on local when update on central fails
+   *
+   * @return Future which is of the type void
+   */
   public Future<Void> handleUploadInstanceToLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
@@ -214,11 +214,11 @@ public class InconsistencyHandler {
     return Future.succeededFuture();
   }
 
-    /**
-     * This method is meant to restore item on local when update on central fails
-     *
-     * @return Future which is of the type void
-     */
+  /**
+   * This method is meant to restore item on local when update on central fails
+   *
+   * @return Future which is of the type void
+   */
   public Future<Void> handleUpdateInstanceOnLocal(final String id, final String token) {
 
     RetryPolicy<Object> retryPolicy =
@@ -351,14 +351,38 @@ public class InconsistencyHandler {
                         localCat
                             .updateDomain(id, item, token)
                             .onSuccess(
-                                successHandler -> {
-                                  asyncExecution.complete();
-                                })
+                                successHandler -> asyncExecution.complete())
                             .onFailure(asyncExecution::recordException);
                       })
                   .onFailure(asyncExecution::recordException);
             });
 
+    return Future.succeededFuture();
+  }
+
+  /**
+   * This method is meant to re-create adapter on the resource server if delete item fails on catalogue server
+   */
+  public Future<Void> handleRecreateAdapter(String id, String token) {
+    RetryPolicy<Object> retryPolicy =
+        retryPolicyBuilder
+            .onSuccess(listener -> LOGGER.info("Delete of adapter reverted after failure on local catalogue"))
+            .onFailure(
+                failureListener -> {
+                  LOGGER.error("INCONSISTENCY DETECTED : ADAPTER NOT RESTORED IN RESOURCE SERVER");
+                }
+            )
+            .build();
+
+    Failsafe.with(retryPolicy)
+        .getAsyncExecution(
+            asyncExecution -> {
+              resourceServerService
+                  .createAdapter(id, token)
+                  .onSuccess(successHandler -> asyncExecution.complete())
+                  .onFailure(asyncExecution::recordException);
+            }
+        );
     return Future.succeededFuture();
   }
 }
