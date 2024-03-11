@@ -1,0 +1,62 @@
+version: '3.7'
+
+networks:
+  onboarding-server-net:
+    driver: bridge
+
+services:
+  test:
+    image: ghcr.io/datakaveri/onboarding-server-test:latest
+    env_file:
+      - ./../configs_and_tests/.onboarding.env
+    volumes:
+      - ./src/:/usr/share/app/src
+      # - /home/ubuntu/configs/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
+      - ../configs_and_tests/config.json:/usr/share/app/configs/onboarding-config.json
+      - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
+      # - ${WORKSPACE}:/tmp/test
+      - type: volume
+        source: onboarding-server-volume
+        target: /usr/share/app/storage/temp-dir
+    command: bash -c "docker/runTests.sh"
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "100m"
+ 
+  integTest:
+    image: ghcr.io/datakaveri/onboarding-server-depl:latest
+    env_file:
+      - ./../configs_and_tests/.onboarding.env
+    volumes:
+      # - /home/ubuntu/configs/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
+      - ../configs_and_tests/config.json:/usr/share/app/configs/onboarding-config.json
+      - ./iudx-pmd-ruleset.xml:/usr/share/app/iudx-pmd-ruleset.xml
+      - ./google_checks.xml:/usr/share/app/google_checks.xm
+      - type: volume
+        source: onboarding-server-volume
+        target: /usr/share/app/storage/temp-dir
+    depends_on:
+      - "zookeeper"
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    networks:
+      - onboarding-server-net
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "100m"
+    command: bash -c "exec java $$onboarding-server_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/onboarding-config.json"
+  zookeeper:
+    image: zookeeper:latest
+    expose:
+      - "2181"
+    networks:
+      - onboarding-server-net
+
+volumes:
+  onboarding-server-volume:
