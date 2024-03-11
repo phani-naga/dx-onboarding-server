@@ -19,7 +19,7 @@ pipeline {
 
 
   stages {
-        stage('Build images') {
+    stage('Build images') {
       steps{
         script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
@@ -86,7 +86,7 @@ pipeline {
       }
     }
 
-       stage('Integration tests & OWASP ZAP pen test'){
+    stage('Integration tests & OWASP ZAP pen test'){
       steps{
         node('built-in') {
           script{
@@ -155,7 +155,7 @@ pipeline {
             }
           }          
         }
-               stage('Integration test on <dev/staging> deployment') {
+        stage('Integration test on swarm deployment') {
           steps {
             node('built-in') {
               script{
@@ -167,7 +167,7 @@ pipeline {
             always{
               node('built-in') {
                 script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/onboarding/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: '<Dev/Staging> Integration Test Report'])
+                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/onboarding/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'swarm Integration Test Report'])
                 }
               }
             }
@@ -176,22 +176,17 @@ pipeline {
             }
           }
         }
-
-
-
-      }
-    }
-  
-    post{
-    failure{
-      script{
-        if (env.GIT_BRANCH == 'origin/main')
-        emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
-Check console output at $BUILD_URL to view the results.'''
       }
     }
   }
-
-}
+    post{
+      failure{
+        script{
+          if (env.GIT_BRANCH == 'origin/main')
+          emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+  Check console output at $BUILD_URL to view the results.'''
+        }
+    }
+  }
 }
 
