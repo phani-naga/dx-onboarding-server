@@ -28,7 +28,7 @@ pipeline {
         }
       }
     }
-stage('Unit Tests and Code Coverage Test'){
+    stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
           sh 'docker compose -f docker-compose.test.yml up test'
@@ -68,6 +68,7 @@ stage('Unit Tests and Code Coverage Test'){
           }
         }        
       }
+    }
     stage('Start onboarding-server for Performance/Integration Testing'){
       steps{
         script{
@@ -180,9 +181,7 @@ stage('Unit Tests and Code Coverage Test'){
 
       }
     }
-
-
-  }
+  
     post{
     failure{
       script{
