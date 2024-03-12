@@ -92,7 +92,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
               sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/iudx-onboarding-server-test-suite.postman_collection.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
+              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/onboarding-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
           }
         }
@@ -145,7 +145,7 @@ pipeline {
         stage('Docker Swarm deployment') {
           steps {
             script {
-              sh "ssh azureuser@docker-swarm 'docker service update onboarding-server_onboarding-server --image ghcr.io/datakaveri/onboarding-server-depl:5.5.5-alpha-${env.GIT_HASH}'"
+              sh "ssh azureuser@docker-swarm 'docker service update onboarding-server_onboarding-server --image ghcr.io/datakaveri/onboarding-server-depl:5.5.0-alpha-${env.GIT_HASH}'"
               sh 'sleep 10'
             }
           }
@@ -159,7 +159,7 @@ pipeline {
           steps {
             node('built-in') {
               script{
-                sh 'newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/cd/iudx-onboarding-server-test-suite.postman_collection.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+                sh 'newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/cd/onboarding-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
               }
             }
           }
