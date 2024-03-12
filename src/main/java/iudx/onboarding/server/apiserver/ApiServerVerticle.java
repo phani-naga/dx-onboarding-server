@@ -1,5 +1,9 @@
 package iudx.onboarding.server.apiserver;
 
+import static iudx.onboarding.server.apiserver.util.Constants.*;
+import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
+import static iudx.onboarding.server.common.Constants.*;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -24,18 +28,13 @@ import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.HttpStatusCode;
 import iudx.onboarding.server.resourceserver.ResourceServerService;
 import iudx.onboarding.server.token.TokenService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static iudx.onboarding.server.apiserver.util.Constants.*;
-import static iudx.onboarding.server.apiserver.util.Util.errorResponse;
-import static iudx.onboarding.server.common.Constants.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The Onboarding Server API Verticle.
@@ -70,7 +69,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private TokenService tokenService;
   private CatalogueUtilService catalogueService;
   private ResourceServerService resourceServerService;
-  private LocalCatImpl localCat;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -346,7 +344,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private Future<JsonObject> deleteAdapterForResourceGroup(String id, MultiMap tokenHeaderMap) {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.debug("delete adapter started");
-    catalogueService.getItem(id,CatalogueType.LOCAL)
+    catalogueService.getItem(id, CatalogueType.LOCAL)
         .compose(localCatResult -> {
           LOGGER.debug("debugging localCat :{}", localCatResult);
           String itemType = dxItemType(localCatResult.getJsonArray("results").getJsonObject(0).getJsonArray("type"));
@@ -618,7 +616,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .deleteDomain(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             deleteLocalDomain -> {
-              JsonObject localCreateResponse = deleteLocalDomain;
               LOGGER.debug("item deleted in local cat {}", deleteLocalDomain.getJsonArray(RESULTS));
 
               if (isUacAvailable) {
@@ -731,9 +728,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       response.setStatusCode(400).end(errorMessage);
     } else if (errorMessage.contains(":LinkValidationFailed")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if(errorMessage.contains(":urn:dx:cat:InvalidUUID")){
+    } else if (errorMessage.contains(":urn:dx:cat:InvalidUUID")) {
       response.setStatusCode(400).end(errorMessage);
-    }else {
+    } else {
       response.setStatusCode(500).end(errorMessage);
     }
   }

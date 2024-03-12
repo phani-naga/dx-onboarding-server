@@ -1,5 +1,7 @@
 package iudx.onboarding.server.catalogue.service;
 
+import static iudx.onboarding.server.common.Constants.TOKEN;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -9,8 +11,6 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.onboarding.server.common.Constants.TOKEN;
 
 public class LocalCatImpl implements CatalogueService {
 
@@ -56,7 +56,7 @@ public class LocalCatImpl implements CatalogueService {
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();
@@ -83,7 +83,7 @@ public class LocalCatImpl implements CatalogueService {
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();
@@ -110,7 +110,7 @@ public class LocalCatImpl implements CatalogueService {
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future(); // Return the future outside the callback function
@@ -134,10 +134,10 @@ public class LocalCatImpl implements CatalogueService {
               LOGGER.info("Failure {}", httpResponseAsyncResult.cause());
               promise.fail(cause);
             } else {
-              LOGGER.debug("get item fail :{}",httpResponseAsyncResult.result().bodyAsString());
+              LOGGER.debug("get item fail :{}", httpResponseAsyncResult.result().bodyAsString());
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();
@@ -196,7 +196,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -223,7 +223,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -254,7 +254,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -285,7 +285,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future(); // Return the future outside the callback function
@@ -316,7 +316,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -343,7 +343,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -374,7 +374,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future();
@@ -405,7 +405,7 @@ public class LocalCatImpl implements CatalogueService {
                 } else {
                   promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
-                ; // Fail the promise with the failure cause
+                // Fail the promise with the failure cause
               }
             });
     return promise.future(); // Return the future outside the callback function

@@ -53,7 +53,7 @@ public class CentralCatImpl implements CatalogueService {
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();
@@ -80,7 +80,7 @@ public class CentralCatImpl implements CatalogueService {
             } else {
               promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();
@@ -107,7 +107,7 @@ public class CentralCatImpl implements CatalogueService {
             } else {
               promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future(); // Return the future outside the callback function
@@ -130,7 +130,7 @@ public class CentralCatImpl implements CatalogueService {
             } else {
               promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
-            ; // Fail the promise with the failure cause
+            // Fail the promise with the failure cause
           }
         });
     return promise.future();

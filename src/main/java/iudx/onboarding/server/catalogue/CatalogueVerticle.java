@@ -1,5 +1,7 @@
 package iudx.onboarding.server.catalogue;
 
+import static iudx.onboarding.server.common.Constants.*;
+
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.AbstractVerticle;
@@ -9,13 +11,10 @@ import io.vertx.serviceproxy.ServiceBinder;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.ingestion.IngestionService;
 import iudx.onboarding.server.token.TokenService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.net.UnknownHostException;
 import java.time.Duration;
-
-import static iudx.onboarding.server.common.Constants.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CatalogueVerticle extends AbstractVerticle {
 
