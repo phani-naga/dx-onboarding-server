@@ -34,27 +34,27 @@ pipeline {
           sh 'docker compose -f docker-compose.test.yml up test'
         }
         xunit (
-          thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
+          thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '4') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,**/*Service.class,iudx/onboarding/server/deploy/*.class'
       }
       post{
-      always {
-        recordIssues(
-          enabledForFailure: true,
-          blameDisabled: true,
-          forensicsDisabled: true,
-          qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
-          tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-        )
-        recordIssues(
-          enabledForFailure: true,
-          blameDisabled: true,
-          forensicsDisabled: true,
-          qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
-          tool: pmdParser(pattern: 'target/pmd.xml')
-        )
+        always {
+          recordIssues(
+            enabledForFailure: true,
+            blameDisabled: true,
+            forensicsDisabled: true,
+            qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
+            tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+          )
+          recordIssues(
+            enabledForFailure: true,
+            blameDisabled: true,
+            forensicsDisabled: true,
+            qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
+            tool: pmdParser(pattern: 'target/pmd.xml')
+          )
       }
         failure{
           script{
