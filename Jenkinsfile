@@ -86,24 +86,34 @@ pipeline {
       }
     }
 
-    stage('Integration tests & OWASP ZAP pen test'){
+        stage('Integration Tests and OWASP ZAP pen test'){
       steps{
         node('built-in') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
-              sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/onboarding-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
-            runZapAttack()
+            startZap ([host: '0.0.0.0', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
+            sh 'curl http://0.0.0.0:8090/JSON/pscan/action/disableScanners/?ids=10096'
           }
+        }
+        script{
+            sh 'cp /home/ubuntu/configs/onboarding-config.json.json ./configs/test-config.json'
+            sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
+        }
+        node('built-in') {
+          script{
+            runZapAttack()
+            }
         }
       }
       post{
         always{
+           xunit (
+             thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+             tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+             )
           node('built-in') {
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/onboarding/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
             script{
               archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
-            }  
+            }
           }
         }
         failure{
@@ -116,6 +126,8 @@ pipeline {
         }
       }
     }
+
+
    stage('Continuous Deployment') {
       when {
         allOf {
