@@ -95,7 +95,8 @@ pipeline {
           }
         }
         script{
-            sh 'cp /home/ubuntu/configs/onboarding-config.json ./configs/test-config.json'
+            sh 'mv example-config/ configs/'
+            sh 'cp /home/ubuntu/configs/onboarding-config.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
