@@ -95,7 +95,7 @@ pipeline {
           }
         }
         script{
-            sh 'mv example-config/ configs/'
+            sh 'mkdir configs'
             sh 'cp /home/ubuntu/configs/onboarding-config.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
@@ -118,6 +118,9 @@ pipeline {
           }
         }
         failure{
+          script{
+            sh 'rm -rf configs'
+          }
           error "Test failure. Stopping pipeline execution!"
         }
         cleanup{
@@ -165,6 +168,9 @@ pipeline {
           post{
             failure{
               error "Failed to deploy image in Docker Swarm"
+              script{
+                sh 'rm -rf configs'
+              }
             }
           }          
         }
@@ -181,24 +187,30 @@ pipeline {
               node('built-in') {
                 script{
                   publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/onboarding/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'swarm Integration Test Report'])
+
                 }
               }
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
             }
+            cleanup{
+              script{
+                sh 'rm -rf configs'
+              }
+            }
           }
         }
       }
     }
   }
-    post{
-      failure{
-        script{
-          if (env.GIT_BRANCH == 'origin/main')
-          emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
-  Check console output at $BUILD_URL to view the results.'''
-        }
+  post{
+    failure{
+      script{
+        if (env.GIT_BRANCH == 'origin/main')
+        emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+Check console output at $BUILD_URL to view the results.'''
+      }
     }
   }
 }
