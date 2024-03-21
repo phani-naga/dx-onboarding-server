@@ -16,7 +16,6 @@ public class TokenSetup {
   private static WebClient webClient;
   public static void setupTokens(String authEndpoint, JsonObject clientCredentials) {
     // Fetch tokens asynchronously and wait for all completions
-    JsonObject providerCredentials = clientCredentials.getJsonObject("provider");
     JsonObject rsAdminCredentials = clientCredentials.getJsonObject("rsAdmin");
     JsonObject cosAdminCredentials = clientCredentials.getJsonObject("cosAdmin");
     LOGGER.debug(cosAdminCredentials);
@@ -24,8 +23,8 @@ public class TokenSetup {
         fetchToken(
           "provider",
           authEndpoint,
-          providerCredentials.getString("clientID"),
-          providerCredentials.getString("clientSecret")),
+          cosAdminCredentials.getString("clientID"),
+          cosAdminCredentials.getString("clientSecret")),
         fetchToken(
           "admin",
           authEndpoint,
@@ -78,8 +77,6 @@ public class TokenSetup {
               switch (userType) {
                 case "provider":
                   providerToken = accessToken;
-                  token = accessToken;
-                  LOGGER.debug("token: "+token);
                   break;
                 case "admin":
                   rsAdminToken = accessToken;
@@ -109,11 +106,6 @@ public class TokenSetup {
   private static JsonObject getPayload(String userType) {
     JsonObject jsonPayload = new JsonObject();
     switch (userType) {
-      case "consumer":
-        jsonPayload.put("itemId", "rs.iudx.io");
-        jsonPayload.put("itemType", "resource_server");
-        jsonPayload.put("role", "consumer");
-        break;
       case "provider":
         jsonPayload.put("itemId", "rs.iudx.io");
         jsonPayload.put("itemType", "resource_server");
