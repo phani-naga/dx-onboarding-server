@@ -4,6 +4,7 @@
 [![Security Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520onboarding%2520%28master%29%2520pipeline&label=security%20tests)](https://jenkins.iudx.io/job/iudx%20onboarding%20%28master%29%20pipeline/lastBuild/zap/)
 [![Integration Tests](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520onboarding%2520%28master%29%2520pipeline&label=integration%20tests)](https://jenkins.iudx.io/job/iudx%20onboarding%20%28master%29%20pipeline/lastBuild/Integration_20Test_20Report/)
 
+![IUDX](./docs/iudx.png)
 # iudx-onboarding-server
 iudx-onboarding-server
 
