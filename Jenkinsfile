@@ -31,16 +31,19 @@ pipeline {
     stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
-          sh 'docker compose -f docker-compose.test.yml up test'
+          sh 'cp /home/ubuntu/configs/onboarding-config.json ./secrets/all-verticles-configs/config-dev.json'
+           catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+              sh "mvn clean test checkstyle:checkstyle pmd:pmd"
+            }  
         }
-        xunit (
+      }
+      post{
+        always {
+          xunit (
           thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,**/*Service.class,iudx/onboarding/server/deploy/*.class'
-      }
-      post{
-        always {
           recordIssues(
             enabledForFailure: true,
             blameDisabled: true,
@@ -57,9 +60,6 @@ pipeline {
           )
       }
         failure{
-          script{
-            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
-          }
           error "Test failure. Stopping pipeline execution!"
         }
         cleanup{
@@ -178,26 +178,18 @@ pipeline {
           steps {
             node('built-in') {
               script{
-                sh 'newman run /var/lib/jenkins/iudx/onboarding/Newman/iudx-onboarding-server-test-suite.postman_collection.json -e /home/ubuntu/configs/cd/onboarding-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/onboarding/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
-              }
+                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'              }
             }
           }
-          post{
+           post{
             always{
-              node('built-in') {
-                script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/onboarding/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'swarm Integration Test Report'])
-
-                }
-              }
+             xunit (
+               thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+               tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+               )
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
-            }
-            cleanup{
-              script{
-                sh 'rm -rf configs'
-              }
             }
           }
         }
