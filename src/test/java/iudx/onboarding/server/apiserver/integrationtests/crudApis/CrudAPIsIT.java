@@ -275,7 +275,7 @@ public class CrudAPIsIT {
       .put("provider", "bbeacb12-5e54-339d-92e0-d8e063b551a8");
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .post("/item/")
@@ -340,7 +340,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .post("/item/")
@@ -375,7 +375,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .post("/item/")
@@ -401,7 +401,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .post("/item/")
@@ -438,7 +438,7 @@ public class CrudAPIsIT {
       );
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .post("/item/")
@@ -558,7 +558,7 @@ public class CrudAPIsIT {
           )
         )
       )
-      .put("resourceServerRegURL", "rs.iudx.io")
+      .put("resourceServerRegURL", "rs-test-pm.iudx.io")
       .put("resourceAccessModalities", new JsonArray()
         .add(new JsonObject()
           .put("type", new JsonArray().add("iudx:HTTPAccess"))
@@ -641,7 +641,7 @@ public class CrudAPIsIT {
       .put("provider", "bbeacb12-5e54-339d-92e0-d8e063b551a8");
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .put("/item/")
@@ -671,7 +671,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .put("/item/")
@@ -696,7 +696,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .put("/item/")
@@ -726,7 +726,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .put("/item/")
@@ -783,7 +783,7 @@ public class CrudAPIsIT {
 
     Response response = given()
       .contentType("application/json")
-      .header("token", token)
+      .header("token", providerToken)
       .body(jsonPayload.toString())
       .when()
       .put("/item/")
@@ -860,7 +860,7 @@ public class CrudAPIsIT {
   void DeleteRSItemDXEntity() {
     Response response = given()
       .param("id", resource_item_id)
-      .header("token", token)
+      .header("token", providerToken)
       .contentType("application/json")
       .when()
       .delete("/item")
@@ -876,7 +876,7 @@ public class CrudAPIsIT {
   void DeleteRSGroupDXEntity() {
     Response response = given()
       .param("id", resource_group_id)
-      .header("token", token)
+      .header("token", providerToken)
       .contentType("application/json")
       .when()
       .delete("/item")
@@ -956,7 +956,7 @@ public class CrudAPIsIT {
   void DeleteDXEntity404() {
     Response response = given()
       .param("id", "7c8b58a7-6e5b-4a97-a15d-8f4aeb4e987e")
-      .header("token", token)
+      .header("token", providerToken)
       .contentType("application/json")
       .when()
       .delete("/item")
@@ -972,7 +972,7 @@ public class CrudAPIsIT {
   void DeleteDXEntityInvalidUUID() {
     Response response = given()
       .queryParam("id", "dummy-id")
-      .header("token", token)
+      .header("token", providerToken)
       .contentType("application/json")
       .when()
       .delete("/item")
