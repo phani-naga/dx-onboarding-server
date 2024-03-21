@@ -1,0 +1,38 @@
+version: '3.7'
+
+networks:
+  onboarding-server-net:
+    driver: bridge
+
+services:
+  integTest:
+    image: ghcr.io/datakaveri/onboarding-server-depl:latest
+    env_file:
+      - /home/ubuntu/configs/.onboarding.env
+    volumes:
+      - /home/ubuntu/configs/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
+      - type: volume
+        source: onboarding-server-volume
+        target: /usr/share/app/storage/temp-dir
+    depends_on:
+      - "zookeeper"
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    networks:
+      - onboarding-server-net
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "100m"
+    command: bash -c "exec java  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/onboarding-config.json"
+  zookeeper:
+    image: zookeeper:latest
+    expose:
+      - "2181"
+    networks:
+      - onboarding-server-net
+
+volumes:
+  onboarding-server-volume:
