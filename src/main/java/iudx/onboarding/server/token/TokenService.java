@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 public interface TokenService {
 
   Future<JsonObject> createToken();
+
   @GenIgnore
   static TokenService createProxy(Vertx vertx, String address) {
     return new TokenServiceVertxEBProxy(vertx, address);

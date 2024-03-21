@@ -11,6 +11,7 @@ public class Api {
   private StringBuilder tokenUrl;
   private StringBuilder instanceUrl;
   private StringBuilder domainUrl;
+
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
     buildPaths();
@@ -42,11 +43,18 @@ public class Api {
   public String getIngestionUrl() {
     return ingestionUrl.toString();
   }
-  public String getTokenUrl(){
+
+  public String getTokenUrl() {
     return tokenUrl.toString();
   }
-  public String getInstanceUrl(){return  instanceUrl.toString();}
-  public String getDomainUrl(){return  domainUrl.toString();}
+
+  public String getInstanceUrl() {
+    return  instanceUrl.toString();
+  }
+
+  public String getDomainUrl() {
+    return  domainUrl.toString();
+  }
 
 
 }

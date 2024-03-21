@@ -15,6 +15,7 @@ public interface ResourceServerService {
   Future<JsonObject> createAdapter(String id, String token);
 
   Future<JsonObject> deleteAdapter(String id, String token);
+
   @GenIgnore
   static ResourceServerService createProxy(Vertx vertx, String address) {
     return new ResourceServerServiceVertxEBProxy(vertx, address);

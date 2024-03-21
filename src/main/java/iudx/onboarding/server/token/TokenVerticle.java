@@ -20,7 +20,7 @@ public class TokenVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    tokenService = new TokenServiceImpl(vertx,config());
+    tokenService = new TokenServiceImpl(vertx, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(TOKEN_ADDRESS).register(TokenService.class, tokenService);
 

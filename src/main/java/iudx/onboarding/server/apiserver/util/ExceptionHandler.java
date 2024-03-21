@@ -1,15 +1,14 @@
 package iudx.onboarding.server.apiserver.util;
 
+import static iudx.onboarding.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.onboarding.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
+
 import io.vertx.core.Handler;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.onboarding.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
-import static iudx.onboarding.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
-
 
 public class ExceptionHandler implements Handler<RoutingContext> {
 

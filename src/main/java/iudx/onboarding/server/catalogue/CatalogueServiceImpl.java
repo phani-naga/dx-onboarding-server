@@ -1,5 +1,9 @@
 package iudx.onboarding.server.catalogue;
 
+import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
+import static iudx.onboarding.server.common.Constants.ID;
+import static iudx.onboarding.server.common.Constants.TOKEN;
+
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import dev.failsafe.RetryPolicyBuilder;
@@ -14,14 +18,9 @@ import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.InconsistencyHandler;
 import iudx.onboarding.server.token.TokenService;
+import java.net.UnknownHostException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.net.UnknownHostException;
-
-import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
-import static iudx.onboarding.server.common.Constants.ID;
-import static iudx.onboarding.server.common.Constants.TOKEN;
 
 public class CatalogueServiceImpl implements CatalogueUtilService {
 
@@ -98,7 +97,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
             String id = request.getString(ID);
             Future.future(f -> inconsistencyHandler.handleUpdateOnLocal(id, token));
             promise.fail(handleFailure(listener.getException()));
-//            promise.fail(new DxRuntimeException(500, listener.getException().getMessage()));
+            //promise.fail(new DxRuntimeException(500, listener.getException().getMessage()));
           })
           .build();
 
@@ -357,7 +356,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
               .onFailure(
                   listener -> {
                     LOGGER.warn("Failed to update instance to central");
-                    String id = request.getString(ID);
                     Future.future(
                         f -> inconsistencyHandler.handleUpdateInstanceOnLocal(instanceId, token));
                     promise.fail(handleFailure(listener.getException()));

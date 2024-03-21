@@ -1,13 +1,13 @@
 package iudx.onboarding.server.ingestion;
 
+import static iudx.onboarding.server.common.Constants.INGESTION_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.onboarding.server.common.Constants.INGESTION_ADDRESS;
 
 public class IngestionVerticle extends AbstractVerticle {
 

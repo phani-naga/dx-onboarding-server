@@ -1,5 +1,7 @@
 package iudx.onboarding.server.token;
 
+import static iudx.onboarding.server.common.Constants.TOKEN;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -10,8 +12,6 @@ import io.vertx.ext.auth.oauth2.OAuth2Options;
 import io.vertx.ext.auth.oauth2.providers.KeycloakAuth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.onboarding.server.common.Constants.TOKEN;
 
 public class TokenServiceImpl implements TokenService {
   private static final Logger LOGGER = LogManager.getLogger(TokenServiceImpl.class);
