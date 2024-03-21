@@ -4,7 +4,6 @@ pipeline {
   environment {
     devRegistry = 'ghcr.io/datakaveri/onboarding-server-dev'
     deplRegistry = 'ghcr.io/datakaveri/onboarding-server-depl'
-    testRegistry = 'ghcr.io/datakaveri/onboarding-server-test:latest'
     registryUri = 'https://ghcr.io'
     registryCredential = 'datakaveri-ghcr'
     GIT_HASH = GIT_COMMIT.take(7)
@@ -24,7 +23,6 @@ pipeline {
         script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
-          testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
         }
       }
     }
