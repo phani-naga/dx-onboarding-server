@@ -55,6 +55,8 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
     LOGGER.debug("baseURI=" + baseURI);
     LOGGER.debug("setting up the tokens");
+    LOGGER.debug(config.getJsonObject("clientCredentials").getJsonObject("cosAdmin").getString("clientID"));
+    LOGGER.debug(config.getJsonObject("clientCredentials").getJsonObject("rsAdmin").getString("clientID"));
     TokenSetup.setupTokens(
       authEndpoint,
       config.getJsonObject("clientCredentials"));
