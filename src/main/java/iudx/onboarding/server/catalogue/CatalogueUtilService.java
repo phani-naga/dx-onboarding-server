@@ -18,15 +18,10 @@ public interface CatalogueUtilService {
   Future<JsonObject> deleteItem(final JsonObject request, final String token, CatalogueType catalogueType);
 
   Future<JsonObject> getItem(final String request, CatalogueType catalogueType);
-
-  Future<JsonObject> createInstance(final JsonObject request, final String token, CatalogueType catalogueType);
-
-  Future<JsonObject> deleteInstance(final JsonObject request, final String token, CatalogueType catalogueType);
-
+  Future<JsonObject> createInstance(final String path, final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> deleteInstance(final String path, final JsonObject request, final String token, CatalogueType catalogueType);
   Future<JsonObject> updateInstance(String id, final JsonObject request, final String token, CatalogueType catalogueType);
-
-  Future<JsonObject> getInstance(final String request, CatalogueType catalogueType);
-
+  Future<JsonObject> getInstance(final String request, final String path, CatalogueType catalogueType);
   Future<JsonObject> createDomain(final JsonObject request, final String token, CatalogueType catalogueType);
 
   Future<JsonObject> deleteDomain(final JsonObject request, final String token, CatalogueType catalogueType);

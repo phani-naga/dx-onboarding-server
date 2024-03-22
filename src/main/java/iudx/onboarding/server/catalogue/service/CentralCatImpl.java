@@ -6,9 +6,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static iudx.onboarding.server.common.Constants.ID;
 
 public class CentralCatImpl implements CatalogueService {
 
@@ -78,7 +79,7 @@ public class CentralCatImpl implements CatalogueService {
             if (cause != null) {
               promise.fail(cause);
             } else {
-              promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+              promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             // Fail the promise with the failure cause
           }
@@ -105,7 +106,7 @@ public class CentralCatImpl implements CatalogueService {
               LOGGER.debug(cause.getMessage());
               promise.fail(cause);
             } else {
-              promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+              promise.fail(httpResponseAsyncResult.result().bodyAsString());
             }
             // Fail the promise with the failure cause
           }
@@ -137,10 +138,11 @@ public class CentralCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> createInstance(JsonObject request, String token) {
+  public Future<JsonObject> createInstance(JsonObject request, String path, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .post(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+        .post(catPort, catHost, catBasePath.concat(path.concat("/instance")))
+        .setQueryParam(ID, request.getString(ID))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .sendJsonObject(
@@ -157,7 +159,8 @@ public class CentralCatImpl implements CatalogueService {
                   LOGGER.debug(cause.getMessage());
                   promise.fail(cause);
                 } else {
-                  promise.fail(new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  LOGGER.error(httpResponseAsyncResult.result().body());
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });
@@ -166,11 +169,11 @@ public class CentralCatImpl implements CatalogueService {
 
 
   @Override
-  public Future<JsonObject> getInstance(String id) {
+  public Future<JsonObject> getInstance(String id, String path) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .get(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
-        .addQueryParam("id", id)
+        .get(catPort, catHost, catBasePath.concat(path.concat("/instance")))
+        .addQueryParam(ID, id)
         .send(
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
@@ -196,7 +199,7 @@ public class CentralCatImpl implements CatalogueService {
         .put(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
-        .addQueryParam("id", id)
+        .addQueryParam(ID, id)
         .sendJsonObject(
             request,
             httpResponseAsyncResult -> {
@@ -211,8 +214,7 @@ public class CentralCatImpl implements CatalogueService {
                 if (cause != null) {
                   promise.fail(cause);
                 } else {
-                  promise.fail(
-                      new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });
@@ -220,13 +222,13 @@ public class CentralCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> deleteInstance(String id, String token) {
+  public Future<JsonObject> deleteInstance(String id, String path, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .delete(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+        .delete(catPort, catHost, catBasePath.concat(path.concat("/instance")))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
-        .addQueryParam("id", id)
+        .addQueryParam(ID, id)
         .send(
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
@@ -242,8 +244,7 @@ public class CentralCatImpl implements CatalogueService {
                   LOGGER.debug(cause.getMessage());
                   promise.fail(cause);
                 } else {
-                  promise.fail(
-                      new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });
@@ -271,8 +272,7 @@ public class CentralCatImpl implements CatalogueService {
                   LOGGER.debug(cause.getMessage());
                   promise.fail(cause);
                 } else {
-                  promise.fail(
-                      new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });
@@ -325,8 +325,7 @@ public class CentralCatImpl implements CatalogueService {
                 if (cause != null) {
                   promise.fail(cause);
                 } else {
-                  promise.fail(
-                      new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });
@@ -356,8 +355,7 @@ public class CentralCatImpl implements CatalogueService {
                   LOGGER.debug(cause.getMessage());
                   promise.fail(cause);
                 } else {
-                  promise.fail(
-                      new DxRuntimeException(httpResponseAsyncResult.result().statusCode(), httpResponseAsyncResult.result().bodyAsString()));
+                  promise.fail(httpResponseAsyncResult.result().bodyAsString());
                 }
               }
             });

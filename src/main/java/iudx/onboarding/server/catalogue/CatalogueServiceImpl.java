@@ -208,12 +208,12 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   }
 
   @Override
-  public Future<JsonObject> getInstance(String id, CatalogueType catalogueType) {
+  public Future<JsonObject> getInstance(String id, String path, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     Future<JsonObject> getFuture;
-    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getInstance(id);
+    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getInstance(id, path);
     else if (catalogueType.equals(CatalogueType.LOCAL)) {
-      getFuture = localCat.getInstance(id);
+      getFuture = localCat.getInstance(id, path);
     } else {
       promise.fail("Invalid catalogue type");
       return promise.future();
@@ -232,7 +232,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
   @Override
   public Future<JsonObject> createInstance(
-      JsonObject request, String token, CatalogueType catalogueType) {
+      String path, JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
       RetryPolicy<Object> retryPolicy =
@@ -244,9 +244,10 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
               .onFailure(
                   listener -> {
                     LOGGER.warn("Failed to upload item to central");
-                    String id = request.getString("instanceId");
-                    Future.future(f -> inconsistencyHandler.handleDeleteInstanceOnLocal(id, token));
-                    promise.fail(handleFailure(listener.getException()));
+                    String key = path.isEmpty() ? ID : "instanceId";
+                    String id = request.getString(key);
+                    Future.future(f -> inconsistencyHandler.handleDeleteInstanceOnLocal(id, path, token));
+                    promise.fail(listener.getException().getMessage());
                   })
               .build();
 
@@ -257,20 +258,20 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                     .createToken()
                     .compose(
                         adminToken -> {
-                          return centralCat.createInstance(request, adminToken.getString(TOKEN));
+                          return centralCat.createInstance(request, path, adminToken.getString(TOKEN));
                         })
                     .onComplete(
                         ar -> {
                           if (ar.succeeded()) {
                             asyncExecution.recordResult(ar.result());
                           } else {
-                            asyncExecution.recordException(ar.cause());
+                            asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
                           }
                         });
               });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
       localCat
-          .createInstance(request, token)
+          .createInstance(request, path, token)
           .onComplete(
               completeHandler -> {
                 if (completeHandler.succeeded()) {
@@ -288,7 +289,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
   @Override
   public Future<JsonObject> deleteInstance(
-      JsonObject request, String token, CatalogueType catalogueType) {
+      String path, JsonObject request, String token, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     String id = request.getString(ID);
     if (catalogueType.equals(CatalogueType.CENTRAL)) {
@@ -301,8 +302,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
               .onFailure(
                   listener -> {
                     LOGGER.warn("Failed to delete instance from central");
-                    Future.future(f -> inconsistencyHandler.handleUploadInstanceToLocal(id, token));
-                    promise.fail(handleFailure(listener.getException()));
+                    Future.future(f -> inconsistencyHandler.handleUploadInstanceToLocal(id, path, token));
+                    promise.fail(listener.getException().getMessage());
                   })
               .build();
 
@@ -313,20 +314,20 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                     .createToken()
                     .compose(
                         adminToken -> {
-                          return centralCat.deleteInstance(id, adminToken.getString(TOKEN));
+                          return centralCat.deleteInstance(id, path, adminToken.getString(TOKEN));
                         })
                     .onComplete(
                         ar -> {
                           if (ar.succeeded()) {
                             asyncExecution.recordResult(ar.result());
                           } else {
-                            asyncExecution.recordException(ar.cause());
+                            asyncExecution.recordException(new DxRuntimeException(400,ar.cause().getMessage()));
                           }
                         });
               });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
       localCat
-          .deleteInstance(id, token)
+          .deleteInstance(id, path, token)
           .onComplete(
               completeHandler -> {
                 if (completeHandler.succeeded()) {
@@ -358,7 +359,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                     LOGGER.warn("Failed to update instance to central");
                     Future.future(
                         f -> inconsistencyHandler.handleUpdateInstanceOnLocal(instanceId, token));
-                    promise.fail(handleFailure(listener.getException()));
+                    promise.fail(listener.getException().getMessage());
                   })
               .build();
 
@@ -377,7 +378,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                           if (ar.succeeded()) {
                             asyncExecution.recordResult(ar.result());
                           } else {
-                            asyncExecution.recordException(ar.cause());
+                            asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
                           }
                         });
               });
