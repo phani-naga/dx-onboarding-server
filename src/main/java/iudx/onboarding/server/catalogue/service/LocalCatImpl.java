@@ -10,6 +10,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.TOKEN;
 
 public class LocalCatImpl implements CatalogueService {
@@ -169,11 +170,12 @@ public class LocalCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> createInstance(JsonObject request, String token) {
+  public Future<JsonObject> createInstance(JsonObject request, String path, String token) {
     Promise<JsonObject> promise = Promise.promise();
     request.remove(TOKEN);
     catWebClient
-        .post(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+        .post(catPort, catHost, catBasePath.concat(path.concat("/instance")))
+        .setQueryParam(ID, request.getString(ID))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .sendJsonObject(
@@ -200,12 +202,12 @@ public class LocalCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> getInstance(String id) {
+  public Future<JsonObject> getInstance(String id, String path) {
     LOGGER.info("id" + id);
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .get(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
-        .addQueryParam("id", id)
+        .get(catPort, catHost, catBasePath.concat(path.concat("/instance")))
+        .addQueryParam(ID, id)
         .send(
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
@@ -234,7 +236,7 @@ public class LocalCatImpl implements CatalogueService {
         .put(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
-        .addQueryParam("id", id)
+        .addQueryParam(ID, id)
         .sendJsonObject(
             request,
             httpResponseAsyncResult -> {
@@ -258,13 +260,13 @@ public class LocalCatImpl implements CatalogueService {
   }
 
   @Override
-  public Future<JsonObject> deleteInstance(String id, String token) {
+  public Future<JsonObject> deleteInstance(String id, String path, String token) {
     Promise<JsonObject> promise = Promise.promise();
     catWebClient
-        .delete(catPort, catHost, catBasePath.concat("/internal/ui/instance"))
+        .delete(catPort, catHost, catBasePath.concat(path.concat("/instance")))
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
-        .addQueryParam("id", id)
+        .addQueryParam(ID, id)
         .send(
             httpResponseAsyncResult -> {
               if (httpResponseAsyncResult.succeeded()
