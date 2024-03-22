@@ -144,7 +144,7 @@ public class InconsistencyHandler {
      *
      * @return Future which is of the type void
      */
-  public Future<Void> handleDeleteInstanceOnLocal(final String id, final String token) {
+  public Future<Void> handleDeleteInstanceOnLocal(final String id, final String path, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -162,7 +162,7 @@ public class InconsistencyHandler {
         .getAsyncExecution(
             asyncExecution -> {
               localCat
-                  .deleteInstance(id, token)
+                  .deleteInstance(id, path, token)
                   .onSuccess(
                       successHandler -> {
                         asyncExecution.complete();
@@ -178,7 +178,7 @@ public class InconsistencyHandler {
      *
      * @return Future which is of the type void
      */
-  public Future<Void> handleUploadInstanceToLocal(final String id, final String token) {
+  public Future<Void> handleUploadInstanceToLocal(final String id, final String path, final String token) {
 
     RetryPolicy<Object> retryPolicy =
         retryPolicyBuilder
@@ -193,13 +193,13 @@ public class InconsistencyHandler {
         .getAsyncExecution(
             asyncExecution -> {
               centralCat
-                  .getInstance(id)
+                  .getInstance(id, path)
                   .onSuccess(
                       item -> {
                         JsonObject deletedItem = item.getJsonArray("results").getJsonObject(0);
                         deletedItem.put("instanceId", id);
                         localCat
-                            .createInstance(deletedItem, token)
+                            .createInstance(deletedItem, path, token)
                             .onSuccess(
                                 successHandler -> {
                                   asyncExecution.complete();
@@ -232,7 +232,7 @@ public class InconsistencyHandler {
         .getAsyncExecution(
             asyncExecution -> {
               centralCat
-                  .getInstance(id)
+                  .getInstance(id, "/internal/ui")
                   .onSuccess(
                       oldItem -> {
                         JsonObject item = oldItem.getJsonArray("results").getJsonObject(0);
