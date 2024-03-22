@@ -491,9 +491,11 @@ public class CatalogueServiceTest {
   @Description("test createInstance when handler succeeds and type is local")
   public void testCreateInstanceLocal(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    String path = "internal/ui/";
+    JsonObject request = new JsonObject().put("token", "xyz").put("id", "poona");
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.setQueryParam(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
     when(httpResponse.statusCode()).thenReturn(201);
@@ -509,7 +511,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(JsonObject.class), any());
     catalogueService
-        .createInstance(request, "xyz", localType)
+        .createInstance(path, request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -526,9 +528,11 @@ public class CatalogueServiceTest {
   @Description("test createInstance when handler fails and type is local")
   public void testCreateInstanceLocalFailed(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    String path = "internal/ui/";
+    JsonObject request = new JsonObject().put("token", "xyz").put("id", "id");
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.setQueryParam(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
     doAnswer(
@@ -541,7 +545,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .createInstance(request, "xyz", localType)
+        .createInstance(path, request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -559,9 +563,11 @@ public class CatalogueServiceTest {
   @Description("test createInstance when handler fails and type is local")
   public void testCreateInstanceFailed(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    String path = "internal/ui/";
+    JsonObject request = new JsonObject().put("token", "xyz").put("id", "id");
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+    when(httpRequest.setQueryParam(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
     when(httpResponseAsyncResult.cause()).thenReturn(throwable);
     doAnswer(
@@ -574,7 +580,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .sendJsonObject(any(), any());
     catalogueService
-        .createInstance(request, "xyz", localType)
+        .createInstance(path,request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -694,6 +700,7 @@ public class CatalogueServiceTest {
   @Description("test deleteInstance when handler succeeds and type is local")
   public void testDeleteInstanceLocal(VertxTestContext testContext) {
 
+    String path = "internal/ui/";
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
@@ -713,7 +720,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteInstance(request, "xyz", localType)
+        .deleteInstance(path,request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -730,6 +737,7 @@ public class CatalogueServiceTest {
   @Description("test deleteInstance when handler fails and type is local")
   public void testDeleteInstanceLocalFailed(VertxTestContext testContext) {
 
+    String path = "internal/ui/";
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
@@ -747,7 +755,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteInstance(request, "xyz", localType)
+        .deleteInstance(path,request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -764,6 +772,7 @@ public class CatalogueServiceTest {
   @Description("test deleteInstance when handler fails and type is local")
   public void testDeleteInstanceFailed(VertxTestContext testContext) {
 
+    String path = "internal/ui/";
     JsonObject request = new JsonObject().put("token", "xyz").put("id", "dummy");
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
@@ -781,7 +790,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .deleteInstance(request, "xyz", localType)
+        .deleteInstance(path, request, "xyz", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -797,6 +806,7 @@ public class CatalogueServiceTest {
   @Test
   @Description("test getInstance when handler succeeds and type is local")
   public void testGetInstanceLocal(VertxTestContext testContext) {
+    String path = "internal/ui/";
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -814,7 +824,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .getInstance(id, localType)
+        .getInstance(id, path, localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -845,7 +855,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .getInstance(id, localType)
+        .getInstance(id, "/internal/ui/instance", localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {
@@ -861,6 +871,7 @@ public class CatalogueServiceTest {
   @Test
   @Description("test getInstance when handler fails and type is local")
   public void testGetInstanceFailed(VertxTestContext testContext) {
+    String path = "internal/ui/";
     CatalogueType localType = CatalogueType.LOCAL;
     String id = "dummy";
     when(httpRequest.addQueryParam("id", id)).thenReturn(httpRequest);
@@ -876,7 +887,7 @@ public class CatalogueServiceTest {
         .when(httpRequest)
         .send(any());
     catalogueService
-        .getInstance(id, localType)
+        .getInstance(id, path,localType)
         .onComplete(
             ar -> {
               if (ar.succeeded()) {

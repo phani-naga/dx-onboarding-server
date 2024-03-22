@@ -178,9 +178,16 @@ public class LocalCatImpl implements CatalogueService {
   public Future<JsonObject> createInstance(JsonObject request, String path, String token) {
     Promise<JsonObject> promise = Promise.promise();
     request.remove(TOKEN);
+
+    LOGGER.error(token);
+    LOGGER.error(path);
+    LOGGER.error(request);
+    LOGGER.error(request.getString(ID));
     catWebClient
         .post(catPort, catHost, catBasePath.concat(path.concat("/instance")))
+
         .setQueryParam(ID, request.getString(ID))
+
         .putHeader("token", token)
         .putHeader("Content-Type", "application/json")
         .sendJsonObject(

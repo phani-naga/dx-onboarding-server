@@ -348,8 +348,9 @@ public class CentralCatTest {
     @Test
     @Description("test createInstance method in central when method succeeds")
     public void createInstance(Vertx vertx, VertxTestContext testContext) {
-        JsonObject request = new JsonObject();
+        JsonObject request = new JsonObject().put("id", "id");
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+      when(httpRequest.setQueryParam(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
         when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
         when(httpResponse.statusCode()).thenReturn(201);
@@ -365,7 +366,7 @@ public class CentralCatTest {
                 .when(httpRequest)
                 .sendJsonObject(any(JsonObject.class), any());
 
-        centralCat.createInstance(request, "abc")
+        centralCat.createInstance(request, "/internal/ui/instance","abc")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
@@ -381,8 +382,9 @@ public class CentralCatTest {
     @Test
     @Description("test createInstance method in central when method fails")
     public void createInstanceFailed(VertxTestContext testContext) {
-        JsonObject request = new JsonObject();
+        JsonObject request = new JsonObject().put("id", "id");
         when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
+      when(httpRequest.setQueryParam(anyString(), anyString())).thenReturn(httpRequest);
         when(httpResponseAsyncResult.succeeded()).thenReturn(true);
         when(httpResponseAsyncResult.result()).thenReturn(httpResponse);
         when(httpResponse.statusCode()).thenReturn(202);
@@ -399,8 +401,7 @@ public class CentralCatTest {
                 })
                 .when(httpRequest)
                 .sendJsonObject(any(), any());
-        centralCat
-                .createInstance(request, "abc")
+      centralCat.createInstance(request, "/internal/ui/instance","abc")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
@@ -512,7 +513,7 @@ public class CentralCatTest {
                 .when(httpRequest)
                 .send(any());
         centralCat
-                .deleteInstance(id, "")
+                .deleteInstance(id, "/internal/ui/instance", "")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
@@ -549,7 +550,7 @@ public class CentralCatTest {
                 .when(httpRequest)
                 .send(any());
         centralCat
-                .deleteInstance(id, "")
+            .deleteInstance(id, "/internal/ui/instance", "")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
@@ -585,7 +586,7 @@ public class CentralCatTest {
                 .when(httpRequest)
                 .send(any());
         centralCat
-                .getInstance(id)
+                .getInstance(id, "/internal/ui/instance")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {
@@ -621,7 +622,7 @@ public class CentralCatTest {
                 .when(httpRequest)
                 .send(any());
         centralCat
-                .getInstance(id)
+                .getInstance(id, "/internal/ui/instance")
                 .onComplete(
                         handler -> {
                             if (handler.succeeded()) {

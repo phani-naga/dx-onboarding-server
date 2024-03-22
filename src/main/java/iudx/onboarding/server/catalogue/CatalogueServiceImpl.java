@@ -270,6 +270,10 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                         });
               });
     } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+      LOGGER.error(token);
+      LOGGER.error(path);
+      LOGGER.error(request);
+      LOGGER.error(localCat);
       localCat
           .createInstance(request, path, token)
           .onComplete(

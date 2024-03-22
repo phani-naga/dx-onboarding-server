@@ -9,14 +9,9 @@ public class Api {
   private StringBuilder onboardingUrl;
   private StringBuilder ingestionUrl;
   private StringBuilder tokenUrl;
-<<<<<<< HEAD
-  private StringBuilder instanceUrl;
-  private StringBuilder domainUrl;
-=======
   private StringBuilder mlayerInstanceApi;
   private StringBuilder mlayerDomainApi;
   private StringBuilder instanceApi;
->>>>>>> e1f2443 (feat: instance api)
 
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
@@ -55,14 +50,6 @@ public class Api {
     return tokenUrl.toString();
   }
 
-<<<<<<< HEAD
-  public String getInstanceUrl() {
-    return  instanceUrl.toString();
-  }
-
-  public String getDomainUrl() {
-    return  domainUrl.toString();
-=======
   public String getMlayerInstanceApi() {
     return mlayerInstanceApi.toString();
   }
@@ -73,7 +60,6 @@ public class Api {
 
   public String getInstanceApi() {
     return instanceApi.toString();
->>>>>>> e1f2443 (feat: instance api)
   }
 
 
