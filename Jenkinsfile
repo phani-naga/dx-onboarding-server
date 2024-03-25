@@ -84,7 +84,7 @@ pipeline {
       }
     }
 
-        stage('Integration Tests and OWASP ZAP pen test'){
+    stage('Integration Tests and OWASP ZAP pen test'){
       steps{
         node('built-in') {
           script{
@@ -100,7 +100,7 @@ pipeline {
         node('built-in') {
           script{
             runZapAttack()
-            }
+          }
         }
       }
       post{
@@ -165,10 +165,10 @@ pipeline {
           }
           post{
             failure{
-              error "Failed to deploy image in Docker Swarm"
               script{
                 sh 'rm -rf configs'
               }
+              error "Failed to deploy image in Docker Swarm"
             }
           }          
         }
@@ -188,6 +188,11 @@ pipeline {
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
+            }
+            cleanup{
+              script{
+                sh 'rm -rf configs'
+              }
             }
           }
         }
