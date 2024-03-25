@@ -160,7 +160,7 @@ pipeline {
           steps {
             script {
               sh "ssh azureuser@docker-swarm 'docker service update onboarding-server_onboarding-server --image ghcr.io/datakaveri/onboarding-server-depl:5.5.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 10'
+              sh 'sleep 30'
             }
           }
           post{
