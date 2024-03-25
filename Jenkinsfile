@@ -174,17 +174,16 @@ pipeline {
         }
         stage('Integration test on swarm deployment') {
           steps {
-            node('built-in') {
-              script{
-                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'              }
+            script{
+              sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
             }
           }
-           post{
+          post{
             always{
-             xunit (
+              xunit (
                thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
                tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
-               )
+              )
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
