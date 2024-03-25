@@ -16,6 +16,8 @@ public class TokenSetup {
   private static WebClient webClient;
   public static void setupTokens(String authEndpoint, JsonObject clientCredentials) {
     // Fetch tokens asynchronously and wait for all completions
+    LOGGER.debug(authEndpoint);
+    LOGGER.debug(clientCredentials.getJsonObject("rsAdmin").getString("clientID"));
     JsonObject rsAdminCredentials = clientCredentials.getJsonObject("rsAdmin");
     JsonObject cosAdminCredentials = clientCredentials.getJsonObject("cosAdmin");
     LOGGER.debug(cosAdminCredentials);

@@ -9,8 +9,9 @@ public class Api {
   private StringBuilder onboardingUrl;
   private StringBuilder ingestionUrl;
   private StringBuilder tokenUrl;
-  private StringBuilder instanceUrl;
-  private StringBuilder domainUrl;
+  private StringBuilder mlayerInstanceApi;
+  private StringBuilder mlayerDomainApi;
+  private StringBuilder instanceApi;
 
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
@@ -32,8 +33,9 @@ public class Api {
     onboardingUrl = new StringBuilder(dxApiBasePath).append(ONBOARDING_API);
     ingestionUrl = new StringBuilder(dxApiBasePath).append(INGESTION_API);
     tokenUrl = new StringBuilder(dxApiBasePath).append(TOKEN_API);
-    instanceUrl = new StringBuilder(dxApiBasePath).append("/internal/ui").append(INSTANCE_API);
-    domainUrl = new StringBuilder(dxApiBasePath).append("/internal/ui").append(DOMAIN_API);
+    mlayerInstanceApi = new StringBuilder(dxApiBasePath).append("/internal/ui").append(INSTANCE_API);
+    mlayerDomainApi = new StringBuilder(dxApiBasePath).append("/internal/ui").append(DOMAIN_API);
+    instanceApi = new StringBuilder(dxApiBasePath).append(INSTANCE_API);
   }
 
   public String getOnboardingUrl() {
@@ -48,12 +50,16 @@ public class Api {
     return tokenUrl.toString();
   }
 
-  public String getInstanceUrl() {
-    return  instanceUrl.toString();
+  public String getMlayerInstanceApi() {
+    return mlayerInstanceApi.toString();
   }
 
-  public String getDomainUrl() {
-    return  domainUrl.toString();
+  public String getMlayerDomainApi() {
+    return mlayerDomainApi.toString();
+  }
+
+  public String getInstanceApi() {
+    return instanceApi.toString();
   }
 
 

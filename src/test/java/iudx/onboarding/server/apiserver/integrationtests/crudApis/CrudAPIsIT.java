@@ -210,7 +210,7 @@ public class CrudAPIsIT {
     JsonObject jsonPayload = new JsonObject()
       .put("@context", "https://voc.iudx.org.in/")
       .put("type", new JsonArray().add("iudx:Provider"))
-      .put("name", "Provider for integration tests")
+      .put("name", "Providerforintegrationtests")
       .put("resourceServer", resource_server_id)
       .put("description", "provider for the integration test")
       .put("ownerUserId", "cbe6c060-1767-488f-b624-1424e22004a2")

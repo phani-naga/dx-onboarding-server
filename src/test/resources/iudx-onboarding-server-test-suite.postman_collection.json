@@ -46,10 +46,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"auth-five",
+								"authvertx",
 								"iudx",
 								"io"
 							],
@@ -99,10 +99,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"auth-five",
+								"authvertx",
 								"iudx",
 								"io"
 							],
@@ -168,10 +168,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"auth-five",
+								"authvertx",
 								"iudx",
 								"io"
 							],
@@ -2306,6 +2306,439 @@
 								{
 									"key": "id",
 									"value": "{{owner_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Resource Server DX Entity Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}{{base}}/item?id={{resource_server_id_test}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"item"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{resource_server_id_test}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Instance APIs",
+			"item": [
+				{
+					"name": "201 (success) - Create Instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"    const resultsjsonData = body.results;\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");\r",
+									"    const ID = resultsjsonData.id;\r",
+									"    pm.globals.set(\"instance_id\",ID);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?id=poone",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "poone"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid query param) - Create Instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.be.badRequest;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:InvalidSyntax\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?ide=poone",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "ide",
+									"value": "poone"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (success) - UnAuthorized request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",  \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?id=pune",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "pune"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete Instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:cat:Success\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{instance_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (unauthorized access) - Delete Instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response status\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\",  \"urn:dx:cat:InvalidAuthorizationToken\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?id={{instance_id}}",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{instance_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) - Delete Instance",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 404 (Not Found)\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Item is not found\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{cosAdminToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}{{base}}/instance?id=non-exisiting-id",
+							"host": [
+								"{{host}}{{base}}"
+							],
+							"path": [
+								"instance"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "non-exisiting-id"
 								}
 							]
 						}

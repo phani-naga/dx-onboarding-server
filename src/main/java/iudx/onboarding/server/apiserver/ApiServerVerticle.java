@@ -110,16 +110,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.delete(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::deleteItem);
 
     // instance API
-    router.post(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::createInstance);
-    router.delete(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::deleteInstance);
-    router.put(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::updateInstance);
-    router.get(api.getInstanceUrl()).failureHandler(exceptionHandler).handler(this::getAllInstance);
+    router.post(api.getInstanceApi()).handler(this::createInstance).failureHandler(exceptionHandler);
+    router.get(api.getInstanceApi()).handler(this::getAllInstance).failureHandler(exceptionHandler);
+    router.delete(api.getInstanceApi()).handler(this::deleteInstance).failureHandler(exceptionHandler);
 
-    // domain API
-    router.post(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::createDomain);
-    router.delete(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::deleteDomain);
-    router.put(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::updateDomain);
-    router.get(api.getDomainUrl()).failureHandler(exceptionHandler).handler(this::getDomain);
+    // mlayer - instance API
+    router.post(api.getMlayerInstanceApi()).failureHandler(exceptionHandler).handler(this::createInstance);
+    router.delete(api.getMlayerInstanceApi()).failureHandler(exceptionHandler).handler(this::deleteInstance);
+    router.put(api.getMlayerInstanceApi()).failureHandler(exceptionHandler).handler(this::updateInstance);
+    router.get(api.getMlayerInstanceApi()).failureHandler(exceptionHandler).handler(this::getAllInstance);
+
+    // mlayer - domain API
+    router.post(api.getMlayerDomainApi()).failureHandler(exceptionHandler).handler(this::createDomain);
+    router.delete(api.getMlayerDomainApi()).failureHandler(exceptionHandler).handler(this::deleteDomain);
+    router.put(api.getMlayerDomainApi()).failureHandler(exceptionHandler).handler(this::updateDomain);
+    router.get(api.getMlayerDomainApi()).failureHandler(exceptionHandler).handler(this::getDomain);
 
     // documentation apis
     router.get("/apis/spec")
@@ -420,21 +425,26 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private void createInstance(RoutingContext routingContext) {
     MultiMap tokenHeadersMap = routingContext.request().headers();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    JsonObject requestBody = routingContext.body().asJsonObject();
+    String path = request.path().contains("/internal/ui") ? "/internal/ui" : "";
+    JsonObject requestBody
+        = path.isEmpty() ? new JsonObject().put(ID, routingContext.queryParams().get(ID)) : routingContext.body().asJsonObject();
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
     catalogueService
-        .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .createInstance(path, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             localInstance -> {
               LOGGER.info("results after local cat{}", localInstance);
+              if (!path.isEmpty()) {
               String instanceId =
                   localInstance.getJsonArray(RESULTS).getJsonObject(0).getString("id");
-              requestBody.put("instanceId", instanceId);
+                requestBody.put("instanceId", instanceId);
+              }
               LOGGER.info("request body" + requestBody);
               if (isUacAvailable) {
                 catalogueService
-                    .createInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .createInstance(path, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                     .onSuccess(
                         centralInstance -> {
                           response.setStatusCode(201).end(centralInstance.toString());
@@ -443,7 +453,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                         centralinstance -> {
                           // This is after 3 retries and delete of item from local
                           // TODO: notify user to try again
-                          response.setStatusCode(500).end(centralinstance.getMessage());
+                          handleResponse(response, centralinstance);
                         });
               } else {
 
@@ -463,8 +473,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    String path = request.path().contains("/internal/ui") ? "/internal/ui" : "";
     catalogueService
-        .getInstance(request.getParam(ID), CatalogueType.LOCAL)
+        .getInstance(request.getParam(ID), path, CatalogueType.LOCAL)
         .onSuccess(
             getLocalItemSuccessHandler -> {
               LOGGER.info("Response {}", getLocalItemSuccessHandler);
@@ -531,8 +542,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = new JsonObject().put(ID, request.getParam(ID));
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
+    String path = request.path().contains("/internal/ui") ? "/internal/ui" : "";
     catalogueService
-        .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
+        .deleteInstance(path, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
         .onSuccess(
             localInstance -> {
               LOGGER.debug(
@@ -540,7 +552,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
               if (isUacAvailable) {
                 catalogueService
-                    .deleteInstance(requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
+                    .deleteInstance(path, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.CENTRAL)
                     .onSuccess(
                         deleteCentralCatItemSuccess -> {
                           LOGGER.debug(
