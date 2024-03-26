@@ -40,6 +40,7 @@ public class Constants {
   public static final String TOKEN_API = "/token";
   public static final String INSTANCE_API = "/instance";
   public static final String DOMAIN_API = "/domain";
+  public static final String DETAIL = "detail";
 
 
 }
