@@ -69,7 +69,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: '#/components/schemas/successResponseWithObjects'
+                  - $ref: '#/components/schemas/successCreateResponseWithObjects'
                   - $ref: '#/components/schemas/successResponseForRgOnboarding'
         '400':
           description: Invalid document
@@ -242,7 +242,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/successResponseWithObjects'
+                $ref: '#/components/schemas/successGetResponseWithObjects'
         '400':
           description: Invalid ID.
           content:
@@ -290,12 +290,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/successResponseWithObjects'
+                $ref: '#/components/schemas/successDeleteResponseWithObjects'
               examples:
                 Delete Success:
                   value:
                     type: 'urn:dx:cat:Success'
                     title: Success
+                    detail: 'Item deleted Successfully'
                     results:
                       - id: uuid
         '401':
@@ -868,7 +869,7 @@ tags:
     x-displayName: Administrator
 components:
   schemas:
-    successResponseWithObjects:
+    successCreateResponseWithObjects:
       type: object
       title: Root Type for standardResponse
       description: Standard Response for all requests
@@ -899,6 +900,7 @@ components:
           type: 'urn:dx:cat:Success'
           title: Success
           totalHits: 10
+          detail: 'Item Created Successfully'
           results:
             - id: uuid
               name: wifi-location
@@ -908,6 +910,101 @@ components:
         type: 'urn:dx:cat:Success'
         title: Success
         totalHits: 10
+        detail: 'Item Created Successfully'
+        results:
+          - id: uuid
+            name: wifi-location
+            type:
+              - 'iudx:Resource'
+    successGetResponseWithObjects:
+      type: object
+      title: Root Type for standardResponse
+      description: Standard Response for all requests
+      properties:
+        totalHits:
+          type: integer
+          description: Total number of documents which matched the query.
+          format: int32
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
+        type:
+          type: string
+          description: |
+            URN type of the response indicating if the query was successful or if any errors have been triggered.
+        title:
+          type: string
+          description: A human readable title to the message response.
+      required:
+        - type
+      x-examples:
+        Example 1:
+          type: 'urn:dx:cat:Success'
+          title: Success
+          totalHits: 10
+          detail: 'Item fetched Successfully'
+          results:
+            - id: uuid
+              name: wifi-location
+              type:
+                - 'iudx:Resource'
+      example:
+        type: 'urn:dx:cat:Success'
+        title: Success
+        totalHits: 10
+        detail: 'Item fetched successfully'
+        results:
+          - id: uuid
+            name: wifi-location
+            type:
+              - 'iudx:Resource'
+    successDeleteResponseWithObjects:
+      type: object
+      title: Root Type for standardResponse
+      description: Standard Response for all requests
+      properties:
+        totalHits:
+          type: integer
+          description: Total number of documents which matched the query.
+          format: int32
+        results:
+          type: array
+          description: Results which matched the query. This is an array of objects.
+          items:
+            type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
+        type:
+          type: string
+          description: |
+            URN type of the response indicating if the query was successful or if any errors have been triggered.
+        title:
+          type: string
+          description: A human readable title to the message response.
+      required:
+        - type
+      x-examples:
+        Example 1:
+          type: 'urn:dx:cat:Success'
+          title: Success
+          totalHits: 10
+          detail: 'Item deleted Successfully'
+          results:
+            - id: uuid
+              name: wifi-location
+              type:
+                - 'iudx:Resource'
+      example:
+        type: 'urn:dx:cat:Success'
+        title: Success
+        totalHits: 10
+        detail: 'Item deleted Successfully'
         results:
           - id: uuid
             name: wifi-location
@@ -1399,11 +1496,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Item updated Successfully'
         results:
           id: uuid
           type: [ ]
@@ -1935,11 +2036,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Instance Created Successfully'
         results:
           - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
             detail: Instance created Successfully
@@ -1977,11 +2082,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Instance Updated Successfully'
         results:
           - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
             detail: Instance Updated Successfully
@@ -2006,12 +2115,16 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
         totalHits: 1
+        detail: 'Instance fetched Successfully'
         results:
           - cover: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/covers/lucknow.jpeg'
             instanceId: 191e35e3-99c2-43a5-ba8d-811a756b08de
@@ -2035,11 +2148,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Instance deleted Successfully'
         results:
           - id: 191e35e3-99c2-43a5-ba8d-811a756b08de
             detail: Instance deleted Successfully
@@ -2082,11 +2199,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'domain created successfully'
         results:
           - id: 3d73067f-2855-4155-b918-14d621b7a576
             detail: domain Created Successfully
@@ -2107,11 +2228,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Domain Updated Successfully'
         results:
           - id: 3d73067f-2855-4155-b918-14d621b7a576
             detail: Domain Updated Successfully
@@ -2136,12 +2261,16 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
         totalHits: 2
+        detail: 'Domain fetched Successfully'
         results:
           - icon: 'https://iudx-catalogue-assets.s3.ap-south-1.amazonaws.com/instances/icons/environment.png'
             name: environment
@@ -2170,11 +2299,15 @@ components:
           description: Results which matched the query. This is an array of objects.
           items:
             type: object
+        detail:
+          type: string
+          description: Detailed description of the type or response
       required:
         - type
       example:
         type: 'urn:dx:cat:Success'
         title: Success
+        detail: 'Domain deleted Successfully'
         results:
           - id: 3d73067f-2855-4155-b918-14d621b7a576
             detail: Domain deleted Successfully
