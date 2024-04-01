@@ -165,9 +165,6 @@ pipeline {
           }
           post{
             failure{
-              script{
-                sh 'rm -rf configs'
-              }
               error "Failed to deploy image in Docker Swarm"
             }
           }          
@@ -188,10 +185,6 @@ pipeline {
             failure{
               error "Test failure. Stopping pipeline execution!"
             }
-            cleanup{
-              script{
-                sh 'rm -rf configs'
-              }
             }
           }
         }
@@ -201,6 +194,7 @@ pipeline {
   post{
     failure{
       script{
+        sh 'rm -rf configs'
         if (env.GIT_BRANCH == 'origin/main')
         emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
