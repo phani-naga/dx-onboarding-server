@@ -1,5 +1,5 @@
 # This github workflow will automatically update docker image tags of onboarding-server-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/onboarding-server-depl .Based on tag it will update the master/latest branch (if its 5.5.1-alpha-) or 5.5.0 stable branch (if its 5.5.0-)
-name: Update Onboarding docker image tags
+name: Update Onboarding server docker image tags
 
 # This trigger will run the workflow whenever a new package is published to the registry
 on:
@@ -45,7 +45,7 @@ jobs:
         # Update the YAML files and create a new branch for each tag update
         if [ "$newtag5_5_0" != "$oldtag5_5_0" ]
         then
-         git checkout -b onboarding-5.5.0-automatic-updates/$newtag5_5_0
+         git checkout -b onboarding-server-5.5.0-automatic-updates/$newtag5_5_0
 
           # Uses sed to find and replace $oldtag5_5_0 with $newtag5_5_0 in Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml file
          sed -i s/$oldtag5_5_0/$newtag5_5_0/g Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml
@@ -60,8 +60,8 @@ jobs:
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/onboarding-server/Chart.yaml
          sed -i s/$oldtag5_5_0/$newtag5_5_0/g K8s-deployment/Charts/onboarding-server/values.yaml
          git add Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml K8s-deployment/Charts/onboarding-server/values.yaml K8s-deployment/Charts/onboarding-server/Chart.yaml
-         git commit --allow-empty -m "updated onboarding docker image tag to $newtag5_5_0"
-         git push --set-upstream origin onboarding-5.5.0-automatic-updates/$newtag5_5_0
+         git commit --allow-empty -m "updated onboarding server docker image tag to $newtag5_5_0"
+         git push --set-upstream origin onboarding-server-5.5.0-automatic-updates/$newtag5_5_0
 
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch 5.5.0
          gh pr create -R datakaveri/iudx-deployment --base 5.5.0 --fill 
@@ -70,7 +70,7 @@ jobs:
         if [ "$newtag5_5_1" != "$oldtag5_5_1" ]
         then
          git checkout master
-         git checkout -b onboarding-automatic-updates/$newtag5_5_1
+         git checkout -b onboarding-server-automatic-updates/$newtag5_5_1
 
          # Uses sed to find and replace $oldtag5_5_1 with $newtag5_5_1 in Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml file
          sed -i s/$oldtag5_5_1/$newtag5_5_1/g Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml
@@ -85,8 +85,8 @@ jobs:
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/onboarding-server/Chart.yaml
          sed -i s/$oldtag5_5_1/$newtag5_5_1/g K8s-deployment/Charts/onboarding-server/values.yaml
          git add Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml K8s-deployment/Charts/onboarding-server/values.yaml K8s-deployment/Charts/onboarding-server/Chart.yaml
-         git commit --allow-empty -m "updated onboarding docker image tag to $newtag5_5_1"
-         git push --set-upstream origin onboarding-automatic-updates/$newtag5_5_1
+         git commit --allow-empty -m "updated onboarding server docker image tag to $newtag5_5_1"
+         git push --set-upstream origin onboarding-server-automatic-updates/$newtag5_5_1
          
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch master
          gh pr create -R datakaveri/iudx-deployment --base master --fill 
