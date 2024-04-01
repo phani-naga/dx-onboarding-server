@@ -74,7 +74,6 @@ public class CrudAPIsIT {
       .response();
     // Extract the generated ID from the response
     owner_id = response.path("results.id");
-    LOGGER.info(owner_id);
   }
 
   @Test

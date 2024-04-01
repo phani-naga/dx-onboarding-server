@@ -16,12 +16,9 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
   @Override
   public void beforeAll(ExtensionContext context) {
     JsonObject config = Configuration.getConfiguration("./secrets/all-verticles-configs/config-test.json", 0);
-    // String testHost = config.getString("ip");
     String authServerHost = config.getString("authServerHost");
-    // String authUrl=config.getString("authUrl");
     boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
     if (testOnDepl) {
-//      String testHost = "onboarding.iudx.io";
       String testHost = config.getString("testHost");
       baseURI = "https://" + testHost;
       port = 443;
@@ -53,18 +50,13 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
       proxy(proxyHost, Integer.parseInt(proxyPort));
     }
 
-    LOGGER.debug("baseURI=" + baseURI);
     LOGGER.debug("setting up the tokens");
-    LOGGER.debug(config.getJsonObject("clientCredentials").getJsonObject("cosAdmin").getString("clientID"));
-    LOGGER.debug(config.getJsonObject("clientCredentials").getJsonObject("rsAdmin").getString("clientID"));
     TokenSetup.setupTokens(
       authEndpoint,
       config.getJsonObject("clientCredentials"));
 
     // Wait for tokens to be available before proceeding
     waitForTokens();
-
-    // LOGGER.debug();("done with setting up the tokens");
 
     enableLoggingOfRequestAndResponseIfValidationFails();
   }
