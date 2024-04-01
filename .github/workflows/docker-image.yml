@@ -1,4 +1,4 @@
-# This github workflow will automatically update docker image tags of fs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/fs-depl .Based on tag it will update the master/latest branch (if its 5.5.1-alpha-) or 5.5.0 stable branch (if its 5.5.0-)
+# This github workflow will automatically update docker image tags of onboarding-server-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/onboarding-server-depl .Based on tag it will update the master/latest branch (if its 5.5.1-alpha-) or 5.5.0 stable branch (if its 5.5.0-)
 name: Update FS docker image tags
 
 # This trigger will run the workflow whenever a new package is published to the registry
@@ -29,8 +29,8 @@ jobs:
         GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
         # Get the latest version of 5.5.0 and 5.5.1-alpha tags from the container registry using GitHub API
-        export newtag5_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.0 | grep -v alpha | sed -e 's/^"//' -e 's/"$//'))`
-        export newtag5_5_1=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/fs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.1-alpha | sed -e 's/^"//' -e 's/"$//'))`
+        export newtag5_5_0=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/onboarding-server-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.0 | grep -v alpha | sed -e 's/^"//' -e 's/"$//'))`
+        export newtag5_5_1=`(head -n 1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/onboarding-server-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.1-alpha | sed -e 's/^"//' -e 's/"$//'))`
         
         # Get the old tags from the YAML files
         export oldtag5_5_1=`yq -r .services.onboarding-server.image Docker-Swarm-deployment/single-node/onboarding-server/onboarding-server-stack.yaml | cut -d : -f 2`
