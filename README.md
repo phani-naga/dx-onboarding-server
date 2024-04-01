@@ -10,7 +10,7 @@ The onboarding server is IUDX's helper server for onboarding items, instances an
 
 
 <p align="center">
-<img src="./docs/onboarding_readme..drawio.png">
+<img src="./docs/onboarding_readme.drawio.png">
 </p>
 
 ## Features
