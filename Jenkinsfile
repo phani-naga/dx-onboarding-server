@@ -185,7 +185,6 @@ pipeline {
             failure{
               error "Test failure. Stopping pipeline execution!"
             }
-            }
           }
         }
       }
