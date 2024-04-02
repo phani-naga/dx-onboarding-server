@@ -16,11 +16,8 @@ public class TokenSetup {
   private static WebClient webClient;
   public static void setupTokens(String authEndpoint, JsonObject clientCredentials) {
     // Fetch tokens asynchronously and wait for all completions
-    LOGGER.debug(authEndpoint);
-    LOGGER.debug(clientCredentials.getJsonObject("rsAdmin").getString("clientID"));
     JsonObject rsAdminCredentials = clientCredentials.getJsonObject("rsAdmin");
     JsonObject cosAdminCredentials = clientCredentials.getJsonObject("cosAdmin");
-    LOGGER.debug(cosAdminCredentials);
     CompositeFuture.all(
         fetchToken(
           "provider",
@@ -51,10 +48,8 @@ public class TokenSetup {
 
   private static Future<String> fetchToken(
     String userType, String authEndpoint, String clientID, String clientSecret) {
-    // LOGGER.debug("user type is..." + userType);
     Promise<String> promise = Promise.promise();
     JsonObject jsonPayload = getPayload(userType);
-    // LOGGER.debug("payload: " + jsonPayload);
 
     // Create a WebClient to make the HTTP request
     webClient = WebClient.create(Vertx.vertx(), new WebClientOptions().setSsl(true));
@@ -71,22 +66,17 @@ public class TokenSetup {
             HttpResponse<Buffer> response = result.result();
             if (response.statusCode() == 200) {
               JsonObject jsonResponse = response.bodyAsJsonObject();
-              // LOGGER.debug("response is.. " + jsonResponse);
               String accessToken =
                 jsonResponse.getJsonObject("results").getString("accessToken");
-              // LOGGER.debug("access token is..." + accessToken);
-              // Store the token based on user type
               switch (userType) {
                 case "provider":
                   providerToken = accessToken;
                   break;
                 case "admin":
                   rsAdminToken = accessToken;
-                  LOGGER.debug("admin: "+rsAdminToken);
                   break;
                 case "cosAdmin":
                   cosAdminToken = accessToken;
-                  LOGGER.debug("cos: "+ cosAdminToken);
                   break;
               }
               promise.complete(accessToken);
