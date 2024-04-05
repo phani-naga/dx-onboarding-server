@@ -29,7 +29,7 @@ pipeline {
     stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
-          sh 'cp /home/ubuntu/configs/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
+          sh 'cp /home/ubuntu/configs/5.5.0/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
               sh "mvn clean test checkstyle:checkstyle pmd:pmd"
             }  
@@ -94,7 +94,7 @@ pipeline {
         }
         script{
             sh 'mkdir configs'
-            sh 'cp /home/ubuntu/configs/onboarding-config-test.json ./configs/config-test.json'
+            sh 'cp /home/ubuntu/configs/5.5.0/onboarding-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
@@ -129,8 +129,7 @@ pipeline {
       }
     }
 
-
-   stage('Continuous Deployment') {
+    stage('Push Images') {
       when {
         allOf {
           anyOf {
@@ -141,60 +140,27 @@ pipeline {
             triggeredBy cause: 'UserIdCause'
           }
           expression {
-            return env.GIT_BRANCH == 'origin/main';
+            return env.GIT_BRANCH == 'origin/1.0.1';
           }
         }
-      }
-      stages {
-        stage('Push Images') {
-          steps {
-            script {
-              docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("5.5.0-alpha-${env.GIT_HASH}")
-                deplImage.push("5.5.0-alpha-${env.GIT_HASH}")
-              }
-            }
-          }
-        }
-        stage('Docker Swarm deployment') {
-          steps {
-            script {
-              sh "ssh azureuser@docker-swarm 'docker service update onboarding-server_onboarding-server --image ghcr.io/datakaveri/onboarding-server-depl:5.5.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 30'
-            }
-          }
-          post{
-            failure{
-              error "Failed to deploy image in Docker Swarm"
-            }
-          }          
-        }
-        stage('Integration test on swarm deployment') {
-          steps {
-            script{
-              sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
-            }
-          }
-          post{
-            always{
-              xunit (
-               thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
-               tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
-              )
-            }
-            failure{
-              error "Test failure. Stopping pipeline execution!"
-            }
+  	  }
+      steps {
+        script {
+          docker.withRegistry( registryUri, registryCredential ) {
+            devImage.push("1.0.1-${env.GIT_HASH}")
+            deplImage.push("1.0.1-${env.GIT_HASH}")
           }
         }
       }
     }
+
+
   }
   post{
     failure{
       script{
         sh 'rm -rf configs'
-        if (env.GIT_BRANCH == 'origin/main')
+        if (env.GIT_BRANCH == 'origin/1.0.1')
         emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
       }
