@@ -29,7 +29,7 @@ pipeline {
     stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
-          sh 'cp /home/ubuntu/configs/5.0.0/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
+          sh 'cp /home/ubuntu/configs/5.5.0/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
               sh "mvn clean test checkstyle:checkstyle pmd:pmd"
             }  
@@ -94,7 +94,7 @@ pipeline {
         }
         script{
             sh 'mkdir configs'
-            sh 'cp /home/ubuntu/configs/5.0.0/onboarding-config-test.json ./configs/config-test.json'
+            sh 'cp /home/ubuntu/configs/5.5.0/onboarding-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {

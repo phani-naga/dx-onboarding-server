@@ -8,9 +8,9 @@ services:
   integTest:
     image: ghcr.io/datakaveri/onboarding-server-depl:latest
     env_file:
-      - /home/ubuntu/configs/5.0.0/.onboarding.env
+      - /home/ubuntu/configs/5.5.0/.onboarding.env
     volumes:
-      - /home/ubuntu/configs/5.0.0/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
+      - /home/ubuntu/configs/5.5.0/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
       - type: volume
         source: onboarding-server-volume
         target: /usr/share/app/storage/temp-dir
