@@ -1,7 +1,9 @@
 openapi: 3.0.2
 info:
-  version: 1.0.1
+  version: '1.0.1'
   title: Data Exchange Onboarding Server APIs
+  license:
+    name: Apache 2.0
   description: |
     # Introduction
     The Onboarding is DXs' (Data Exchange) metadata onboarding portal. 
@@ -30,6 +32,7 @@ info:
   contact:
     name: For support contact IUDX Team at
     email: support@iudx.org.in
+    url: https://iudx.org.in/
 servers:
   - url: 'https://example-cat.com/iudx/cat/v1'
     description: Production Instance
