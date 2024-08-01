@@ -44,15 +44,13 @@ pipeline {
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,**/*Service.class,iudx/onboarding/server/deploy/*.class'
           recordIssues(
             enabledForFailure: true,
-            blameDisabled: true,
-            forensicsDisabled: true,
+            skipBlames: true,
             qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
             tool: checkStyle(pattern: 'target/checkstyle-result.xml')
           )
           recordIssues(
             enabledForFailure: true,
-            blameDisabled: true,
-            forensicsDisabled: true,
+            skipBlames: true,
             qualityGates: [[threshold:25, type: 'TOTAL', unstable: false]],
             tool: pmdParser(pattern: 'target/pmd.xml')
           )
