@@ -250,7 +250,14 @@ public class ApiServerVerticle extends AbstractVerticle {
         })
         .compose(nextHandler -> {
           if (isUacAvailable) {
-            return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, nextHandler);
+            try{
+                LOGGER.debug("Adaptor Creation for Resource Group started");
+                return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, nextHandler);
+
+            } catch (Exception e) {
+                LOGGER.debug("Adapter creation for resource group failed due to an exception: {}", e.getMessage());
+                return Future.succeededFuture();
+            }
           } else {
             if (resultContainer.result.containsKey("item_details")) {
               resultContainer.result.put("adapter_details", nextHandler);
