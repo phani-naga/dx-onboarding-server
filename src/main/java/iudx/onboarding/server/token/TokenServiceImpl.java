@@ -15,9 +15,9 @@ import org.apache.logging.log4j.Logger;
 
 public class TokenServiceImpl implements TokenService {
   private static final Logger LOGGER = LogManager.getLogger(TokenServiceImpl.class);
-  private final String KEYCLOAK_CLIENT_ID;
-  private final String KEYCLOAK_CLIENT_SECRET;
-  private final String KEYCLOAK_SITE;
+  private final String keycloakClientId;
+  private final String keycloakClientSecret;
+  private final String keycloakSite;
   private final OAuth2Options options;
   Vertx vertx;
   JsonObject config;
@@ -27,15 +27,15 @@ public class TokenServiceImpl implements TokenService {
   public TokenServiceImpl(Vertx vertx, JsonObject config) {
     this.config = config;
     this.vertx = vertx;
-    this.KEYCLOAK_CLIENT_ID = config.getString("keycloakClientId");
-    this.KEYCLOAK_CLIENT_SECRET = config.getString("keycloakClientSecret");
-    this.KEYCLOAK_SITE = config.getString("keycloakSite");
+    this.keycloakClientId = config.getString("keycloakClientId");
+    this.keycloakClientSecret = config.getString("keycloakClientSecret");
+    this.keycloakSite = config.getString("keycloakSite");
     this.options =
         new OAuth2Options()
             .setFlow(OAuth2FlowType.CLIENT)
-            .setClientId(KEYCLOAK_CLIENT_ID)
-            .setClientSecret(KEYCLOAK_CLIENT_SECRET)
-            .setSite(KEYCLOAK_SITE);
+            .setClientId(keycloakClientId)
+            .setClientSecret(keycloakClientSecret)
+            .setSite(keycloakSite);
 
     KeycloakAuth.discover(vertx, options)
         .onComplete(

@@ -29,7 +29,8 @@ public class ResourceServerServiceImpl implements ResourceServerService {
   private InconsistencyHandler inconsistencyHandler;
   private IngestionService ingestionService;
 
-  ResourceServerServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, IngestionService ingestionService, JsonObject config) {
+  ResourceServerServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder,
+                            IngestionService ingestionService, JsonObject config) {
     this.retryPolicyBuilder = retryPolicyBuilder;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
@@ -60,7 +61,8 @@ public class ResourceServerServiceImpl implements ResourceServerService {
             .getAsyncExecution(asyncExecution -> {
               localCat.getRelatedEntity(id, "resourceServer", new JsonArray().add("resourceServerRegURL"))
                       .compose(rsUrlResult -> {
-                        String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
+                        String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0)
+                                .getString("resourceServerRegURL");
                         return Future.succeededFuture(resourceServerUrl);
                       }).compose(rsUrl -> {
                         return ingestionService.registerAdapter(rsUrl, id, token);
@@ -105,7 +107,8 @@ public class ResourceServerServiceImpl implements ResourceServerService {
             .getAsyncExecution(asyncExecution -> {
               localCat.getRelatedEntity(id, "resourceServer", new JsonArray().add("resourceServerRegURL"))
                       .compose(rsUrlResult -> {
-                        String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0).getString("resourceServerRegURL");
+                        String resourceServerUrl = rsUrlResult.getJsonArray(RESULTS).getJsonObject(0)
+                                .getString("resourceServerRegURL");
                         return Future.succeededFuture(resourceServerUrl);
                       }).compose(rsUrl -> {
                         return ingestionService.unregisteredAdapter(rsUrl, id, token);

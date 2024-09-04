@@ -39,7 +39,8 @@ public class ResourceServerVerticle extends AbstractVerticle {
         .withMaxAttempts(3)
         .onRetry(retryListener -> LOGGER.error("Operation failed... retrying"));
 
-    resourceServerService = new ResourceServerServiceImpl(vertx, tokenService, retryPolicyBuilder, ingestionService, config());
+    resourceServerService = new ResourceServerServiceImpl(vertx, tokenService, retryPolicyBuilder,
+            ingestionService, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(RS_SERVICE_ADDRESS).register(ResourceServerService.class, resourceServerService);
 
