@@ -11,17 +11,28 @@ import iudx.onboarding.server.common.CatalogueType;
 @VertxGen
 @ProxyGen
 public interface CatalogueUtilService {
-  Future<JsonObject> createItem(final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> createItem(final JsonObject request, final String token,
+                                CatalogueType catalogueType);
 
-  Future<JsonObject> updateItem(final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> updateItem(final JsonObject request, final String token,
+                                CatalogueType catalogueType);
 
-  Future<JsonObject> deleteItem(final JsonObject request, final String token, CatalogueType catalogueType);
+  Future<JsonObject> deleteItem(final JsonObject request, final String token,
+                                CatalogueType catalogueType);
 
   Future<JsonObject> getItem(final String request, CatalogueType catalogueType);
-  Future<JsonObject> createInstance(final String path, final JsonObject request, final String token, CatalogueType catalogueType);
-  Future<JsonObject> deleteInstance(final String path, final JsonObject request, final String token, CatalogueType catalogueType);
-  Future<JsonObject> updateInstance(String id, final JsonObject request, final String token, CatalogueType catalogueType);
+
+  Future<JsonObject> createInstance(final String path, final JsonObject request, final String token,
+                                    CatalogueType catalogueType);
+
+  Future<JsonObject> deleteInstance(final String path, final JsonObject request, final String token,
+                                    CatalogueType catalogueType);
+
+  Future<JsonObject> updateInstance(String id, final JsonObject request, final String token,
+                                    CatalogueType catalogueType);
+
   Future<JsonObject> getInstance(final String request, final String path, CatalogueType catalogueType);
+
   Future<JsonObject> createDomain(final JsonObject request, final String token, CatalogueType catalogueType);
 
   Future<JsonObject> deleteDomain(final JsonObject request, final String token, CatalogueType catalogueType);

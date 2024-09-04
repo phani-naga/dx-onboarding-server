@@ -31,7 +31,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   private LocalCatImpl localCat;
   private InconsistencyHandler inconsistencyHandler;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder, JsonObject config) {
+  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder,
+                       JsonObject config) {
     this.tokenService = tokenService;
     this.retryPolicyBuilder = retryPolicyBuilder;
     this.centralCat = new CentralCatImpl(vertx, config);
@@ -189,8 +190,9 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   public Future<JsonObject> getItem(String id, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     Future<JsonObject> getFuture;
-    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getItem(id);
-    else if (catalogueType.equals(CatalogueType.LOCAL)) {
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      getFuture = centralCat.getItem(id);
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
       getFuture = localCat.getItem(id);
     } else {
       promise.fail("Invalid catalogue type");
@@ -211,8 +213,9 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   public Future<JsonObject> getInstance(String id, String path, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     Future<JsonObject> getFuture;
-    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getInstance(id, path);
-    else if (catalogueType.equals(CatalogueType.LOCAL)) {
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      getFuture = centralCat.getInstance(id, path);
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
       getFuture = localCat.getInstance(id, path);
     } else {
       promise.fail("Invalid catalogue type");
@@ -325,7 +328,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
                           if (ar.succeeded()) {
                             asyncExecution.recordResult(ar.result());
                           } else {
-                            asyncExecution.recordException(new DxRuntimeException(400,ar.cause().getMessage()));
+                            asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
                           }
                         });
               });
@@ -430,8 +433,9 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   public Future<JsonObject> getDomain(String id, CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
     Future<JsonObject> getFuture;
-    if (catalogueType.equals(CatalogueType.CENTRAL)) getFuture = centralCat.getDomain(id);
-    else if (catalogueType.equals(CatalogueType.LOCAL)) {
+    if (catalogueType.equals(CatalogueType.CENTRAL)) {
+      getFuture = centralCat.getDomain(id);
+    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
       getFuture = localCat.getDomain(id);
     } else {
       promise.fail("Invalid catalogue type");

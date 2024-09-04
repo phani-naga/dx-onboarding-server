@@ -24,7 +24,8 @@ public class InconsistencyHandler {
   RetryPolicyBuilder<Object> retryPolicyBuilder;
   ResourceServerService resourceServerService;
 
-  public InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat, RetryPolicyBuilder<Object> retryPolicyBuilder) {
+  public InconsistencyHandler(TokenService tokenService, LocalCatImpl localCat, CentralCatImpl centralCat,
+                              RetryPolicyBuilder<Object> retryPolicyBuilder) {
     this.tokenService = tokenService;
     this.localCat = localCat;
     this.centralCat = centralCat;

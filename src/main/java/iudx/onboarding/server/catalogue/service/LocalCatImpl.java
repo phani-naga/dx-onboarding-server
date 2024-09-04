@@ -1,5 +1,6 @@
 package iudx.onboarding.server.catalogue.service;
 
+import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.TOKEN;
 
 import io.vertx.core.Future;
@@ -12,8 +13,8 @@ import io.vertx.ext.web.client.WebClientOptions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.onboarding.server.common.Constants.ID;
-import static iudx.onboarding.server.common.Constants.TOKEN;
+
+
 
 public class LocalCatImpl implements CatalogueService {
 
@@ -176,13 +177,13 @@ public class LocalCatImpl implements CatalogueService {
 
   @Override
   public Future<JsonObject> createInstance(JsonObject request, String path, String token) {
-    Promise<JsonObject> promise = Promise.promise();
     request.remove(TOKEN);
 
     LOGGER.error(token);
     LOGGER.error(path);
     LOGGER.error(request);
     LOGGER.error(request.getString(ID));
+    Promise<JsonObject> promise = Promise.promise();
     catWebClient
         .post(catPort, catHost, catBasePath.concat(path.concat("/instance")))
 

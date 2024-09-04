@@ -41,8 +41,7 @@ import org.apache.logging.log4j.Logger;
  *
  * <h1>Onboarding Server API Verticle</h1>
  *
- * <p>
- * The API Server verticle implements the IUDX Onboarding Server APIs. It handles the API requests
+ * <p>The API Server verticle implements the IUDX Onboarding Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
  * @version 1.0
@@ -63,7 +62,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private Router router;
   private int port;
-  private boolean isSSL;
+  private boolean isSsl;
   private boolean isUacAvailable;
   private String dxApiBasePath;
   private TokenService tokenService;
@@ -87,11 +86,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Get base paths from config */
     dxApiBasePath = config().getString("dxApiBasePath");
-    Api api = Api.getInstance(dxApiBasePath);
 
     /* Define the APIs, methods, endpoints and associated methods. */
 
-    ExceptionHandler exceptionHandler = new ExceptionHandler();
     router = Router.router(vertx);
     configureCorsHandler(router);
 
@@ -102,6 +99,12 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     router.route().handler(BodyHandler.create());
     router.route().handler(TimeoutHandler.create(28000, 408));
+
+    Api api = Api.getInstance(dxApiBasePath);
+
+    ExceptionHandler exceptionHandler = new ExceptionHandler();
+
+
 
     // item API
     router.post(api.getOnboardingUrl()).failureHandler(exceptionHandler).handler(this::createItem);
@@ -218,8 +221,8 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param serverOptions The server options to be configured.
    */
   private void setServerOptions(HttpServerOptions serverOptions) {
-    isSSL = config().getBoolean("ssl");
-    if (isSSL) {
+    isSsl = config().getBoolean("ssl");
+    if (isSsl) {
       LOGGER.debug("Info: Starting HTTPs server");
       port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
     } else {
@@ -250,13 +253,12 @@ public class ApiServerVerticle extends AbstractVerticle {
         })
         .compose(nextHandler -> {
           if (isUacAvailable) {
-            try{
-                LOGGER.debug("Adaptor Creation for Resource Group started");
-                return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, nextHandler);
-
+            try {
+              LOGGER.debug("Adaptor Creation for Resource Group started");
+              return createAdapterForResourceGroup(tokenHeadersMap, resultContainer, nextHandler);
             } catch (Exception e) {
-                LOGGER.debug("Adapter creation for resource group failed due to an exception: {}", e.getMessage());
-                return Future.succeededFuture();
+              LOGGER.debug("Adapter creation for resource group failed due to an exception: {}", e.getMessage());
+              return Future.succeededFuture();
             }
           } else {
             if (resultContainer.result.containsKey("item_details")) {
@@ -290,7 +292,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
   }
 
-  private Future<JsonObject> createAdapterForResourceGroup(MultiMap tokenHeadersMap, ResultContainer resultContainer, JsonObject item) {
+  private Future<JsonObject> createAdapterForResourceGroup(MultiMap tokenHeadersMap, ResultContainer resultContainer,
+                                                           JsonObject item) {
     String itemType = dxItemType(item.getJsonArray("type"));
     LOGGER.debug(item);
     if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
@@ -304,13 +307,13 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private String dxItemType(JsonArray type) {
-    ArrayList<String> ITEM_TYPES =
+    ArrayList<String> itemTypes =
         new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
             "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
 
     Set<String> types =
         new HashSet<String>(type.getList());
-    types.retainAll(ITEM_TYPES);
+    types.retainAll(itemTypes);
 
     return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }
@@ -437,7 +440,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String path = request.path().contains("/internal/ui") ? "/internal/ui" : "";
     JsonObject requestBody
-        = path.isEmpty() ? new JsonObject().put(ID, routingContext.queryParams().get(ID)) : routingContext.body().asJsonObject();
+        = path.isEmpty() ? new JsonObject().put(ID, routingContext.queryParams().get(ID)) :
+            routingContext.body().asJsonObject();
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON);
     catalogueService
         .createInstance(path, requestBody, tokenHeadersMap.get(TOKEN), CatalogueType.LOCAL)
@@ -751,7 +755,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     if (errorMessage.contains(":InvalidSchema")) {
       response.setStatusCode(400).end(errorMessage);
-    } else if (errorMessage.contains(":InvalidAuthorizationToken") || errorMessage.contains(":invalidAuthorizationToken")) {
+    } else if (errorMessage.contains(":InvalidAuthorizationToken")
+            || errorMessage.contains(":invalidAuthorizationToken")) {
       response.setStatusCode(401).end(errorMessage);
     } else if (errorMessage.contains(":ItemNotFound")) {
       response.setStatusCode(404).end(errorMessage);

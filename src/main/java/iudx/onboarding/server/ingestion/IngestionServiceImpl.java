@@ -43,7 +43,8 @@ public class IngestionServiceImpl implements IngestionService {
             .putHeader("Content-Type", "application/json")
             .sendJsonObject(ingestionRequestBody, responseHandler -> {
               if (responseHandler.succeeded() && responseHandler.result().statusCode() == 201) {
-                JsonObject result = responseHandler.result().body().toJsonObject().getJsonArray("results").getJsonObject(0);
+                JsonObject result = responseHandler.result().body().toJsonObject()
+                        .getJsonArray("results").getJsonObject(0);
                 promise.complete(result);
               } else {
                 Throwable cause = responseHandler.cause();
