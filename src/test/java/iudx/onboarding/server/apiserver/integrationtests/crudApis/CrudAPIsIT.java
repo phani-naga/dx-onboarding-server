@@ -196,7 +196,7 @@ public class CrudAPIsIT {
 
     // Introduce a delay
     try {
-      Thread.sleep(2000); // 2 seconds delay
+      Thread.sleep(4000); // 2 seconds delay
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -250,7 +250,7 @@ public class CrudAPIsIT {
     LOGGER.debug("provider id before check..."+"bbeacb12-5e54-339d-92e0-d8e063b551a8");
     // Introduce a delay
     try {
-      Thread.sleep(2000); // 2 seconds delay
+      Thread.sleep(4000); // 2 seconds delay
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -303,7 +303,7 @@ public class CrudAPIsIT {
 
     // Introduce a delay
     try {
-      Thread.sleep(2000); // 2 seconds delay
+      Thread.sleep(4000); // 2 seconds delay
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
