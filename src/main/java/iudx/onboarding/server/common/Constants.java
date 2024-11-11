@@ -10,4 +10,5 @@ public class Constants {
   public static final String TOKEN_ADDRESS = "iudx.onboarding.server.token";
   public static final String INGESTION_ADDRESS = "iudx.onboarding.server.ingestion";
   public static final String RS_SERVICE_ADDRESS = "iudx.onboarding.server.resourceserver";
+  public static final String MINIO_ADDRESS = "iudx.onboarding.server.minio";
 }
