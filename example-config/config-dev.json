@@ -37,6 +37,16 @@
       "keycloakClientSecret": "6ba618a0-06c6-49a0-a824-d5dfc6d025f3"
     },
     {
+      "id": "iudx.onboarding.server.minio.MinioVerticle",
+      "isWorkerVerticle":false,
+      "verticleInstances": 1,
+      "minioEndpoint": "http://172.19.0.1:9000",
+      "minioRegion": "in",
+      "minioAccessKey": "myminioadmin",
+      "minioSecretKey": "minio-secret-key-change-me",
+      "minioAdmin": ""
+    },
+    {
       "id": "iudx.onboarding.server.ingestion.IngestionVerticle",
       "isWorkerVerticle": false,
       "verticleInstances": 1,
