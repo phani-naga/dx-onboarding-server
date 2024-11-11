@@ -10,6 +10,7 @@ import dev.failsafe.RetryPolicyBuilder;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.apiserver.util.RespBuilder;
@@ -17,8 +18,13 @@ import iudx.onboarding.server.catalogue.service.CentralCatImpl;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.common.InconsistencyHandler;
+import iudx.onboarding.server.minio.MinioService;
 import iudx.onboarding.server.token.TokenService;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,63 +32,108 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueServiceImpl.class);
   private final TokenService tokenService;
+  private final MinioService minioService;
   private final RetryPolicyBuilder<Object> retryPolicyBuilder;
   private CentralCatImpl centralCat;
   private LocalCatImpl localCat;
   private InconsistencyHandler inconsistencyHandler;
+  private boolean isMinIO;
 
-  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, RetryPolicyBuilder<Object> retryPolicyBuilder,
-                       JsonObject config) {
+  CatalogueServiceImpl(Vertx vertx, TokenService tokenService, MinioService minioService,
+                       RetryPolicyBuilder<Object> retryPolicyBuilder, JsonObject config) {
     this.tokenService = tokenService;
+    this.minioService = minioService;
     this.retryPolicyBuilder = retryPolicyBuilder;
     this.centralCat = new CentralCatImpl(vertx, config);
     this.localCat = new LocalCatImpl(vertx, config);
-    this.inconsistencyHandler = new InconsistencyHandler(tokenService, localCat, centralCat, retryPolicyBuilder);
+    this.inconsistencyHandler =
+        new InconsistencyHandler(tokenService, localCat, centralCat, retryPolicyBuilder);
+    this.isMinIO = config.getBoolean("isMinIO", false);
   }
 
   @Override
-  public Future<JsonObject> createItem(JsonObject request, String token, CatalogueType catalogueType) {
+  public Future<JsonObject> createItem(JsonObject request, String token,
+                                       CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
-    if (catalogueType.equals(CatalogueType.CENTRAL)) {
-      RetryPolicy<Object> retryPolicy = retryPolicyBuilder
-          .onSuccess(successListener -> {
-            promise.complete((JsonObject) successListener.getResult());
-          })
-          .onFailure(listener -> {
-            LOGGER.warn("Failed to upload item to central");
-            String id = request.getString(ID);
-            Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(id, token));
-            promise.fail(listener.getException().getMessage());
-          })
-          .build();
-
-      Failsafe.with(retryPolicy)
-          .getAsyncExecution(asyncExecution -> {
-            tokenService.createToken()
-                .compose(adminToken -> {
-                  return centralCat.createItem(request, adminToken.getString(TOKEN));
-                })
-                .onComplete(ar -> {
-                  if (ar.succeeded()) {
-                    asyncExecution.recordResult(ar.result().getJsonObject(RESULTS));
-                  } else {
-                    asyncExecution.recordException(new DxRuntimeException(400, ar.cause().getMessage()));
-                  }
-                });
-          });
-    } else if (catalogueType.equals(CatalogueType.LOCAL)) {
-      localCat.createItem(request, token).onComplete(completeHandler -> {
-        if (completeHandler.succeeded()) {
-          promise.complete(completeHandler.result());
-        } else {
-          promise.fail(completeHandler.cause());
-        }
-      });
-    } else {
-      promise.fail("Invalid catalogue type");
+    String itemType = dxItemType(request.getJsonArray("type"));
+    Future<String> keycloakTokenFuture = Future.succeededFuture();
+    if (catalogueType.equals(CatalogueType.CENTRAL)
+        || (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup"))) {
+      keycloakTokenFuture =
+          tokenService.createToken().map(adminToken -> adminToken.getString(TOKEN));
     }
 
+    keycloakTokenFuture.compose(keyCloakToken -> {
+      Future<String> bucketUrlFuture = Future.succeededFuture();
+
+      // If MinIO is enabled and the item type is ResourceGroup, create a bucket
+      if (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+        bucketUrlFuture = tokenService.decodeToken(keyCloakToken)
+            .compose(decodedToken -> {
+              String sub = decodedToken.getString("sub");
+              return minioService.createBucket(sub);
+            });
+      }
+
+      return bucketUrlFuture.compose(bucketUrl -> {
+        if (bucketUrl != null) {
+          request.put("bucketUrl", bucketUrl);
+        }
+
+        // Determine the catalogue type after setting the bucket URL
+        if (catalogueType.equals(CatalogueType.CENTRAL)) {
+          RetryPolicy<Object> retryPolicy = retryPolicyBuilder
+              .onSuccess(
+                  successListener -> promise.complete((JsonObject) successListener.getResult()))
+              .onFailure(listener -> {
+                LOGGER.warn("Failed to upload item to central");
+                String id = request.getString(ID);
+                Future.future(f -> inconsistencyHandler.handleDeleteOnLocal(id, token));
+                promise.fail(listener.getException().getMessage());
+              })
+              .build();
+
+          Failsafe.with(retryPolicy)
+              .getAsyncExecution(asyncExecution -> {
+                centralCat.createItem(request, keyCloakToken)
+                    .onComplete(ar -> {
+                      if (ar.succeeded()) {
+                        asyncExecution.recordResult(ar.result().getJsonObject(RESULTS));
+                      } else {
+                        asyncExecution.recordException(
+                            new DxRuntimeException(400, ar.cause().getMessage()));
+                      }
+                    });
+              });
+        } else if (catalogueType.equals(CatalogueType.LOCAL)) {
+          localCat.createItem(request, token).onComplete(completeHandler -> {
+            if (completeHandler.succeeded()) {
+              promise.complete(completeHandler.result());
+            } else {
+              promise.fail(completeHandler.cause());
+            }
+          });
+        } else {
+          promise.fail("Invalid catalogue type");
+        }
+
+        return promise.future();
+      });
+    });
+
     return promise.future();
+  }
+
+
+  private String dxItemType(JsonArray type) {
+    ArrayList<String> itemTypes =
+        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
+            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
+
+    Set<String> types = new HashSet<String>(type.getList());
+    types.retainAll(itemTypes);
+
+    return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }
 
   @Override
