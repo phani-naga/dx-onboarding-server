@@ -57,8 +57,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     Promise<JsonObject> promise = Promise.promise();
     String itemType = dxItemType(request.getJsonArray("type"));
     Future<String> keycloakTokenFuture = Future.succeededFuture();
-    if (catalogueType.equals(CatalogueType.CENTRAL)
-        || (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup"))) {
+    if ((isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup") &&
+        catalogueType.equals(CatalogueType.LOCAL)) || (catalogueType.equals(CatalogueType.CENTRAL))) {
       keycloakTokenFuture =
           tokenService.createToken().map(adminToken -> adminToken.getString(TOKEN));
     }
@@ -66,8 +66,9 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
     keycloakTokenFuture.compose(keyCloakToken -> {
       Future<String> bucketUrlFuture = Future.succeededFuture();
 
-      // If MinIO is enabled and the item type is ResourceGroup, create a bucket
-      if (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+      // If MinIO is enabled and the item type is ResourceGroup, create a bucket and set the policy
+      if (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup")
+          && catalogueType.equals(CatalogueType.LOCAL)) {
         bucketUrlFuture = tokenService.decodeToken(keyCloakToken)
             .compose(decodedToken -> {
               String sub = decodedToken.getString("sub");

@@ -44,7 +44,7 @@ public class MinioServiceImpl implements MinioService {
         // Set the bucket policy and complete promise with bucket URL upon success
         setBucketPolicy(username, minioAdmin).onComplete(policyResult -> {
           if (policyResult.succeeded()) {
-            String bucketUrl = minioEndpoint + bucketName;
+            String bucketUrl = minioEndpoint + "/buckets/" + bucketName;
             promise.complete(bucketUrl);  // Return the bucket URL
           } else {
             promise.fail(policyResult.cause());
@@ -52,7 +52,7 @@ public class MinioServiceImpl implements MinioService {
         });
       } else {
         LOGGER.debug("Bucket {} already exists", bucketName);
-        String bucketUrl = minioEndpoint + bucketName;
+        String bucketUrl = minioEndpoint + "/buckets/" + bucketName;
         promise.complete(bucketUrl);  // Return existing bucket URL
       }
     } catch (Exception e) {
