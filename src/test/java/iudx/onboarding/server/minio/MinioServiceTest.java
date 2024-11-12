@@ -58,7 +58,7 @@ public class MinioServiceTest {
     // Verify interactions and result
     verify(minioClient, times(1)).makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     verify(minioClient, times(1)).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioEndpoint + bucketName, resultFuture.result());
+    assertEquals(minioEndpoint + "/buckets/" + bucketName, resultFuture.result());
   }
 
   @Test
@@ -76,7 +76,7 @@ public class MinioServiceTest {
     // Verify no bucket creation or policy setting calls
     verify(minioClient, never()).makeBucket(any(MakeBucketArgs.class));
     verify(minioClient, never()).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioEndpoint + bucketName, resultFuture.result());
+    assertEquals(minioEndpoint + "/buckets/" + bucketName, resultFuture.result());
   }
 
   @Test
