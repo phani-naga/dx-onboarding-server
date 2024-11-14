@@ -22,18 +22,13 @@ public class MinioServiceTest {
 
   private MinioServiceImpl minioService;
 
-  private final String minioEndpoint = "http://172.19.0.1:9000";
+  private final String minioServerUrl = "http://172.19.0.1:9000";
   private final String minioAdmin = "testAdmin";
 
   @BeforeEach
   public void setup() {
     MockitoAnnotations.openMocks(this);
-
-    JsonObject config = new JsonObject()
-        .put("minioEndpoint", minioEndpoint)
-        .put("minioAdmin", minioAdmin);
-
-    minioService = new MinioServiceImpl(minioClient, config);
+    minioService = new MinioServiceImpl(minioClient, minioServerUrl, minioAdmin);
   }
 
   @Test
@@ -55,7 +50,7 @@ public class MinioServiceTest {
     // Verify interactions and result
     verify(minioClient, times(1)).makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     verify(minioClient, times(1)).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioEndpoint + "/buckets/" + bucketName, resultFuture.result());
+    assertEquals(minioServerUrl + "/buckets/" + bucketName, resultFuture.result());
   }
 
   @Test
@@ -73,7 +68,7 @@ public class MinioServiceTest {
     // Verify no bucket creation or policy setting calls
     verify(minioClient, never()).makeBucket(any(MakeBucketArgs.class));
     verify(minioClient, never()).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioEndpoint + "/buckets/" + bucketName, resultFuture.result());
+    assertEquals(minioServerUrl + "/buckets/" + bucketName, resultFuture.result());
   }
 
   @Test

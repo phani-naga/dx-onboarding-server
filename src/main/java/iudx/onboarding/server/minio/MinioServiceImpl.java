@@ -20,12 +20,13 @@ public class MinioServiceImpl implements MinioService {
   private static final Logger LOGGER = LogManager.getLogger(MinioServiceImpl.class);
   private final MinioClient minioClient;
   private final String minioAdmin;
-  private final String minioEndpoint;
+  private final String minioServerUrl;
 
-  public MinioServiceImpl(MinioClient minioClient, JsonObject config) {
-    this.minioEndpoint = config.getString("minioEndpoint");
+  public MinioServiceImpl(MinioClient minioClient, String minioServerUrl, String minioAdmin) {
+
+    this.minioServerUrl = minioServerUrl;
     this.minioClient = minioClient;
-    this.minioAdmin = config.getString("minioAdmin");
+    this.minioAdmin = minioAdmin;
   }
 
   @Override
@@ -44,7 +45,7 @@ public class MinioServiceImpl implements MinioService {
         // Set the bucket policy and complete promise with bucket URL upon success
         setBucketPolicy(username, minioAdmin).onComplete(policyResult -> {
           if (policyResult.succeeded()) {
-            String bucketUrl = minioEndpoint + "/buckets/" + bucketName;
+            String bucketUrl = minioServerUrl + "/buckets/" + bucketName;
             promise.complete(bucketUrl);  // Return the bucket URL
           } else {
             promise.fail(policyResult.cause());
@@ -52,7 +53,7 @@ public class MinioServiceImpl implements MinioService {
         });
       } else {
         LOGGER.debug("Bucket {} already exists", bucketName);
-        String bucketUrl = minioEndpoint + "/buckets/" + bucketName;
+        String bucketUrl = minioServerUrl + "/buckets/" + bucketName;
         promise.complete(bucketUrl);  // Return existing bucket URL
       }
     } catch (Exception e) {

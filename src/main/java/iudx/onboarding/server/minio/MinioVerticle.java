@@ -19,12 +19,16 @@ public class MinioVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
+    String minioHost = config().getString("minioHost");
+    String minioPort = config().getString("minioPort");
+    String minioServerUrl = minioHost + ":" + minioPort;
+    String minioAdmin = config().getString("minioAdmin");
     minioClient = MinioClientFactory.createMinioClient(
-        config().getString("minioEndpoint"),
+        minioServerUrl,
         config().getString("minioRegion"),
         config().getString("minioAccessKey"),
         config().getString("minioSecretKey"));
-    minioService = new MinioServiceImpl(minioClient, config());
+    minioService = new MinioServiceImpl(minioClient, minioServerUrl, minioAdmin);
 
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(MINIO_ADDRESS).register(MinioService.class, minioService);
