@@ -32,7 +32,7 @@ metadata in a federated Catalogue server model.
 
 # How to Guide
 ## Setup and Installation
-Setup and installation guide is available [here](./docs/SETUP-and-installation.md)
+Setup and installation guide is available [here](./docs/SETUP-and-Installation)
 
 # Reference
 ## API Docs 
