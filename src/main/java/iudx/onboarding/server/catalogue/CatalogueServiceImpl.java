@@ -2,7 +2,11 @@ package iudx.onboarding.server.catalogue;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
 import static iudx.onboarding.server.common.Constants.ID;
+import static iudx.onboarding.server.common.Constants.ITEM_TYPES;
+import static iudx.onboarding.server.common.Constants.ITEM_TYPE_RESOURCE_GROUP;
+import static iudx.onboarding.server.common.Constants.SUB;
 import static iudx.onboarding.server.common.Constants.TOKEN;
+import static iudx.onboarding.server.common.Constants.TYPE;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
@@ -37,7 +41,7 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   private CentralCatImpl centralCat;
   private LocalCatImpl localCat;
   private InconsistencyHandler inconsistencyHandler;
-  private boolean isMinIO;
+  private final boolean isMinIO;
 
   CatalogueServiceImpl(Vertx vertx, TokenService tokenService, MinioService minioService,
                        RetryPolicyBuilder<Object> retryPolicyBuilder, JsonObject config) {
@@ -55,9 +59,9 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
   public Future<JsonObject> createItem(JsonObject request, String token,
                                        CatalogueType catalogueType) {
     Promise<JsonObject> promise = Promise.promise();
-    String itemType = dxItemType(request.getJsonArray("type"));
+    String itemType = dxItemType(request.getJsonArray(TYPE));
     Future<String> keycloakTokenFuture = Future.succeededFuture();
-    if ((isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup") &&
+    if ((isMinIO && itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE_GROUP) &&
         catalogueType.equals(CatalogueType.LOCAL)) || (catalogueType.equals(CatalogueType.CENTRAL))) {
       keycloakTokenFuture =
           tokenService.createToken().map(adminToken -> adminToken.getString(TOKEN));
@@ -67,19 +71,18 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
       Future<String> bucketUrlFuture = Future.succeededFuture();
 
       // If MinIO is enabled and the item type is ResourceGroup, create a bucket and set the policy
-      if (isMinIO && itemType.equalsIgnoreCase("iudx:ResourceGroup")
+      if (isMinIO && itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE_GROUP)
           && catalogueType.equals(CatalogueType.LOCAL)) {
         bucketUrlFuture = tokenService.decodeToken(keyCloakToken)
             .compose(decodedToken -> {
-              String sub = decodedToken.getString("sub");
+              String sub = decodedToken.getString(SUB);
               return minioService.createBucket(sub);
             });
       }
 
       return bucketUrlFuture.compose(bucketUrl -> {
-        if (bucketUrl != null) {
+        // Add the bucket URL to the request
           request.put("bucketUrl", bucketUrl);
-        }
 
         // Determine the catalogue type after setting the bucket URL
         if (catalogueType.equals(CatalogueType.CENTRAL)) {
@@ -127,12 +130,8 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
 
 
   private String dxItemType(JsonArray type) {
-    ArrayList<String> itemTypes =
-        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
-            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
-
     Set<String> types = new HashSet<String>(type.getList());
-    types.retainAll(itemTypes);
+    types.retainAll(ITEM_TYPES);
 
     return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }

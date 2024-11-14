@@ -23,7 +23,7 @@ public class MinioServiceTest {
   private MinioServiceImpl minioService;
 
   private final String minioEndpoint = "http://172.19.0.1:9000";
-  private final String minioAdmin = "admin";
+  private final String minioAdmin = "testAdmin";
 
   @BeforeEach
   public void setup() {
@@ -31,9 +31,6 @@ public class MinioServiceTest {
 
     JsonObject config = new JsonObject()
         .put("minioEndpoint", minioEndpoint)
-        .put("minioRegion", "in")
-        .put("minioAccessKey", "myminioadmin")
-        .put("minioSecretKey", "minio-secret-key-change-me")
         .put("minioAdmin", minioAdmin);
 
     minioService = new MinioServiceImpl(minioClient, config);

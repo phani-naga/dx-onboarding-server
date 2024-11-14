@@ -78,48 +78,43 @@ public class MinioServiceImpl implements MinioService {
   }
 
   String createBucketPolicy(String userName, String admin) throws JsonProcessingException {
+    if (admin == null || admin.isEmpty()) {
+      throw new IllegalArgumentException("MinIO admin user cannot be null or empty");
+    }
+
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode policyJson = mapper.createObjectNode();
 
     // Define policy version
     policyJson.put("Version", "2012-10-17");
 
-    // Statement for the specific user
-    ObjectNode userStatement = mapper.createObjectNode();
-    userStatement.put("Effect", "Allow");
-
-    ObjectNode userPrincipal = mapper.createObjectNode();
-    userPrincipal.put("AWS", "arn:aws:iam::*:user/" + userName);
-    userStatement.set("Principal", userPrincipal);
-
-    ArrayNode userActions = userStatement.putArray("Action");
+    // Actions that both user and admin can perform
     List<String> actions = Arrays.asList("s3:GetObject", "s3:DeleteObject", "s3:PutObject");
-    actions.forEach(userActions::add);
-
-    ArrayNode userResources = userStatement.putArray("Resource");
     String bucketName = userName + "-bucket";
-    userResources.add("arn:aws:s3:::" + bucketName + "/*");
 
     // Create statements for user and admin access
     ArrayNode statementsArray = policyJson.putArray("Statement");
-    statementsArray.add(userStatement);
-
-    // Statement for the admin user
-    ObjectNode adminStatement = mapper.createObjectNode();
-    adminStatement.put("Effect", "Allow");
-
-    ObjectNode adminPrincipal = mapper.createObjectNode();
-    adminPrincipal.put("AWS", "arn:aws:iam::*:user/" + admin);
-    adminStatement.set("Principal", adminPrincipal);
-
-    ArrayNode adminActions = adminStatement.putArray("Action");
-    adminActions.addAll(userActions);  // Reuse user actions for admin
-
-    ArrayNode adminResources = adminStatement.putArray("Resource");
-    adminResources.add("arn:aws:s3:::" + bucketName + "/*");
-
-    statementsArray.add(adminStatement);
+    statementsArray.add(createStatement(userName, actions, bucketName));
+    statementsArray.add(createStatement(admin, actions, bucketName));
 
     return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(policyJson);
+  }
+
+  private ObjectNode createStatement(String principalUser, List<String> actions, String bucketName) {
+    ObjectMapper mapper = new ObjectMapper();
+    ObjectNode statement = mapper.createObjectNode();
+    statement.put("Effect", "Allow");
+
+    ObjectNode principal = mapper.createObjectNode();
+    principal.put("AWS", "arn:aws:iam::*:user/" + principalUser);
+    statement.set("Principal", principal);
+
+    ArrayNode actionArray = statement.putArray("Action");
+    actions.forEach(actionArray::add);
+
+    ArrayNode resourceArray = statement.putArray("Resource");
+    resourceArray.add("arn:aws:s3:::" + bucketName + "/*");
+
+    return statement;
   }
 }

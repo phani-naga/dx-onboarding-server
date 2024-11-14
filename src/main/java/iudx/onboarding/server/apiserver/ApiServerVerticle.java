@@ -294,11 +294,11 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private Future<JsonObject> createAdapterForResourceGroup(MultiMap tokenHeadersMap, ResultContainer resultContainer,
                                                            JsonObject item) {
-    String itemType = dxItemType(item.getJsonArray("type"));
+    String itemType = dxItemType(item.getJsonArray(TYPE));
     LOGGER.debug(item);
-    if (itemType.equalsIgnoreCase("iudx:ResourceGroup")) {
+    if (itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE_GROUP)) {
       resultContainer.result = new JsonObject().put("item_details", item);
-      String itemId = item.getString("id");
+      String itemId = item.getString(ID);
       return resourceServerService.createAdapter(itemId, tokenHeadersMap.get(TOKEN));
     } else {
       resultContainer.result = item;
@@ -307,13 +307,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private String dxItemType(JsonArray type) {
-    ArrayList<String> itemTypes =
-        new ArrayList<String>(Arrays.asList("iudx:Resource", "iudx:ResourceGroup",
-            "iudx:ResourceServer", "iudx:Provider", "iudx:COS"));
-
-    Set<String> types =
-        new HashSet<String>(type.getList());
-    types.retainAll(itemTypes);
+    Set<String> types = new HashSet<String>(type.getList());
+    types.retainAll(ITEM_TYPES);
 
     return types.toString().replaceAll("\\[", "").replaceAll("\\]", "");
   }
