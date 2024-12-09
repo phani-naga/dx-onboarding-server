@@ -30,9 +30,10 @@ pipeline {
       steps{
         script{
           sh 'cp /home/ubuntu/configs/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
+          sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
               sh "mvn clean test checkstyle:checkstyle pmd:pmd"
-            }  
+            }
         }
       }
       post{
@@ -60,9 +61,10 @@ pipeline {
         }
         cleanup{
           script{
+            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
             sh 'sudo rm -rf target/'
           }
-        }        
+        }
       }
     }
     stage('Start onboarding-server for Performance/Integration Testing'){
