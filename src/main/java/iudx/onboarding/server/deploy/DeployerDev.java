@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
  * <ul>
  *   <li>--config/-c : path to the config file
  * </ul>
+ *
  * <p></p>
  * e.g. <i>java -jar ./fatjar.jar -c configs/config.json</i>
  */
