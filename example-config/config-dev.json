@@ -45,7 +45,10 @@
       "minioRegion": "in",
       "minioAccessKey": "myminioadmin",
       "minioSecretKey": "minio-secret-key-change-me",
-      "minioAdmin": ""
+      "minioAdmin": "",
+      "minioPolicyApiServerHost":  "localhost",
+      "minioPolicyApiServerPort": 3000,
+      "minioPolicyApiAuthorizationKey":  ""
     },
     {
       "id": "iudx.onboarding.server.ingestion.IngestionVerticle",

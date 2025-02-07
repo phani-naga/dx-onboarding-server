@@ -9,6 +9,9 @@ public class Constants {
   public static final String TOKEN = "token";
   public static final String TYPE = "type";
   public static final String SUB = "sub";
+  public static final String USER_ID = "userId";
+  public static final String BUCKET = "-bucket";
+  public static final String BUCKET_URL = "bucketUrl";
 
   /** Item types. */
   public static final String ITEM_TYPE_RESOURCE = "iudx:Resource";

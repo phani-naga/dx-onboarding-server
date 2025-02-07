@@ -1,12 +1,14 @@
 package iudx.onboarding.server.catalogue;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
+import static iudx.onboarding.server.common.Constants.BUCKET_URL;
 import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.ITEM_TYPES;
 import static iudx.onboarding.server.common.Constants.ITEM_TYPE_RESOURCE_GROUP;
 import static iudx.onboarding.server.common.Constants.SUB;
 import static iudx.onboarding.server.common.Constants.TOKEN;
 import static iudx.onboarding.server.common.Constants.TYPE;
+import static iudx.onboarding.server.common.Constants.USER_ID;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
@@ -25,8 +27,6 @@ import iudx.onboarding.server.common.InconsistencyHandler;
 import iudx.onboarding.server.minio.MinioService;
 import iudx.onboarding.server.token.TokenService;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
@@ -73,16 +73,27 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
       // If MinIO is enabled and the item type is ResourceGroup, create a bucket and set the policy
       if (isMinIO && itemType.equalsIgnoreCase(ITEM_TYPE_RESOURCE_GROUP)
           && catalogueType.equals(CatalogueType.LOCAL)) {
+        JsonObject policyRequest = new JsonObject();
         bucketUrlFuture = tokenService.decodeToken(keyCloakToken)
             .compose(decodedToken -> {
               String sub = decodedToken.getString(SUB);
+              policyRequest.put(USER_ID, sub);
               return minioService.createBucket(sub);
+            })
+            .compose(bucketUrl -> {
+              // Call attach-bucket-to-user-policy API after bucket creation
+              String bucketName = policyRequest.getString(USER_ID);
+              policyRequest
+                  .put("bucket", bucketName)
+                  .put("createBucket", false);
+
+              return minioService.attachBucketToNamePolicy(policyRequest).map(bucketUrl);
             });
       }
 
       return bucketUrlFuture.compose(bucketUrl -> {
         // Add the bucket URL to the request
-          request.put("bucketUrl", bucketUrl);
+          request.put(BUCKET_URL, bucketUrl);
 
         // Determine the catalogue type after setting the bucket URL
         if (catalogueType.equals(CatalogueType.CENTRAL)) {

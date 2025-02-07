@@ -1,5 +1,7 @@
 package iudx.onboarding.server.minio;
 
+import static iudx.onboarding.server.common.Constants.BUCKET;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -10,7 +12,10 @@ import io.minio.MinioClient;
 import io.minio.SetBucketPolicyArgs;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -18,22 +23,36 @@ import org.apache.logging.log4j.Logger;
 
 public class MinioServiceImpl implements MinioService {
   private static final Logger LOGGER = LogManager.getLogger(MinioServiceImpl.class);
+  public static WebClient webClient;
   private final MinioClient minioClient;
   private final String minioAdmin;
   private final String minioServerUrl;
+  private final String policyApiServerHost;
+  private final Integer policyApiServerPort;
+  private final String authorizationKey;
 
-  public MinioServiceImpl(MinioClient minioClient, String minioServerUrl, String minioAdmin) {
-
+  public MinioServiceImpl(Vertx vertx, MinioClient minioClient, String minioServerUrl,
+                          String minioAdmin, String policyApiServerHost,
+                          Integer policyApiServerPort, String authorizationKey) {
     this.minioServerUrl = minioServerUrl;
     this.minioClient = minioClient;
     this.minioAdmin = minioAdmin;
+    this.policyApiServerHost = policyApiServerHost;
+    this.policyApiServerPort = policyApiServerPort;
+    this.authorizationKey = authorizationKey;
+
+    WebClientOptions options =
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+    if (webClient == null) {
+      webClient = WebClient.create(vertx, options);
+    }
   }
 
   @Override
   public Future<String> createBucket(String username) {
     Promise<String> promise = Promise.promise();
     try {
-      String bucketName = username + "-bucket";
+      String bucketName = username + BUCKET;
       boolean bucketExists =
           minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
 
@@ -63,12 +82,33 @@ public class MinioServiceImpl implements MinioService {
     return promise.future();
   }
 
+  @Override
+  public Future<Void> attachBucketToNamePolicy(JsonObject policyRequest) {
+    Promise<Void> promise = Promise.promise();
+
+    webClient.post(policyApiServerPort, policyApiServerHost, "/attach-bucket-to-user-policy")
+        .putHeader("Content-Type", "application/json")
+        .putHeader("Authorization", authorizationKey)
+        .sendJsonObject(policyRequest, ar -> {
+          if (ar.succeeded()) {
+            LOGGER.info("Bucket policy attached successfully");
+            promise.complete();
+          } else {
+            LOGGER.error("Failed to attach bucket policy: " + ar.cause().getMessage());
+            promise.fail(ar.cause());
+          }
+        });
+
+    return promise.future();
+
+  }
+
   Future<Void> setBucketPolicy(String userName, String admin) {
     Promise<Void> promise = Promise.promise();
     try {
       String policy = createBucketPolicy(userName, admin);
       minioClient.setBucketPolicy(
-          SetBucketPolicyArgs.builder().bucket(userName + "-bucket").config(policy).build());
+          SetBucketPolicyArgs.builder().bucket(userName + BUCKET).config(policy).build());
       LOGGER.debug("Bucket policy for {} added successfully", userName);
       promise.complete();
     } catch (Exception e) {
@@ -91,7 +131,7 @@ public class MinioServiceImpl implements MinioService {
 
     // Actions that both user and admin can perform
     List<String> actions = Arrays.asList("s3:GetObject", "s3:DeleteObject", "s3:PutObject");
-    String bucketName = userName + "-bucket";
+    String bucketName = userName + BUCKET;
 
     // Create statements for user and admin access
     ArrayNode statementsArray = policyJson.putArray("Statement");
@@ -101,7 +141,8 @@ public class MinioServiceImpl implements MinioService {
     return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(policyJson);
   }
 
-  private ObjectNode createStatement(String principalUser, List<String> actions, String bucketName) {
+  private ObjectNode createStatement(String principalUser, List<String> actions,
+                                     String bucketName) {
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode statement = mapper.createObjectNode();
     statement.put("Effect", "Allow");

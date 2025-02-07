@@ -1,7 +1,15 @@
 package iudx.onboarding.server.minio;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.minio.BucketExistsArgs;
@@ -9,26 +17,37 @@ import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.SetBucketPolicyArgs;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 public class MinioServiceTest {
-
-  @Mock
-  private MinioClient minioClient;
-
-  private MinioServiceImpl minioService;
-
   private final String minioServerUrl = "http://172.19.0.1:9000";
   private final String minioAdmin = "testAdmin";
+  private final String policyApiServerHost = "localhost";
+  private final Integer policyApiServerPort = 3000;
+  private final String authorizationKey = "testKey";
+  @Mock
+  private Vertx vertx;
+  @Mock
+  private MinioClient minioClient;
+  private WebClient webClient;
+  private MinioServiceImpl minioService;
 
   @BeforeEach
   public void setup() {
     MockitoAnnotations.openMocks(this);
-    minioService = new MinioServiceImpl(minioClient, minioServerUrl, minioAdmin);
+    minioService = new MinioServiceImpl(vertx, minioClient, minioServerUrl, minioAdmin,
+        policyApiServerHost, policyApiServerPort, authorizationKey);
+    webClient = WebClient.create(vertx,
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true));
   }
 
   @Test
@@ -92,7 +111,6 @@ public class MinioServiceTest {
   public void testSetBucketPolicySuccess()
       throws Exception {
     String username = "policyuser";
-    String bucketName = username + "-bucket";
 
     // Mock policy setting
     doNothing().when(minioClient).setBucketPolicy(any(SetBucketPolicyArgs.class));

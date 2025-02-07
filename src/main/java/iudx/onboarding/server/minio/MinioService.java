@@ -17,4 +17,5 @@ public interface MinioService {
   }
 
   Future<String> createBucket(String username);
+  Future<Void> attachBucketToNamePolicy(JsonObject policyRequest);
 }
