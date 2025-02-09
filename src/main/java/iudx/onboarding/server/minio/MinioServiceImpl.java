@@ -87,6 +87,7 @@ public class MinioServiceImpl implements MinioService {
     Promise<Void> promise = Promise.promise();
 
     webClient.post(policyApiServerPort, policyApiServerHost, "/attach-bucket-to-user-policy")
+        .ssl(false)
         .putHeader("Content-Type", "application/json")
         .putHeader("Authorization", authorizationKey)
         .sendJsonObject(policyRequest, ar -> {
