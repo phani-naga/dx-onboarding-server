@@ -64,7 +64,7 @@ public class MinioServiceImpl implements MinioService {
         // Set the bucket policy and complete promise with bucket URL upon success
         setBucketPolicy(username, minioAdmin).onComplete(policyResult -> {
           if (policyResult.succeeded()) {
-            String bucketUrl = minioServerUrl + "/buckets/" + bucketName;
+            String bucketUrl = minioServerUrl + "/minio/ui/browser/" + bucketName;
             promise.complete(bucketUrl);  // Return the bucket URL
           } else {
             promise.fail(policyResult.cause());
@@ -92,6 +92,8 @@ public class MinioServiceImpl implements MinioService {
         .putHeader("Authorization", authorizationKey)
         .sendJsonObject(policyRequest, ar -> {
           if (ar.succeeded()) {
+            LOGGER.info(ar.result().statusCode());
+            LOGGER.info(ar.result().bodyAsJsonObject());
             LOGGER.info("Bucket policy attached successfully");
             promise.complete();
           } else {

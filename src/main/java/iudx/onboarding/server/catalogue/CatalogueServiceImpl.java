@@ -1,6 +1,7 @@
 package iudx.onboarding.server.catalogue;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
+import static iudx.onboarding.server.common.Constants.BUCKET;
 import static iudx.onboarding.server.common.Constants.BUCKET_URL;
 import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.ITEM_TYPES;
@@ -81,8 +82,10 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
               return minioService.createBucket(sub);
             })
             .compose(bucketUrl -> {
+              // Add the bucket URL to the request
+              request.put(BUCKET_URL, bucketUrl);
               // Call attach-bucket-to-user-policy API after bucket creation
-              String bucketName = policyRequest.getString(USER_ID);
+              String bucketName = policyRequest.getString(USER_ID) + BUCKET;
               policyRequest
                   .put("bucket", bucketName)
                   .put("createBucket", false);
@@ -92,9 +95,6 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
       }
 
       return bucketUrlFuture.compose(bucketUrl -> {
-        // Add the bucket URL to the request
-          request.put(BUCKET_URL, bucketUrl);
-
         // Determine the catalogue type after setting the bucket URL
         if (catalogueType.equals(CatalogueType.CENTRAL)) {
           RetryPolicy<Object> retryPolicy = retryPolicyBuilder
