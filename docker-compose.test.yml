@@ -10,7 +10,7 @@ services:
     env_file:
       - /home/ubuntu/configs/.onboarding.env
     volumes:
-      - /home/ubuntu/configs/onboarding-config.json:/usr/share/app/configs/onboarding-config.json
+      - /home/ubuntu/configs/onboarding-minio-config-dev.json:/usr/share/app/configs/onboarding-config.json
       - type: volume
         source: onboarding-server-volume
         target: /usr/share/app/storage/temp-dir
