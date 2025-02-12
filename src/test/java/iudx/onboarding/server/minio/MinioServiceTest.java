@@ -69,7 +69,7 @@ public class MinioServiceTest {
     // Verify interactions and result
     verify(minioClient, times(1)).makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     verify(minioClient, times(1)).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioServerUrl + "/buckets/" + bucketName, resultFuture.result());
+    assertEquals(minioServerUrl + "/minio/ui/browser/" + bucketName, resultFuture.result());
   }
 
   @Test
