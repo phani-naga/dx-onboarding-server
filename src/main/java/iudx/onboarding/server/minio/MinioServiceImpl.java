@@ -27,19 +27,16 @@ public class MinioServiceImpl implements MinioService {
   private final MinioClient minioClient;
   private final String minioAdmin;
   private final String minioServerUrl;
-  private final String policyApiServerHost;
-  private final Integer policyApiServerPort;
   private final String authorizationKey;
+  private final String minioPolicyApiUrl;
 
   public MinioServiceImpl(Vertx vertx, MinioClient minioClient, String minioServerUrl,
-                          String minioAdmin, String policyApiServerHost,
-                          Integer policyApiServerPort, String authorizationKey) {
+                          String minioAdmin, String minioPolicyApiUrl, String authorizationKey) {
     this.minioServerUrl = minioServerUrl;
     this.minioClient = minioClient;
     this.minioAdmin = minioAdmin;
-    this.policyApiServerHost = policyApiServerHost;
-    this.policyApiServerPort = policyApiServerPort;
     this.authorizationKey = authorizationKey;
+    this.minioPolicyApiUrl = minioPolicyApiUrl;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -86,8 +83,7 @@ public class MinioServiceImpl implements MinioService {
   public Future<Void> attachBucketToNamePolicy(JsonObject policyRequest) {
     Promise<Void> promise = Promise.promise();
 
-    webClient.post(policyApiServerPort, policyApiServerHost, "/attach-bucket-to-user-policy")
-        .ssl(false)
+    webClient.post(minioPolicyApiUrl, "/attach-bucket-to-user-policy")
         .putHeader("Content-Type", "application/json")
         .putHeader("Authorization", authorizationKey)
         .sendJsonObject(policyRequest, ar -> {

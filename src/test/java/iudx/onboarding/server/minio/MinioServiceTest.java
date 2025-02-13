@@ -18,9 +18,6 @@ import io.minio.MinioClient;
 import io.minio.SetBucketPolicyArgs;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +28,7 @@ import org.mockito.MockitoAnnotations;
 public class MinioServiceTest {
   private final String minioServerUrl = "http://172.19.0.1:9000";
   private final String minioAdmin = "testAdmin";
-  private final String policyApiServerHost = "localhost";
-  private final Integer policyApiServerPort = 3000;
+  private final String minioPolicyApiUrl = "minioPolicyApiUrl";
   private final String authorizationKey = "testKey";
   @Mock
   private Vertx vertx;
@@ -45,7 +41,7 @@ public class MinioServiceTest {
   public void setup() {
     MockitoAnnotations.openMocks(this);
     minioService = new MinioServiceImpl(vertx, minioClient, minioServerUrl, minioAdmin,
-        policyApiServerHost, policyApiServerPort, authorizationKey);
+        minioPolicyApiUrl, authorizationKey);
     webClient = WebClient.create(vertx,
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true));
   }
