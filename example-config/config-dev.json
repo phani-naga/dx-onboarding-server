@@ -12,7 +12,8 @@
     "localCatServerPort": 1234,
     "isUacAvailable": true,
     "centralCatServerHost": "",
-    "centralCatServerPort":1234
+    "centralCatServerPort":1234,
+    "isMinIO": true
   },
   "host": "onboarding.iudx.io",
   "modules": [
