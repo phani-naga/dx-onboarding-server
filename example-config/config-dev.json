@@ -40,14 +40,12 @@
       "id": "iudx.onboarding.server.minio.MinioVerticle",
       "isWorkerVerticle":false,
       "verticleInstances": 1,
-      "minioHost": "http://172.19.0.1",
-      "minioPort": 9000,
+      "minioServerUrl": "http://172.19.0.1",
       "minioRegion": "in",
       "minioAccessKey": "myminioadmin",
       "minioSecretKey": "minio-secret-key-change-me",
       "minioAdmin": "",
-      "minioPolicyApiServerHost":  "localhost",
-      "minioPolicyApiServerPort": 3000,
+      "minioPolicyApiUrl": "",
       "minioPolicyApiAuthorizationKey":  ""
     },
     {
