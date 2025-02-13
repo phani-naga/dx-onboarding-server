@@ -83,7 +83,7 @@ public class MinioServiceImpl implements MinioService {
   public Future<Void> attachBucketToNamePolicy(JsonObject policyRequest) {
     Promise<Void> promise = Promise.promise();
 
-    webClient.post(minioPolicyApiUrl, "/attach-bucket-to-user-policy")
+    webClient.postAbs(minioPolicyApiUrl + "/attach-bucket-to-user-policy")
         .putHeader("Content-Type", "application/json")
         .putHeader("Authorization", authorizationKey)
         .sendJsonObject(policyRequest, ar -> {
