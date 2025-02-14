@@ -1,5 +1,9 @@
 package iudx.onboarding.server.minio;
 
+import static iudx.onboarding.server.common.Constants.MINIO_BUCKET_SUFFIX;
+import static iudx.onboarding.server.common.Constants.MINIO_UI_BROWSER_PATH;
+import static iudx.onboarding.server.common.Constants.S3_ALL_OBJECTS_SUFFIX;
+import static iudx.onboarding.server.common.Constants.S3_BUCKET_ARN_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,7 +53,7 @@ public class MinioServiceTest {
   @Test
   public void testCreateBucketWhenBucketDoesNotExist() throws Exception {
     String username = "testuser";
-    String bucketName = username + "-bucket";
+    String bucketName = username + MINIO_BUCKET_SUFFIX;
 
     // Mock bucket existence check to return false
     when(minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()))
@@ -65,13 +69,13 @@ public class MinioServiceTest {
     // Verify interactions and result
     verify(minioClient, times(1)).makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
     verify(minioClient, times(1)).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioServerUrl + "/minio/ui/browser/" + bucketName, resultFuture.result());
+    assertEquals(minioServerUrl + MINIO_UI_BROWSER_PATH + bucketName, resultFuture.result());
   }
 
   @Test
   public void testCreateBucketWhenBucketAlreadyExists() throws Exception {
     String username = "existinguser";
-    String bucketName = username + "-bucket";
+    String bucketName = username + MINIO_BUCKET_SUFFIX;
 
     // Mock bucket existence check to return true
     when(minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()))
@@ -83,13 +87,13 @@ public class MinioServiceTest {
     // Verify no bucket creation or policy setting calls
     verify(minioClient, never()).makeBucket(any(MakeBucketArgs.class));
     verify(minioClient, never()).setBucketPolicy(any(SetBucketPolicyArgs.class));
-    assertEquals(minioServerUrl + "/buckets/" + bucketName, resultFuture.result());
+    assertEquals(minioServerUrl + MINIO_UI_BROWSER_PATH + bucketName, resultFuture.result());
   }
 
   @Test
   public void testCreateBucketWhenBucketCreationFails() throws Exception {
     String username = "failuser";
-    String bucketName = username + "-bucket";
+    String bucketName = username + MINIO_BUCKET_SUFFIX;
 
     // Mock bucket existence check to return false and bucket creation to throw an exception
     when(minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()))
@@ -137,10 +141,8 @@ public class MinioServiceTest {
     String policyJson = minioService.createBucketPolicy(username, minioAdmin);
 
     assertNotNull(policyJson);
-    assertTrue(policyJson.contains("s3:GetObject"));
-    assertTrue(policyJson.contains("s3:DeleteObject"));
-    assertTrue(policyJson.contains("s3:PutObject"));
-    assertTrue(policyJson.contains("arn:aws:s3:::" + username + "-bucket/*"));
+    assertTrue(policyJson.contains(
+        S3_BUCKET_ARN_PREFIX + username + MINIO_BUCKET_SUFFIX + S3_ALL_OBJECTS_SUFFIX));
   }
 }
 

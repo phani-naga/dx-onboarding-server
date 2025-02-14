@@ -1,15 +1,17 @@
 package iudx.onboarding.server.catalogue;
 
 import static iudx.onboarding.server.apiserver.util.Constants.RESULTS;
-import static iudx.onboarding.server.common.Constants.BUCKET;
 import static iudx.onboarding.server.common.Constants.BUCKET_URL;
 import static iudx.onboarding.server.common.Constants.ID;
 import static iudx.onboarding.server.common.Constants.ITEM_TYPES;
 import static iudx.onboarding.server.common.Constants.ITEM_TYPE_RESOURCE_GROUP;
+import static iudx.onboarding.server.common.Constants.MINIO_BUCKET_SUFFIX;
+import static iudx.onboarding.server.common.Constants.POLICY_BUCKET;
+import static iudx.onboarding.server.common.Constants.POLICY_CREATE_BUCKET;
+import static iudx.onboarding.server.common.Constants.POLICY_USER_ID;
 import static iudx.onboarding.server.common.Constants.SUB;
 import static iudx.onboarding.server.common.Constants.TOKEN;
 import static iudx.onboarding.server.common.Constants.TYPE;
-import static iudx.onboarding.server.common.Constants.USER_ID;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
@@ -78,17 +80,17 @@ public class CatalogueServiceImpl implements CatalogueUtilService {
         bucketUrlFuture = tokenService.decodeToken(keyCloakToken)
             .compose(decodedToken -> {
               String sub = decodedToken.getString(SUB);
-              policyRequest.put(USER_ID, sub);
+              policyRequest.put(POLICY_USER_ID, sub);
               return minioService.createBucket(sub);
             })
             .compose(bucketUrl -> {
               // Add the bucket URL to the request
               request.put(BUCKET_URL, bucketUrl);
               // Call attach-bucket-to-user-policy API after bucket creation
-              String bucketName = policyRequest.getString(USER_ID) + BUCKET;
+              String bucketName = policyRequest.getString(POLICY_USER_ID) + MINIO_BUCKET_SUFFIX;
               policyRequest
-                  .put("bucket", bucketName)
-                  .put("createBucket", false);
+                  .put(POLICY_BUCKET, bucketName)
+                  .put(POLICY_CREATE_BUCKET, false);
 
               return minioService.attachBucketToNamePolicy(policyRequest).map(bucketUrl);
             });

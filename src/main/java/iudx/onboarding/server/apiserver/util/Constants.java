@@ -16,6 +16,7 @@ public class Constants {
   public static final String HEADER_ORIGIN = "Origin";
   public static final String HEADER_REFERER = "Referer";
   public static final String HEADER_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+  public static final String HEADER_Authorization = "Authorization";
   public static final String HEADER_OPTIONS = "options";
   public static final String HEADER_PUBLIC_KEY = "publicKey";
   public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
