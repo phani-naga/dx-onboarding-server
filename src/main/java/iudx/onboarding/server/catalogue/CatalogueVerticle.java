@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.ingestion.IngestionService;
+import iudx.onboarding.server.minio.MinioService;
 import iudx.onboarding.server.token.TokenService;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -23,12 +24,14 @@ public class CatalogueVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private CatalogueUtilService catalogueUtilService;
   private TokenService tokenService;
+  private MinioService minioService;
 
 
   @Override
   public void start() throws Exception {
 
     tokenService = TokenService.createProxy(vertx, TOKEN_ADDRESS);
+    minioService = MinioService.createProxy(vertx, MINIO_ADDRESS);
 
     RetryPolicyBuilder<Object> retryPolicyBuilder = RetryPolicy.builder()
         .handle(DxRuntimeException.class)
@@ -38,7 +41,8 @@ public class CatalogueVerticle extends AbstractVerticle {
         .withMaxAttempts(3)
         .onRetry(retryListener -> LOGGER.error("Operation failed... retrying"));
 
-    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, retryPolicyBuilder, config());
+    catalogueUtilService = new CatalogueServiceImpl(vertx, tokenService, minioService,
+        retryPolicyBuilder, config());
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CATALOGUE_ADDRESS).register(CatalogueUtilService.class, catalogueUtilService);
 

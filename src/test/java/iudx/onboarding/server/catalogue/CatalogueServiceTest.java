@@ -18,7 +18,9 @@ import iudx.onboarding.server.apiserver.exceptions.DxRuntimeException;
 import iudx.onboarding.server.catalogue.service.LocalCatImpl;
 import iudx.onboarding.server.common.CatalogueType;
 import iudx.onboarding.server.ingestion.IngestionService;
+import iudx.onboarding.server.minio.MinioService;
 import iudx.onboarding.server.token.TokenService;
+import java.util.List;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,14 +87,16 @@ public class CatalogueServiceTest {
     lenient().when(LocalCatImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
 
     catalogueService =
-        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class), retryPolicyBuilder, config);
+        new CatalogueServiceImpl(Vertx.vertx(), mock(TokenService.class),
+            mock(MinioService.class), retryPolicyBuilder,
+            config);
   }
 
   @Test
   @Description("test createItem when handler succeeds and type is local")
   public void testCreateItemLocal(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    JsonObject request = new JsonObject().put("token", "xyz").put("type", List.of("iudx:Owner"));
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(true);
@@ -126,7 +130,7 @@ public class CatalogueServiceTest {
   @Description("test createItem when handler fails and type is local")
   public void testCreateItemLocalFailed(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    JsonObject request = new JsonObject().put("token", "xyz").put("type", List.of("iudx:Owner"));
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);
@@ -159,7 +163,7 @@ public class CatalogueServiceTest {
   @Description("test createItem when handler fails and type is local")
   public void testCreateItemFailed(VertxTestContext testContext) {
 
-    JsonObject request = new JsonObject().put("token", "xyz");
+    JsonObject request = new JsonObject().put("token", "xyz").put("type", List.of("iudx:Owner"));
     CatalogueType localType = CatalogueType.LOCAL;
     when(httpRequest.putHeader(anyString(), anyString())).thenReturn(httpRequest);
     when(httpResponseAsyncResult.succeeded()).thenReturn(false);

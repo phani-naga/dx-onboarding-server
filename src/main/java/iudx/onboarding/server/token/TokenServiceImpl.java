@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
 import io.vertx.ext.auth.oauth2.OAuth2Options;
@@ -63,6 +64,27 @@ public class TokenServiceImpl implements TokenService {
           LOGGER.error("Failed to generate the token " + err.getMessage());
           promise.fail(err.getMessage());
         });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> decodeToken(String token) {
+    Promise<JsonObject> promise = Promise.promise();
+    try {
+      keycloak.authenticate(new TokenCredentials(token))
+          .onSuccess(authInfo -> {
+            JsonObject tokenInfo = authInfo.principal();
+            LOGGER.debug("Token decoded successfully: " + tokenInfo);
+            promise.complete(tokenInfo);
+          })
+          .onFailure(err -> {
+            LOGGER.error("Token decoding failed: " + err.getLocalizedMessage());
+            promise.fail(err.getLocalizedMessage());
+          });
+    } catch (Exception exception) {
+      LOGGER.error("Token decoding failed: " + exception.getLocalizedMessage());
+      promise.fail(exception.getLocalizedMessage());
+    }
     return promise.future();
   }
 }
