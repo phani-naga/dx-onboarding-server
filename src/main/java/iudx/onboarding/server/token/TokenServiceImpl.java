@@ -6,6 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 import io.vertx.ext.auth.oauth2.OAuth2FlowType;
@@ -24,6 +25,7 @@ public class TokenServiceImpl implements TokenService {
   JsonObject config;
   OAuth2Auth keycloak;
   private String jwtToken;
+  private static final int JWT_LEEWAY_TIME = 90;
 
   public TokenServiceImpl(Vertx vertx, JsonObject config) {
     this.config = config;
@@ -36,7 +38,10 @@ public class TokenServiceImpl implements TokenService {
             .setFlow(OAuth2FlowType.CLIENT)
             .setClientId(keycloakClientId)
             .setClientSecret(keycloakClientSecret)
-            .setSite(keycloakSite);
+            .setSite(keycloakSite)
+                .setJWTOptions(
+                        new JWTOptions().setLeeway(JWT_LEEWAY_TIME)
+                );
 
     KeycloakAuth.discover(vertx, options)
         .onComplete(
