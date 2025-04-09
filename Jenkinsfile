@@ -30,9 +30,10 @@ pipeline {
       steps{
         script{
           sh 'cp /home/ubuntu/configs/onboarding-config-test.json ./secrets/all-verticles-configs/config-test.json'
+          sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
            catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
               sh "mvn clean test checkstyle:checkstyle pmd:pmd"
-            }  
+            }
         }
       }
       post{
@@ -60,9 +61,10 @@ pipeline {
         }
         cleanup{
           script{
+            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
             sh 'sudo rm -rf target/'
           }
-        }        
+        }
       }
     }
     stage('Start onboarding-server for Performance/Integration Testing'){
@@ -93,6 +95,7 @@ pipeline {
         script{
             sh 'mkdir -p configs'
             sh 'cp /home/ubuntu/configs/onboarding-config-test.json ./configs/config-test.json'
+            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
@@ -121,6 +124,7 @@ pipeline {
         }
         cleanup{
           script{
+            sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           }
         }
@@ -170,6 +174,7 @@ pipeline {
         stage('Integration test on swarm deployment') {
           steps {
             script{
+              sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
               sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
             }
           }
@@ -182,6 +187,11 @@ pipeline {
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
+            }
+            cleanup{
+              script{
+                sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
+              }
             }
           }
         }
@@ -199,4 +209,3 @@ Check console output at $BUILD_URL to view the results.'''
     }
   }
 }
-
