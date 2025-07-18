@@ -1,6 +1,4 @@
 pipeline {
-
-
   environment {
     devRegistry = 'ghcr.io/datakaveri/onboarding-server-dev'
     deplRegistry = 'ghcr.io/datakaveri/onboarding-server-depl'
@@ -8,21 +6,62 @@ pipeline {
     registryCredential = 'datakaveri-ghcr'
     GIT_HASH = GIT_COMMIT.take(7)
   }
-
-
   agent {
     node {
       label 'slave1'
     }
   }
-
-
   stages {
+    stage('Trigger Validation') {
+      steps {
+        script {
+          def isPRComment = env.ghprbCommentBody != null
+          def changed = isImportantChange()
+          if (isPRComment || changed) {
+            echo "Trigger valid: Running pipeline due to PR comment or file changes."
+          } 
+          else {
+            echo "Skipping pipeline. Reason: No PR comment and no important file changes."
+            currentBuild.result = 'SUCCESS'
+            return
+          }
+        }
+      }
+    }
+    stage('Trivy Code Scan (Dependencies)') {
+      steps {
+        script {
+          sh '''
+            trivy fs --scanners vuln,secret,misconfig --output trivy-fs-report.txt .
+          '''
+        }
+      }
+    }
     stage('Build images') {
       steps{
         script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
+        }
+      }
+    }
+    stage('Trivy Docker Image Scan and Report') {
+      steps {
+        script {
+          sh "trivy image --output trivy-dev-image-report.txt ${devImage.imageName()}"
+          sh "trivy image --output trivy-depl-image-report.txt ${deplImage.imageName()}"
+        }
+      }
+      post {
+        always {
+          archiveArtifacts artifacts: 'trivy-*.txt', allowEmptyArchive: true
+          publishHTML(target: [
+            allowMissing: true,
+            keepAll: true,
+            reportDir: '.',
+            reportFiles: 'trivy-fs-report.txt, trivy-dev-image-report.txt, trivy-depl-image-report.txt',
+            reportName: 'Trivy Reports'
+          ])
         }
       }
     }
@@ -134,18 +173,7 @@ pipeline {
 
    stage('Continuous Deployment') {
       when {
-        allOf {
-          anyOf {
-            changeset "docker/**"
-            changeset "docs/**"
-            changeset "pom.xml"
-            changeset "src/main/**"
-            triggeredBy cause: 'UserIdCause'
-          }
-          expression {
-            return env.GIT_BRANCH == 'origin/main';
-          }
-        }
+          expression { return env.GIT_BRANCH == 'origin/master'; }
       }
       stages {
         stage('Push Images') {
@@ -205,6 +233,16 @@ pipeline {
         if (env.GIT_BRANCH == 'origin/main')
         emailext recipientProviders: [buildUser(), developers()], to: '$ONBOARDING_RECIPENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
+      }
+    }
+  }
+}
+def isImportantChange() {
+  def paths = ['docker/', 'docs/', 'pom.xml', 'src/main/']
+  return currentBuild.changeSets.any { cs ->
+    cs.items.any { item ->
+      item.affectedPaths.any { path ->
+        paths.any { imp -> path.startsWith(imp) || path == imp }
       }
     }
   }
