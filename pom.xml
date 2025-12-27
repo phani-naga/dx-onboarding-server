@@ -266,7 +266,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.3.1-jre</version>
+      <version>33.4.8-jre</version>
     </dependency>
     <dependency>
       <groupId>dev.failsafe</groupId>
@@ -404,21 +404,19 @@
                 </filter>
               </filters>
               <transformers>
-                <transformer
-                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>${exec.mainClassDev}</Main-Class>
                   </manifestEntries>
                 </transformer>
-                <transformer
-                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/services/io.vertx.core.spi.VerticleFactory
                   </resource>
                   <resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
                   </resource>
                 </transformer>
               </transformers>
-              <artifactSet></artifactSet>
+              <artifactSet/>
               <outputFile>${project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
               </outputFile>
             </configuration>
@@ -442,21 +440,19 @@
                 </filter>
               </filters>
               <transformers>
-                <transformer
-                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
                     <Main-Class>${exec.mainClass}</Main-Class>
                   </manifestEntries>
                 </transformer>
-                <transformer
-                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                   <resource>META-INF/services/io.vertx.core.spi.VerticleFactory
                   </resource>
                   <resource>META-INF/services/io.vertx.core.spi.VertxServiceProvider
                   </resource>
                 </transformer>
               </transformers>
-              <artifactSet></artifactSet>
+              <artifactSet/>
               <outputFile>
                 ${project.build.directory}/${project.artifactId}-cluster-${project.version}-fat.jar
               </outputFile>
